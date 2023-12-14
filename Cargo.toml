@@ -1,0 +1,158 @@
+[package]
+name = "llm-client"
+version = "0.0.1"
+edition = "2021"
+authors = ["Shelby Jenkins"]
+description = "Rust library for integrating local LLMs (with llama.cpp) and external LLM APIs."
+homepage = "https://github.com/shelbyJenkins/llm-client"
+readme = "README.md"
+
+keywords = [
+    "llm",
+    "machine-learning",
+    "rust",
+    "llama-cpp",
+    "ggml",
+    "ai",
+    "openai",
+    "local-llm"
+]
+categories = [
+    "llm",
+    "machine-learning",
+    "rust",
+    "llama-cpp",
+    "ggml",
+    "ai",
+    "openai",
+    "local-llm"
+]
+license = "MIT"
+repository = "https://github.com/shelbyJenkins/llm-client"
+
+
+[dependencies]
+
+[dependencies.async-convert]
+version = "1.0.0"
+
+[dependencies.async-openai]
+version = "0.17.1"
+
+[dependencies.backoff]
+version = "0.4.0"
+features = ["tokio"]
+
+[dependencies.base64]
+version = "0.21.0"
+
+[dependencies.bytes]
+version = "1.5.0"
+
+[dependencies.clap]
+version = "4.4.11"
+
+[dependencies.chrono]
+version = "0.4.31"
+
+[dependencies.derive_builder]
+version = "0.12.0"
+
+[dependencies.dotenv]
+version = "0.15.0"
+
+[dependencies.futures]
+version = "0.3.26"
+
+[dependencies.hf-hub]
+version = "0.3.2"
+features = ["tokio"]
+
+[dependencies.rand]
+version = "0.8.5"
+
+[dependencies.reqwest]
+version = "0.11.14"
+features = [
+    "json",
+    "stream",
+    "multipart",
+]
+default-features = false
+
+[dependencies.reqwest-eventsource]
+version = "0.4.0"
+
+[dependencies.secrecy]
+version = "0.8.0"
+features = ["serde"]
+
+[dependencies.serde]
+version = "1.0.152"
+features = [
+    "derive",
+    "rc",
+]
+
+[dependencies.serde_json]
+version = "1.0.93"
+
+[dependencies.thiserror]
+version = "1.0.38"
+
+[dependencies.tokio]
+version = "1.25.0"
+features = [
+    "fs",
+    "macros",
+]
+
+[dependencies.tokio-stream]
+version = "0.1.11"
+
+[dependencies.tokio-util]
+version = "0.7.7"
+features = [
+    "codec",
+    "io-util",
+]
+
+[dependencies.tracing]
+version = "0.1.37"
+
+[dependencies.tiktoken-rs]
+version = "0.5.7"
+
+[dependencies.regex]
+version = "1.10.2"
+
+[dependencies.serde_yaml]
+version = "0.9.27"
+
+
+[dev-dependencies.tokio-test]
+version = "0.4.2"
+
+[dev-dependencies.hex-literal]
+version = "0.4.1"
+
+[dev-dependencies.sha2]
+version = "0.10"
+
+
+
+[features]
+default = ["rustls"]
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+rustls = ["reqwest/rustls-tls-native-roots"]
+
+[[bin]]
+name = "server_runner"
+path = "src/providers/llama_cpp/bin/server_runner.rs"
+
+[[bin]]
+name = "model_loader_cli"
+path = "src/providers/llama_cpp/bin/model_loader_cli.rs"
+
+

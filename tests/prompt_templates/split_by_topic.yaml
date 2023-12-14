@@ -1,0 +1,3 @@
+Summarize each story with as much detail as possible. Consider journalistic details like "Who, What, When, Where, Why, How."
+It's better to return an empty list than it is to summarize a stories with scant details.
+Crucial- Do not include individual stories lacking detail! You MUST be able to write at least 3 sentences about a singular story.
