@@ -78,14 +78,14 @@ impl LlamaLlmModels {
         model_definition: &LlamaLlmModels,
         max_tokens_for_model: Option<u16>,
     ) -> u16 {
-        let default_params = LlamaLlmModels::get_default_model_params(&model_definition);
+        let default_params = LlamaLlmModels::get_default_model_params(model_definition);
         if let Some(value) = max_tokens_for_model {
             if value > default_params.max_tokens_for_model {
                 return default_params.max_tokens_for_model;
             }
-            return value;
+            value
         } else {
-            return default_params.max_tokens_for_model;
+            default_params.max_tokens_for_model
         }
     }
 }

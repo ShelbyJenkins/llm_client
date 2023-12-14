@@ -1,0 +1,45 @@
+{
+	"name": "Rust + CUDA",
+    "image": "nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {"version": "latest"},
+		"ghcr.io/devcontainers/features/rust:1": {"version": "latest"},
+		"ghcr.io/devcontainers/features/git:1": {"version": "latest"}
+	},
+	"hostRequirements": {
+		"gpu": "optional" 
+	},
+    "remoteUser": "root",
+	"runArgs": [
+		"--gpus=all"
+	  ],
+	  "remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/usr/local/cuda/bin",
+		"LD_LIBRARY_PATH": "$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64",
+		"XLA_FLAGS": "--xla_gpu_cuda_data_dir=/usr/local/cuda"
+	},	
+    "customizations": {
+		"vscode": {
+			"settings": {
+				"lldb.executable": "/usr/bin/lldb",
+				"files.watcherExclude": {
+					"**/target/**": true
+				},
+				"rust-analyzer.checkOnSave.command": "clippy"
+			},
+			"extensions": [
+				"vadimcn.vscode-lldb",
+				"mutantdino.resourcemonitor",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"serayuzgur.crates",
+				"github.vscode-pull-request-github",
+				"github.vscode-github-actions",
+				"github.copilot",
+				"github.copilot-chat",
+				"d-koppenhagen.file-tree-to-text-generator",
+				"bradlc.vscode-tailwindcss"
+			]
+		}
+	}
+}

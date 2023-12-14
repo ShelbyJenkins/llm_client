@@ -3,7 +3,6 @@ use crate::text_utils;
 use crate::LlamaLlm;
 use crate::LlamaLlmModels;
 use std::collections::HashMap;
-use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;

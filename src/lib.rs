@@ -67,7 +67,7 @@ impl LlmClient {
         let prompt =
             crate::prompting::create_model_formatted_prompt(&self.llm_definition, prompt.clone());
 
-        // let total_prompt_tokens = crate::prompting::check_available_request_tokens_decision(
+        // let _ = crate::prompting::check_available_request_tokens_decision(
         //     &self.llm_definition,
         //     &prompt,
         //     1,
@@ -76,7 +76,7 @@ impl LlmClient {
         match self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => {
                 let provider = OpenAiLlm::default();
-                let (responses, total_response_tokens) = provider
+                let (responses, _) = provider
                     .make_boolean_decision(&prompt, logit_bias, batch_count, &self.model_params)
                     .await?;
                 Ok(responses)
@@ -105,7 +105,7 @@ impl LlmClient {
         let prompt =
             crate::prompting::create_model_formatted_prompt(&self.llm_definition, prompt.clone());
 
-        let (total_prompt_tokens, new_max_response_tokens) =
+        let (_, new_max_response_tokens) =
             crate::prompting::check_available_request_tokens_generation(
                 &self.llm_definition,
                 &prompt,
@@ -130,14 +130,14 @@ impl LlmClient {
         match self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => {
                 let provider = OpenAiLlm::default();
-                let (responses, total_response_tokens) = provider
+                let (responses, _) = provider
                     .generate_text(&prompt, max_response_tokens, logit_bias, &self.model_params)
                     .await?;
                 Ok(responses)
             }
             LlmDefinition::LlamaLlm(_) => {
                 let provider = LlamaLlm::default();
-                let (responses, total_response_tokens) = provider
+                let (responses, _) = provider
                     .generate_text(&prompt, max_response_tokens, logit_bias, &self.model_params)
                     .await?;
                 Ok(responses)

@@ -74,81 +74,6 @@ impl<C: Config> Client<C> {
         &self.config
     }
 
-    /// Make a GET request to {path} and deserialize the response body
-    pub(crate) async fn get<O>(&self, path: &str) -> Result<O, LlamaApiError>
-    where
-        O: DeserializeOwned,
-    {
-        let request_maker = || async {
-            Ok(self
-                .http_client
-                .get(self.config.url(path))
-                .query(&self.config.query())
-                .headers(self.config.headers())
-                .build()?)
-        };
-
-        self.execute(request_maker).await
-    }
-
-    /// Make a GET request to {path} with given Query and deserialize the response body
-    pub(crate) async fn get_with_query<Q, O>(
-        &self,
-        path: &str,
-        query: &Q,
-    ) -> Result<O, LlamaApiError>
-    where
-        O: DeserializeOwned,
-        Q: Serialize + ?Sized,
-    {
-        let request_maker = || async {
-            Ok(self
-                .http_client
-                .get(self.config.url(path))
-                .query(&self.config.query())
-                .query(query)
-                .headers(self.config.headers())
-                .build()?)
-        };
-
-        self.execute(request_maker).await
-    }
-
-    /// Make a DELETE request to {path} and deserialize the response body
-    pub(crate) async fn delete<O>(&self, path: &str) -> Result<O, LlamaApiError>
-    where
-        O: DeserializeOwned,
-    {
-        let request_maker = || async {
-            Ok(self
-                .http_client
-                .delete(self.config.url(path))
-                .query(&self.config.query())
-                .headers(self.config.headers())
-                .build()?)
-        };
-
-        self.execute(request_maker).await
-    }
-
-    /// Make a POST request to {path} and return the response body
-    pub(crate) async fn post_raw<I>(&self, path: &str, request: I) -> Result<Bytes, LlamaApiError>
-    where
-        I: Serialize,
-    {
-        let request_maker = || async {
-            Ok(self
-                .http_client
-                .post(self.config.url(path))
-                .query(&self.config.query())
-                .headers(self.config.headers())
-                .json(&request)
-                .build()?)
-        };
-
-        self.execute_raw(request_maker).await
-    }
-
     /// Make a POST request to {path} and deserialize the response body
     pub(crate) async fn post<I, O>(&self, path: &str, request: I) -> Result<O, LlamaApiError>
     where
@@ -162,26 +87,6 @@ impl<C: Config> Client<C> {
                 .query(&self.config.query())
                 .headers(self.config.headers())
                 .json(&request)
-                .build()?)
-        };
-
-        self.execute(request_maker).await
-    }
-
-    /// POST a form at {path} and deserialize the response body
-    pub(crate) async fn post_form<O, F>(&self, path: &str, form: F) -> Result<O, LlamaApiError>
-    where
-        O: DeserializeOwned,
-        reqwest::multipart::Form: async_convert::TryFrom<F, Error = LlamaApiError>,
-        F: Clone,
-    {
-        let request_maker = || async {
-            Ok(self
-                .http_client
-                .post(self.config.url(path))
-                .query(&self.config.query())
-                .headers(self.config.headers())
-                .multipart(async_convert::TryFrom::try_from(form.clone()).await?)
                 .build()?)
         };
 

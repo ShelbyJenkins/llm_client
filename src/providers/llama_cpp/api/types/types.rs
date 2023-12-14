@@ -1,9 +1,7 @@
 use crate::providers::llama_cpp::api::config::{Config, LlamaConfig};
 use crate::providers::llama_cpp::api::error::LlamaApiError;
-use async_openai::types::{ChatChoice, CompletionUsage};
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 /// Client is a container for config, backoff and http_client
