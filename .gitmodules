@@ -1,4 +1,4 @@
 [submodule "llama.cpp"]
 	path = src/providers/llama_cpp/llama_cpp
 	url = https://github.com/ggerganov/llama.cpp
-
+	ignore = untracked
