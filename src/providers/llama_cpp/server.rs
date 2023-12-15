@@ -1,20 +1,32 @@
 use super::model_loader::download_model;
 use core::panic;
-use std::fs;
 use std::net::TcpStream;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 pub const HOST: &str = "localhost";
 pub const PORT: &str = "8080";
-const LLAMA_PATH: &str = "/workspaces/test/llm_client/src/providers/llama_cpp/llama_cpp";
 
 pub async fn start_server(
     model_id: &str,
     model_filename: &str,
     model_token: Option<String>,
+    threads: Option<u16>,
+    ctx_size: Option<u16>,
+    n_gpu_layers: Option<u16>,
 ) -> std::process::Child {
-    let server_process = server_process(model_id, model_filename, model_token).await;
+    let threads = threads.unwrap_or(2).to_string();
+    let ctx_size = ctx_size.unwrap_or(9001).to_string();
+    let n_gpu_layers = n_gpu_layers.unwrap_or(6).to_string();
+
+    let model_path = download_model(model_id, model_filename, model_token).await;
+
+    let model_path = match model_path {
+        Some(model_path) => model_path.to_str().unwrap().to_owned(),
+        None => panic!("Failed to download model"),
+    };
+    let server_process = server_process(&model_path, &threads, &ctx_size, &n_gpu_layers).await;
+
     let server_addr = format!("{}:{}", HOST, PORT);
     let timeout = Duration::from_secs(30);
     let start_time = Instant::now();
@@ -70,38 +82,25 @@ pub fn kill_existing() {
     }
 }
 
-// c N, --ctx-size N: Set the size of the prompt context.
 pub async fn server_process(
-    model_id: &str,
-    model_filename: &str,
-    model_token: Option<String>,
+    model_path: &str,
+    threads: &str,
+    ctx_size: &str,
+    n_gpu_layers: &str,
 ) -> std::process::Child {
     kill_existing();
-    let llama_path = fs::canonicalize(LLAMA_PATH).expect("Failed to canonicalize path");
-
-    let llama_path_str = llama_path
-        .to_str()
-        .expect("Failed to convert path to string");
-
-    // let model_path = format!("{}/{}/{}", MODEL_PATH, model_id, model_file_name);
-
-    let path = download_model(model_id, model_filename, model_token).await;
-    let path = match path {
-        Some(path) => path.to_str().unwrap().to_string(),
-        None => panic!("Failed to download model"),
-    };
 
     // Start the server
     Command::new("./server")
-        .current_dir(llama_path_str)
+        .current_dir(super::get_llama_cpp_path())
         .arg("--threads")
-        .arg("12")
+        .arg(threads) //12
         .arg("--model")
-        .arg(path)
+        .arg(model_path)
         .arg("--ctx-size")
-        .arg("9001")
+        .arg(ctx_size) // 9001
         .arg("--n-gpu-layers")
-        .arg("23")
+        .arg(n_gpu_layers) // 23
         .arg("--host")
         .arg(HOST)
         .arg("--port")

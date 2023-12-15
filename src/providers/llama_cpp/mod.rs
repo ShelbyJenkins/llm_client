@@ -10,23 +10,21 @@ pub mod model_loader;
 pub mod models;
 pub mod server;
 use api::{client::Client, config::LlamaConfig, types::*};
-pub use models::LlamaLlmModels;
+pub use models::LlamaLlmModel;
+const LLAMA_PATH: &str = "src/providers/llama_cpp/llama_cpp";
 
 pub struct LlamaLlm {
     pub safety_tokens: u16,
     client: Client<LlamaConfig>,
 }
 
-impl Default for LlamaLlm {
-    fn default() -> Self {
+impl LlamaLlm {
+    pub fn new() -> Self {
         Self {
             safety_tokens: 10,
             client: Self::setup_client(),
         }
     }
-}
-
-impl LlamaLlm {
     fn setup_client() -> Client<LlamaConfig> {
         let backoff = backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
@@ -190,4 +188,15 @@ impl LlamaLlm {
             Ok((response.unwrap().content, 0))
         }
     }
+}
+
+pub fn get_llama_cpp_path() -> String {
+    let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let llama_path =
+        std::fs::canonicalize(manifest_dir.join(LLAMA_PATH)).expect("Failed to canonicalize path");
+
+    llama_path
+        .to_str()
+        .expect("Failed to convert path to string")
+        .to_string()
 }

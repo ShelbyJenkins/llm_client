@@ -6,7 +6,7 @@ pub mod prompting;
 pub mod providers;
 pub mod text_utils;
 
-use crate::providers::llama_cpp::{models::LlamaLlmModels, LlamaLlm};
+use crate::providers::llama_cpp::{models::LlamaLlmModel, LlamaLlm};
 use crate::providers::llm_openai::{models::OpenAiLlmModels, OpenAiLlm};
 
 pub struct LlmClient {
@@ -26,25 +26,25 @@ impl LlmClient {
     pub fn frequency_penalty(&mut self, frequency_penalty: Option<f32>) {
         self.model_params.frequency_penalty = match &self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => OpenAiLlmModels::frequency_penalty(frequency_penalty),
-            LlmDefinition::LlamaLlm(_) => LlamaLlmModels::frequency_penalty(frequency_penalty),
+            LlmDefinition::LlamaLlm(_) => LlamaLlmModel::frequency_penalty(frequency_penalty),
         }
     }
     pub fn presence_penalty(&mut self, presence_penalty: Option<f32>) {
         self.model_params.presence_penalty = match &self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => OpenAiLlmModels::presence_penalty(presence_penalty),
-            LlmDefinition::LlamaLlm(_) => LlamaLlmModels::presence_penalty(presence_penalty),
+            LlmDefinition::LlamaLlm(_) => LlamaLlmModel::presence_penalty(presence_penalty),
         }
     }
     pub fn temperature(&mut self, temperature: Option<f32>) {
         self.model_params.temperature = match &self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => OpenAiLlmModels::temperature(temperature),
-            LlmDefinition::LlamaLlm(_) => LlamaLlmModels::temperature(temperature),
+            LlmDefinition::LlamaLlm(_) => LlamaLlmModel::temperature(temperature),
         }
     }
     pub fn top_p(&mut self, top_p: Option<f32>) {
         self.model_params.top_p = match &self.llm_definition {
             LlmDefinition::OpenAiLlm(_) => OpenAiLlmModels::top_p(top_p),
-            LlmDefinition::LlamaLlm(_) => LlamaLlmModels::top_p(top_p),
+            LlmDefinition::LlamaLlm(_) => LlamaLlmModel::top_p(top_p),
         }
     }
     pub fn max_tokens_for_model(&mut self, max_tokens_for_model: Option<u16>) {
@@ -53,7 +53,7 @@ impl LlmClient {
                 OpenAiLlmModels::max_tokens_for_model(model_definition, max_tokens_for_model)
             }
             LlmDefinition::LlamaLlm(model_definition) => {
-                LlamaLlmModels::max_tokens_for_model(model_definition, max_tokens_for_model)
+                LlamaLlmModel::max_tokens_for_model(model_definition, max_tokens_for_model)
             }
         }
     }
@@ -82,7 +82,7 @@ impl LlmClient {
                 Ok(responses)
             }
             LlmDefinition::LlamaLlm(_) => {
-                let provider = LlamaLlm::default();
+                let provider = LlamaLlm::new();
                 let responses = provider
                     .make_boolean_decision(&prompt, logit_bias, batch_count, &self.model_params)
                     .await?;
@@ -136,7 +136,7 @@ impl LlmClient {
                 Ok(responses)
             }
             LlmDefinition::LlamaLlm(_) => {
-                let provider = LlamaLlm::default();
+                let provider = LlamaLlm::new();
                 let (responses, _) = provider
                     .generate_text(&prompt, max_response_tokens, logit_bias, &self.model_params)
                     .await?;
@@ -152,20 +152,19 @@ fn get_default_model_params(llm_definition: &LlmDefinition) -> LlmModelParams {
             OpenAiLlmModels::get_default_model_params(model_definition)
         }
         LlmDefinition::LlamaLlm(model_definition) => {
-            LlamaLlmModels::get_default_model_params(model_definition)
+            LlamaLlmModel::get_default_model_params(model_definition)
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum LlmDefinition {
-    LlamaLlm(LlamaLlmModels),
+    LlamaLlm(LlamaLlmModel),
     OpenAiLlm(OpenAiLlmModels),
 }
 
 pub struct LlmModelParams {
     pub model_id: String,
-    pub model_filename: Option<String>,
     pub max_tokens_for_model: u16,
     pub cost_per_k: f32,
     pub tokens_per_message: u16,

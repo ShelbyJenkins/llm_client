@@ -60,12 +60,17 @@
 ```
 // Use an OpenAI model
 let llm_definition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt35Turbo)
-
+```
+```
 // Or use a model from hugging face
-let llm_definition = LlmDefinition::LlamaLlm(LlamaLlmModels::Mixtral8X7BInstruct(url))
+let zephyr_7b_chat = LlamaLlmModel::new(
+    url, 
+    LlamaPromptFormat::Mistral7BChat, 
+    Some(2000), // Max tokens for model AKA context size
+);
 
 let response = basic_text_gen::generate(
-        llm_definition,
+        &LlmDefinition::LlamaLlm(zephyr_7b_chat),
         Some("Howdy!"),
     )
     .await?;
@@ -95,21 +100,46 @@ if !boolean_classifier::classify(
 ## Getting Started
 
 ### Step-by-step guide
-1. clone
-2. build llama cpp
-3. get model
-    1. copy from hf
-    2. or use default
-    3. cli
-4. Examples:
-   1. Using boolean classifier example
+1. Clone repo:
+```
+git clone https://github.com/ShelbyJenkins/llm_client.git
+cd llm_client
+```
+2. Optional: build devcontainer from `llm_client/.devcontainer/devcontainer.json`
+3. Add llama.cpp:
+```
+git submodule init 
+git submodule update
+```
+4. Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp">instructions here</a>):
+  ```
+  // Example build for nvidia gpus
+  cd llm_client/src/providers/llama_cpp/llama_cpp
+  make LLAMA_CUBLAS=1
+  ```
+5. Test llama.cpp ./server
+```
+cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
+```
+This will download and load the given model, and then start the server.
+
+When you see `llama server listening at http://localhost:8080`, you can load the llama.cpp UI in your browser.
+
+Stop the server with `cargo run -p llm_client --bin server_runner stop`.
+
+6. Using OpenAi: Add a `.env` file in the llm_client dir with the var `OPENAI_API_KEY=<key>`
 
 
+### Examples
 
+<a href="llm_client/examples/basic_text_gen.rs">A quick example of interacting with the provided agents</a>
+
+<a href="llm_client/examples/llm_client.rs">Interacting with the llm_client directly</a>
 
 <!-- ROADMAP -->
 ## Roadmap
 
+* Automate starting the llama.cpp with specified model
 * Handle the various prompt formats of LLM models more gracefully
 * Unit tests
 * Add additional classifier agents:

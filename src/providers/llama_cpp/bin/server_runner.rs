@@ -1,4 +1,4 @@
-use llm_client::providers::llama_cpp::server;
+use llm_client::providers::llama_cpp::{models, server};
 use std::env;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -7,9 +7,7 @@ use std::process::Command;
 use std::thread;
 use std::time::Duration;
 
-// cargo run -p llm_client --bin server_runner start --model_id TheBloke/zephyr-7B-alpha-GGUF --model_filename zephyr-7b-alpha.Q5_K_M.gguf
-// cargo run -p llm_client --bin server_runner start -- --model_id TheBloke/zephyr-7B-alpha-GGUF --model_filename zephyr-7b-alpha.Q2_K.gguf
-// cargo run -p llm_client --bin server_runner start TheBloke/Llama-2-7B-GGUF llama-2-7b.Q4_0.gguf
+// cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
 // cargo run -p llm_client --bin server_runner stop
 
 #[tokio::main]
@@ -30,15 +28,9 @@ pub async fn main() {
             clap::Command::new("start")
                 .about("Starts the server")
                 .arg(
-                    clap::Arg::new("model_id")
+                    clap::Arg::new("model_url")
                         .help("The model URL")
-                        .long("model_id")
-                        .required(true),
-                )
-                .arg(
-                    clap::Arg::new("model_filename")
-                        .help("The model version")
-                        .long("model_filename")
+                        .long("model_url")
                         .required(true),
                 )
                 .arg(
@@ -53,13 +45,21 @@ pub async fn main() {
 
     match matches.subcommand() {
         Some(("start", cmd)) => {
-            let model_id = cmd.get_one::<String>("model_id").unwrap();
-            let model_filename = cmd.get_one::<String>("model_filename").unwrap();
+            let model_url = cmd.get_one::<String>("model_url").unwrap();
             let model_token = cmd.get_one::<String>("model_token");
 
+            let (model_id, model_filename) = models::convert_url_to_hf_format(model_url);
+
             server::kill_existing();
-            let mut child =
-                server::server_process(model_id, model_filename, model_token.cloned()).await;
+            let mut child = server::start_server(
+                &model_id,
+                &model_filename,
+                model_token.cloned(),
+                None,
+                None,
+                None,
+            )
+            .await;
             let pid = child.id();
             let mut file = File::create(file_path).expect("Failed to create PID file");
             writeln!(file, "{}", pid).expect("Failed to write to PID file");

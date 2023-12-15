@@ -18,7 +18,6 @@ impl OpenAiLlmModels {
         match model_definition {
             OpenAiLlmModels::Gpt4 => crate::LlmModelParams {
                 model_id: "gpt-4".to_string(),
-                model_filename: None,
                 max_tokens_for_model: 8192,
                 cost_per_k: 0.06,
                 tokens_per_message: 3,
@@ -31,7 +30,6 @@ impl OpenAiLlmModels {
             },
             OpenAiLlmModels::Gpt432k => crate::LlmModelParams {
                 model_id: "gpt-4-32k".to_string(),
-                model_filename: None,
                 max_tokens_for_model: 32768,
                 cost_per_k: 0.06,
                 tokens_per_message: 3,
@@ -44,7 +42,6 @@ impl OpenAiLlmModels {
             },
             OpenAiLlmModels::Gpt35Turbo => crate::LlmModelParams {
                 model_id: "gpt-3.5-turbo".to_string(),
-                model_filename: None,
                 max_tokens_for_model: 4096,
                 cost_per_k: 0.03,
                 tokens_per_message: 4,
@@ -57,7 +54,6 @@ impl OpenAiLlmModels {
             },
             OpenAiLlmModels::Gpt35Turbo16k => crate::LlmModelParams {
                 model_id: "gpt-3.5-turbo-16k".to_string(),
-                model_filename: None,
                 max_tokens_for_model: 16384,
                 cost_per_k: 0.03,
                 tokens_per_message: 3,

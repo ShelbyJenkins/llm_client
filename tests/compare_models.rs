@@ -13,9 +13,14 @@ const BEST_OF_N_TRIES: u8 = 5;
 const RETRY_AFTER_FAIL_N_TIMES: u8 = 3;
 
 const OPENAI_GPT35: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt35Turbo);
-
+const OPENAI_GPT4: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt4);
+const MISTRAL7BINSTRUCT_MODEL_URL: &str = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf";
 const MISTRAL7BCHAT_MODEL_URL: &str =
     "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf";
+const MIXTRAL8X7BINSTRUCT_MODEL_URL: &str =
+    "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/blob/main/mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf";
+const SOLAR107BINSTRUCTV1_MODEL_URL: &str =
+    "https://huggingface.co/TheBloke/SOLAR-10.7B-Instruct-v1.0-GGUF/blob/main/solar-10.7b-instruct-v1.0.Q8_0.gguf";
 const CONTEXT_SIZE: u16 = 9001;
 const GPU_LAYERS: u16 = 23;
 const SERVER_THREADS: u16 = 4;
@@ -28,7 +33,19 @@ const TEXT_GEN_PROMPT_TEMPLATE_PATH: &str = "tests/prompt_templates/basic_text_g
 // Boolean classifier test
 const BOOLEAN_PROMPT_TEMPLATE_PATH: &str = "tests/prompt_templates/boolean_classifier.yaml";
 const TRUE_TEST_1: &str = "three + three = six.";
+const TRUE_TEST_2: &str = "Mixing the colors red and blue makes the color purple.";
+const TRUE_TEST_3: &str = "The sun is made of hot gas.";
+const TRUE_TEST_4: &str = "In the lion king, Timon said, 'Pumbaa, with you, everything's gas.'";
+const TRUE_TEST_5: &str = "An email with the subject 'Your order has shipped' is a notification that your order has shipped.";
+const TRUE_TEST_6: &str = "An email with the subject 'These TV prices are unbelievably low.' is an advertisement or a spam email.";
+
 const FALSE_TEST_1: &str = "four + four = nine.";
+const FALSE_TEST_2: &str = "Mixing the colors white and black makes the color red.";
+const FALSE_TEST_3: &str = "Paris is the captial of Mexico.";
+const FALSE_TEST_4: &str = "The moon is made of cheese.";
+const FALSE_TEST_5: &str =
+    "An email with the subject 'Your order has shipped' is an advertisement or a spam email.";
+const FALSE_TEST_6: &str = "An email with the subject '☕️ Google admits that a Gemini AI demo video was staged.' is an advertisement or a spam email.";
 
 // Summarizer test
 const SUMMARIZER_PROMPT_TEMPLATE_PATH: &str = "tests/prompt_templates/split_by_topic.yaml";
@@ -36,19 +53,57 @@ const SUMMARIZER_TEST_CONTENT_PATH: &str = "tests/prompt_templates/split_by_topi
 
 #[tokio::test]
 async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
+    let zephyr_7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+        MISTRAL7BINSTRUCT_MODEL_URL,
+        LlamaPromptFormat::Mistral7BInstruct,
+        Some(CONTEXT_SIZE),
+    ));
+
     let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
         MISTRAL7BCHAT_MODEL_URL,
         LlamaPromptFormat::Mistral7BChat,
         Some(CONTEXT_SIZE),
     ));
+    let mixtral_8x7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+        MIXTRAL8X7BINSTRUCT_MODEL_URL,
+        LlamaPromptFormat::Mixtral8X7BInstruct,
+        Some(CONTEXT_SIZE),
+    ));
+    let solar_10b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+        SOLAR107BINSTRUCTV1_MODEL_URL,
+        LlamaPromptFormat::SOLAR107BInstructv1,
+        Some(CONTEXT_SIZE),
+    ));
 
-    let llms = vec![zephyr_7b_chat, OPENAI_GPT35];
+    // let llms = vec![mixtral_8x7b_instruct];
+    let llms = vec![
+        mixtral_8x7b_instruct,
+        zephyr_7b_instruct,
+        zephyr_7b_chat,
+        solar_10b_instruct,
+        OPENAI_GPT35,
+        OPENAI_GPT4,
+    ];
 
     let mut output: HashMap<String, HashMap<String, HashMap<String, HashMap<String, String>>>> =
         HashMap::new();
 
-    let true_tests = vec![TRUE_TEST_1];
-    let false_tests = vec![FALSE_TEST_1];
+    let true_tests = vec![
+        TRUE_TEST_1,
+        TRUE_TEST_2,
+        TRUE_TEST_3,
+        TRUE_TEST_4,
+        TRUE_TEST_5,
+        TRUE_TEST_6,
+    ];
+    let false_tests = vec![
+        FALSE_TEST_1,
+        FALSE_TEST_2,
+        FALSE_TEST_3,
+        FALSE_TEST_4,
+        FALSE_TEST_5,
+        FALSE_TEST_6,
+    ];
 
     for llm_definition in &llms {
         let mut server_process: Option<std::process::Child> = None;

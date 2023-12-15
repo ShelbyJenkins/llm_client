@@ -1,7 +1,7 @@
 pub mod logit_bias;
+use crate::providers::llama_cpp::models::LlamaPromptFormat;
 use crate::text_utils;
 use crate::LlamaLlm;
-use crate::LlamaLlmModels;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
@@ -74,26 +74,21 @@ pub fn create_model_formatted_prompt(
 ) -> HashMap<String, HashMap<String, String>> {
     match llm_definition {
         crate::LlmDefinition::OpenAiLlm(_) => prompt_with_default_formatting,
-        crate::LlmDefinition::LlamaLlm(LlamaLlmModels::Mistral7BChat(_)) => {
-            convert_prompt_to_zephyr_chat(prompt_with_default_formatting)
-        }
-        crate::LlmDefinition::LlamaLlm(LlamaLlmModels::Mistral7BInstruct(_)) => {
-            convert_prompt_to_zephyr_instruct(prompt_with_default_formatting)
-        }
-        crate::LlmDefinition::LlamaLlm(LlamaLlmModels::Mixtral8X7BInstruct(_)) => {
-            convert_prompt_to_mixtral_instruct(prompt_with_default_formatting)
-        }
-        crate::LlmDefinition::LlamaLlm(LlamaLlmModels::SOLAR107BInstructv1(_)) => {
-            convert_prompt_to_upstage_instruct(prompt_with_default_formatting)
-        }
+        crate::LlmDefinition::LlamaLlm(model_definition) => match model_definition.prompt_format {
+            LlamaPromptFormat::Mistral7BChat => {
+                convert_prompt_to_zephyr_chat(prompt_with_default_formatting)
+            }
+            LlamaPromptFormat::Mistral7BInstruct => {
+                convert_prompt_to_zephyr_instruct(prompt_with_default_formatting)
+            }
+            LlamaPromptFormat::Mixtral8X7BInstruct => {
+                convert_prompt_to_mixtral_instruct(prompt_with_default_formatting)
+            }
+            LlamaPromptFormat::SOLAR107BInstructv1 => {
+                convert_prompt_to_upstage_instruct(prompt_with_default_formatting)
+            }
+        },
     }
-}
-
-fn convert_prompt_to_vicuna(
-    prompt_with_default_formatting: HashMap<String, HashMap<String, String>>,
-) -> HashMap<String, HashMap<String, String>> {
-    todo!()
-    // See https://github.com/abetlen/llama-cpp-python/pull/711/files
 }
 
 fn convert_prompt_to_zephyr_chat(
@@ -161,7 +156,7 @@ async fn get_prompt_length(
 ) -> u16 {
     match llm_definition {
         crate::LlmDefinition::OpenAiLlm(_) => token_count_of_openai_prompt(prompt, model_params),
-        crate::LlmDefinition::LlamaLlm(_) => LlamaLlm::default()
+        crate::LlmDefinition::LlamaLlm(_) => LlamaLlm::new()
             .llama_cpp_count_tokens(&prompt["llama_prompt"]["content"])
             .await
             .unwrap(),

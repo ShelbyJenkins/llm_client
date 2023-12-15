@@ -27,7 +27,7 @@ pub async fn generate_logit_bias_from_chars(
             }
         }
         LlmDefinition::LlamaLlm(_) => {
-            let provider = LlamaLlm::default();
+            let provider = LlamaLlm::new();
             if let Some(allowed_chars) = allowed_chars {
                 let allowed_tokens = provider.tokenize_chars(&allowed_chars).await?;
                 for token in allowed_tokens {
@@ -73,8 +73,8 @@ pub fn generate_whitespace_chars() -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::prelude;
-    use crate::providers::llama_cpp::models::LlamaLlmModels;
+    use crate::providers::llama_cpp::models;
+    use crate::providers::llama_cpp::models::LlamaLlmModel;
     use crate::providers::llama_cpp::server::start_server;
     use crate::providers::llm_openai::models::OpenAiLlmModels;
 
@@ -103,10 +103,23 @@ mod tests {
             "general".to_string(),
         ];
         let removed_chars: Vec<String> = vec!["1".to_string(), "2".to_string()];
-        let _ = start_server(prelude::TEST_MODEL_ID, prelude::TEST_MODEL_FILENAME, None).await;
-
+        let zephyr_7b_chat = LlamaLlmModel::new(
+            "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf",
+            models::LlamaPromptFormat::Mistral7BChat,
+            Some(9001),
+        );
+        let _ = start_server(
+            &zephyr_7b_chat.model_id,
+            &zephyr_7b_chat.model_filename,
+            None,
+            None,
+            Some(zephyr_7b_chat.max_tokens_for_model),
+            None,
+        )
+        .await;
+        let llm_definition = LlmDefinition::LlamaLlm(zephyr_7b_chat);
         let response = generate_logit_bias_from_chars(
-            &LlmDefinition::LlamaLlm(LlamaLlmModels::Mistral7BInstruct("".to_string())),
+            &llm_definition,
             Some(allowed_chars),
             Some(removed_chars),
         )

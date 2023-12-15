@@ -1,51 +1,50 @@
 #[derive(Clone, Debug)]
-pub enum LlamaLlmModels {
-    Mistral7BInstruct(String),
-    Mistral7BChat(String),
-    Mixtral8X7BInstruct(String),
-    SOLAR107BInstructv1(String),
+
+pub enum LlamaPromptFormat {
+    Mistral7BInstruct,
+    Mistral7BChat,
+    Mixtral8X7BInstruct,
+    SOLAR107BInstructv1,
+}
+#[derive(Debug, Clone)]
+pub struct LlamaLlmModel {
+    pub model_id: String,
+    pub model_filename: String,
+    pub prompt_format: LlamaPromptFormat,
+    pub max_tokens_for_model: u16,
 }
 
-struct CustomParams {
-    max_tokens_for_model: u16,
-    url: String,
-}
 const SAFETY_TOKENS: u16 = 10;
+const MAX_TOKENS_FOR_MODEL: u16 = 9001;
 
-impl LlamaLlmModels {
-    pub fn get_default_model_params(model_definition: &LlamaLlmModels) -> crate::LlmModelParams {
-        let custom_params = match model_definition {
-            LlamaLlmModels::Mistral7BInstruct(url) => CustomParams {
-                url: url.to_string(),
-                max_tokens_for_model: 32768,
-            },
-            LlamaLlmModels::Mistral7BChat(url) => CustomParams {
-                url: url.to_string(),
-                max_tokens_for_model: 32768,
-            },
-            LlamaLlmModels::Mixtral8X7BInstruct(url) => CustomParams {
-                url: url.to_string(),
-                max_tokens_for_model: 32768,
-            },
-            LlamaLlmModels::SOLAR107BInstructv1(url) => CustomParams {
-                url: url.to_string(),
-                max_tokens_for_model: 32768,
-            },
-        };
+impl LlamaLlmModel {
+    pub fn new(
+        model_url: &str,
+        prompt_format: LlamaPromptFormat,
+        max_tokens_for_model: Option<u16>,
+    ) -> Self {
+        let max_tokens_for_model = max_tokens_for_model.unwrap_or(MAX_TOKENS_FOR_MODEL);
 
-        let (model_id, model_filename) = process_url(&custom_params.url);
+        let (model_id, model_filename) = convert_url_to_hf_format(&model_url);
 
-        crate::LlmModelParams {
+        LlamaLlmModel {
             model_id,
-            model_filename: Some(model_filename),
-            max_tokens_for_model: custom_params.max_tokens_for_model,
+            model_filename,
+            max_tokens_for_model,
+            prompt_format,
+        }
+    }
+    pub fn get_default_model_params(model_definition: &LlamaLlmModel) -> crate::LlmModelParams {
+        crate::LlmModelParams {
+            model_id: model_definition.model_id.clone(),
+            max_tokens_for_model: model_definition.max_tokens_for_model,
             cost_per_k: 0.00,
             tokens_per_message: 0,
             tokens_per_name: 0,
-            frequency_penalty: LlamaLlmModels::frequency_penalty(None),
-            presence_penalty: LlamaLlmModels::presence_penalty(None),
-            temperature: LlamaLlmModels::temperature(None),
-            top_p: LlamaLlmModels::top_p(None),
+            frequency_penalty: LlamaLlmModel::frequency_penalty(None),
+            presence_penalty: LlamaLlmModel::presence_penalty(None),
+            temperature: LlamaLlmModel::temperature(None),
+            top_p: LlamaLlmModel::top_p(None),
             safety_tokens: SAFETY_TOKENS,
         }
     }
@@ -75,22 +74,14 @@ impl LlamaLlmModels {
         }
     }
     pub fn max_tokens_for_model(
-        model_definition: &LlamaLlmModels,
+        model_definition: &LlamaLlmModel,
         max_tokens_for_model: Option<u16>,
     ) -> u16 {
-        let default_params = LlamaLlmModels::get_default_model_params(model_definition);
-        if let Some(value) = max_tokens_for_model {
-            if value > default_params.max_tokens_for_model {
-                return default_params.max_tokens_for_model;
-            }
-            value
-        } else {
-            default_params.max_tokens_for_model
-        }
+        max_tokens_for_model.unwrap_or(MAX_TOKENS_FOR_MODEL)
     }
 }
 
-fn process_url(url: &str) -> (String, String) {
+pub fn convert_url_to_hf_format(url: &str) -> (String, String) {
     if !url.starts_with("https://huggingface.co") {
         panic!("URL does not start with https://huggingface.co\n Format should be like: https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q8_0.gguf");
     } else if !url.ends_with(".gguf") {
