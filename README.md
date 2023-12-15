@@ -105,13 +105,14 @@ if !boolean_classifier::classify(
 git clone https://github.com/ShelbyJenkins/llm_client.git
 cd llm_client
 ```
-2. Optional: build devcontainer from `llm_client/.devcontainer/devcontainer.json`
+2. Optional: Build devcontainer from `llm_client/.devcontainer/devcontainer.json` This will build out a dev container with nvidia dependencies installed. 
+
 3. Add llama.cpp:
 ```
 git submodule init 
 git submodule update
 ```
-4. Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp">instructions here</a>):
+4. Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp"> This is dependent on your hardware. Please see full instructions here</a>):
   ```
   // Example build for nvidia gpus
   cd llm_client/src/providers/llama_cpp/llama_cpp
@@ -132,9 +133,9 @@ Stop the server with `cargo run -p llm_client --bin server_runner stop`.
 
 ### Examples
 
-<a href="llm_client/examples/basic_text_gen.rs">A quick example of interacting with the provided agents</a>
+* [Interacting with the provided agents.](./examples/basic_text_gen.rs")
 
-<a href="llm_client/examples/llm_client.rs">Interacting with the llm_client directly</a>
+* [Interacting with the llm_client directly.](./examples/llm_client.rs)
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -153,7 +154,7 @@ Stop the server with `cargo run -p llm_client --bin server_runner stop`.
 <!-- CONTRIBUTING -->
 ## Contributing
 
-I would love any help adding features!
+This is my first Rust crate. All contributions or feedback is more than welcomed!
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
