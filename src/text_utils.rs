@@ -94,10 +94,12 @@ pub fn remove_all_white_space_except_space(text: &str) -> String {
 
 pub fn split_text_with_regex(text: &str, separator: &str, keep_separator: bool) -> Vec<String> {
     let re = match separator {
-        "n." => Regex::new(r"\d+\.\s").expect("Invalid regex pattern"), // Matches "1. ", "2. ", etc.
-        "n:" => Regex::new(r"\d+:\s").expect("Invalid regex pattern"), // Matches "1: ", "2: ", etc.
-        "n)" => Regex::new(r"\d+\)\s").expect("Invalid regex pattern"), // Matches "1) ", "2) ", etc.
-        "n " => Regex::new(r"\d+\s").expect("Invalid regex pattern"),   // Matches "1 ", "2 ", etc.
+        r"\d+\.\s" => Regex::new(r"\d+\.\s").expect("Invalid regex pattern"), // Matches "1. ", "2. ", etc.
+        r"\d+:\s" => Regex::new(r"\d+:\s").expect("Invalid regex pattern"), // Matches "1: ", "2: ", etc.
+        r"\d+\)\s" => Regex::new(r"\d+\)\s").expect("Invalid regex pattern"), // Matches "1) ", "2) ", etc.
+        r"\d+\s" => Regex::new(r"\d+\s").expect("Invalid regex pattern"), // Matches "1 ", "2 ", etc.
+        "Feature \\d+:" => Regex::new("Feature \\d+:").expect("Invalid regex pattern"), // Matches "1. ", "2. ", etc.
+        "feature \\d+:" => Regex::new("feature \\d+:").expect("Invalid regex pattern"), // Matches "1. ", "2. ", etc.
         "n-" => Regex::new(r"\d+-\s").expect("Invalid regex pattern"), // Matches "1- ", "2- ", etc.
         "[n]" => Regex::new(r"\[\d+\]\s").expect("Invalid regex pattern"), // Matches "[1] ", "[2] ", etc.
         _ => {

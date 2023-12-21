@@ -5,12 +5,20 @@ use std::error::Error;
 use std::io;
 
 const BASE_SPLIT_PROMPT: &str = "Split the feature into discrete features. A feature is unique if a journalist would write a story about it, or if it would have it's own Wikipedia page. Do not label the features. Do not title the features. Return only the summarized features.";
-const SPLIT_BY_NEWLINE_PROMPT: &str =
-    r#"Create a newline separated list. Separate each entry with a new line char: "\n"."#;
-const SEPARATORS: [&str; 9] = ["n.", "n:", "n)", "n ", "- ", "[n]", "\n", "\n\n", "\\n"];
-// const SEPARATORS: [&str; 9] = [
-//     r"n\)", r"n\.", r"n ", r"n:", r"n-", r"\[n\]", r"\n", r"\n\n", r"\\n",
-// ];
+const SPLIT_BY_NUMBERED_LIST_PROMPT: &str = r#"Create a numbered newline separated list. Start each feature with a number like "n. feature". End each feature with a new line char: "\n"."#;
+const SEPARATORS: [&str; 11] = [
+    r"\d+\.\s",
+    r"\d+:\s",
+    r"\d+\)\s",
+    r"\d+\s",
+    "Feature \\d+:",
+    "feature \\d+:",
+    "- ",
+    "[n]",
+    "\n",
+    "\n\n",
+    "\\n",
+];
 
 pub async fn summarize(
     llm_definition: &LlmDefinition,
@@ -114,7 +122,7 @@ fn create_split_and_summarize_prompt(
     let mut base_prompt = BASE_SPLIT_PROMPT.to_string();
 
     base_prompt += "\n";
-    base_prompt += SPLIT_BY_NEWLINE_PROMPT;
+    base_prompt += SPLIT_BY_NUMBERED_LIST_PROMPT;
 
     prompting::create_prompt_with_default_formatting(
         prompting::load_system_prompt_template(Some(&base_prompt), prompt_template_path),
@@ -146,7 +154,7 @@ async fn check_seperator(
 ) -> Result<bool, Box<dyn Error>> {
     let sep_prompt = format!(
         r#"The attached feature is a list. We need to split it using regex.
-            If we used "'{}'" as a seperator, would the list be properly split into discrete items?"#,
+            If we used '{}' as a seperator, would the list be properly split into discrete items?"#,
         sep
     );
 

@@ -41,7 +41,7 @@ const TRUE_TEST_6: &str = "An email with the subject 'These TV prices are unbeli
 
 const FALSE_TEST_1: &str = "four + four = nine.";
 const FALSE_TEST_2: &str = "Mixing the colors white and black makes the color red.";
-const FALSE_TEST_3: &str = "Paris is the captial of Mexico.";
+const FALSE_TEST_3: &str = "Paris is the capital of Mexico.";
 const FALSE_TEST_4: &str = "The moon is made of cheese.";
 const FALSE_TEST_5: &str =
     "An email with the subject 'Your order has shipped' is an advertisement or a spam email.";
