@@ -1,5 +1,5 @@
 #[derive(Clone, Debug)]
-pub enum OpenAiLlmModels {
+pub enum OpenAiDef {
     Gpt4,
     Gpt432k,
     Gpt35Turbo,
@@ -8,15 +8,15 @@ pub enum OpenAiLlmModels {
 
 const SAFETY_TOKENS: u16 = 10;
 
-impl OpenAiLlmModels {
-    pub fn get_default_model_params(model_definition: &OpenAiLlmModels) -> crate::LlmModelParams {
-        let frequency_penalty = OpenAiLlmModels::frequency_penalty(None);
-        let presence_penalty = OpenAiLlmModels::presence_penalty(None);
-        let temperature = OpenAiLlmModels::temperature(None);
-        let top_p = OpenAiLlmModels::top_p(None);
+impl OpenAiDef {
+    pub fn get_default_model_params(model_definition: &OpenAiDef) -> crate::LlmModelParams {
+        let frequency_penalty = OpenAiDef::frequency_penalty(None);
+        let presence_penalty = OpenAiDef::presence_penalty(None);
+        let temperature = OpenAiDef::temperature(None);
+        let top_p = OpenAiDef::top_p(None);
 
         match model_definition {
-            OpenAiLlmModels::Gpt4 => crate::LlmModelParams {
+            OpenAiDef::Gpt4 => crate::LlmModelParams {
                 model_id: "gpt-4".to_string(),
                 max_tokens_for_model: 8192,
                 cost_per_k: 0.06,
@@ -28,7 +28,7 @@ impl OpenAiLlmModels {
                 top_p,
                 safety_tokens: SAFETY_TOKENS,
             },
-            OpenAiLlmModels::Gpt432k => crate::LlmModelParams {
+            OpenAiDef::Gpt432k => crate::LlmModelParams {
                 model_id: "gpt-4-32k".to_string(),
                 max_tokens_for_model: 32768,
                 cost_per_k: 0.06,
@@ -40,7 +40,7 @@ impl OpenAiLlmModels {
                 top_p,
                 safety_tokens: SAFETY_TOKENS,
             },
-            OpenAiLlmModels::Gpt35Turbo => crate::LlmModelParams {
+            OpenAiDef::Gpt35Turbo => crate::LlmModelParams {
                 model_id: "gpt-3.5-turbo".to_string(),
                 max_tokens_for_model: 4096,
                 cost_per_k: 0.03,
@@ -52,7 +52,7 @@ impl OpenAiLlmModels {
                 top_p,
                 safety_tokens: SAFETY_TOKENS,
             },
-            OpenAiLlmModels::Gpt35Turbo16k => crate::LlmModelParams {
+            OpenAiDef::Gpt35Turbo16k => crate::LlmModelParams {
                 model_id: "gpt-3.5-turbo-16k".to_string(),
                 max_tokens_for_model: 16384,
                 cost_per_k: 0.03,
@@ -92,10 +92,10 @@ impl OpenAiLlmModels {
         }
     }
     pub fn max_tokens_for_model(
-        model_definition: &OpenAiLlmModels,
+        model_definition: &OpenAiDef,
         max_tokens_for_model: Option<u16>,
     ) -> u16 {
-        let default_params = OpenAiLlmModels::get_default_model_params(model_definition);
+        let default_params = OpenAiDef::get_default_model_params(model_definition);
         if let Some(value) = max_tokens_for_model {
             if value > default_params.max_tokens_for_model {
                 return default_params.max_tokens_for_model;

@@ -1,7 +1,7 @@
 use core::panic;
 use std::error::Error;
 
-use crate::{prompting, LlmClient, LlmDefinition};
+use crate::{prompting, LlmDefinition, ProviderClient};
 
 pub async fn generate(
     llm_definition: &LlmDefinition,
@@ -10,7 +10,7 @@ pub async fn generate(
     prompt_template_path: Option<&str>,
     model_token_utilization: Option<f32>,
 ) -> Result<String, Box<dyn Error>> {
-    let llm_client = LlmClient::new(llm_definition, None);
+    let llm_client = ProviderClient::new(llm_definition, None).await;
     let prompt = prompting::create_prompt_with_default_formatting(
         prompting::load_system_prompt_template(base_prompt, prompt_template_path),
         None,

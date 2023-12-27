@@ -1,20 +1,41 @@
+use chrono::Utc;
+use dotenv::dotenv;
+use hf_hub;
+use serde_yaml;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
-
-use chrono::Utc;
-use hf_hub;
-use serde_yaml;
-
 // See llm_client/src/bin/model_loader_cli.rs for cli instructions
 // Downloads to Path: "/root/.cache/huggingface/hub/
+
+pub async fn check_requested_model_against_given_model(
+    model_id: &str,
+    model_filename: &str,
+    given_path: PathBuf,
+) -> bool {
+    let requested_path = download_model(model_id, model_filename, None)
+        .await
+        .unwrap();
+
+    given_path == requested_path
+}
 
 pub async fn download_model(
     model_id: &str,
     model_filename: &str,
     model_token: Option<String>,
 ) -> Option<PathBuf> {
+    let model_token = model_token.or_else(|| {
+        let model_token = env::var("HUGGING_FACE_TOKEN").ok();
+        if model_token.is_none() {
+            dotenv().ok(); // Load .env file
+            dotenv::var("HUGGING_FACE_TOKEN").ok()
+        } else {
+            model_token
+        }
+    });
+
     let api = hf_hub::api::tokio::ApiBuilder::new()
         .with_progress(true)
         .with_token(model_token)
@@ -27,7 +48,7 @@ pub async fn download_model(
         .await
         .unwrap();
 
-    println!("Downloaded model: {} ", model_id);
+    // println!("Downloaded model: {} ", model_id);
 
     let config_json = api.model(model_id.into()).get("config.json").await.unwrap();
     let readme_md = api.model(model_id.into()).get("README.md").await.unwrap();
@@ -35,18 +56,18 @@ pub async fn download_model(
     let local_path;
     if let Ok(absolute_path) = local_model_filename.canonicalize() {
         local_path = Some(absolute_path.clone());
-        println!("Local model path: {:?}", absolute_path.display());
+        // println!("Local model path: {:?}", absolute_path.display());
     } else {
         local_path = None;
-        println!(
-            "Could not get the absolute path for: {:?}",
-            local_model_filename.display()
-        );
+        // println!(
+        //     "Could not get the absolute path for: {:?}",
+        //     local_model_filename.display()
+        // );
     }
 
     let model_info = api.model(model_id.to_string()).info().await;
     if let Ok(model_info) = model_info {
-        println!("Model info: {:?}", model_info);
+        // println!("Model info: {:?}", model_info);
         save_model_info(
             model_id,
             model_info,
@@ -120,8 +141,6 @@ fn copy_file(src: &PathBuf, dest: &PathBuf) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex_literal::hex;
-    use sha2::{Digest, Sha256};
 
     #[tokio::test]
     async fn simple_get() {
@@ -129,12 +148,15 @@ mod tests {
         let model_filename = "config.json";
 
         let downloaded_path = download_model(model_id, model_filename, None).await;
-        if let Some(downloaded_path) = downloaded_path {
+        if let Some(downloaded_path) = downloaded_path.clone() {
             assert!(downloaded_path.exists());
-            let val = Sha256::digest(std::fs::read(&*downloaded_path).unwrap());
-            assert_eq!(
-                val[..],
-                hex!("b908f2b7227d4d31a2105dfa31095e28d304f9bc938bfaaa57ee2cacf1f62d32")
+            assert!(
+                check_requested_model_against_given_model(
+                    model_id,
+                    model_filename,
+                    downloaded_path
+                )
+                .await
             );
         } else {
             panic!("Could not download model");

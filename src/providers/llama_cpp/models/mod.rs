@@ -1,50 +1,88 @@
-#[derive(Clone, Debug)]
+pub const DEFAULT_THREADS: u16 = 2;
+pub const DEFAULT_CTX_SIZE: u16 = 9001;
+pub const DEFAULT_N_GPU_LAYERS: u16 = 6;
+pub const TEST_LLM_URL_1: &str =
+    "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf";
+pub const TEST_PROMPT_TEMPLATE_1: LlamaPromptFormat = LlamaPromptFormat::Mistral7BChat;
+pub const TEST_LLM_URL_2: &str =
+    "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf";
+pub const TEST_PROMPT_TEMPLATE_2: LlamaPromptFormat = LlamaPromptFormat::Mistral7BInstruct;
 
+lazy_static! {
+    #[derive(Clone, Debug, Copy)]
+    pub static ref TEST_LLM_1: LlamaDef = LlamaDef::new(
+        TEST_LLM_URL_1,
+        TEST_PROMPT_TEMPLATE_1,
+        Some(DEFAULT_CTX_SIZE),
+        Some(DEFAULT_THREADS),
+        Some(DEFAULT_N_GPU_LAYERS),
+    );
+    #[derive(Clone, Debug)]
+    pub static ref TEST_LLM_2: LlamaDef = LlamaDef::new(
+        TEST_LLM_URL_2,
+        TEST_PROMPT_TEMPLATE_2,
+        Some(DEFAULT_CTX_SIZE),
+        Some(DEFAULT_THREADS),
+        Some(DEFAULT_N_GPU_LAYERS),
+    );
+}
+
+const SAFETY_TOKENS: u16 = 10;
+
+#[derive(Clone, Debug)]
 pub enum LlamaPromptFormat {
     Mistral7BInstruct,
     Mistral7BChat,
     Mixtral8X7BInstruct,
     SOLAR107BInstructv1,
+    None,
 }
 #[derive(Debug, Clone)]
-pub struct LlamaLlmModel {
+pub struct LlamaDef {
     pub model_id: String,
     pub model_filename: String,
     pub prompt_format: LlamaPromptFormat,
     pub max_tokens_for_model: u16,
+    pub threads: u16,
+    pub n_gpu_layers: u16,
 }
 
-const SAFETY_TOKENS: u16 = 10;
-const MAX_TOKENS_FOR_MODEL: u16 = 9001;
-
-impl LlamaLlmModel {
+impl LlamaDef {
     pub fn new(
         model_url: &str,
         prompt_format: LlamaPromptFormat,
-        max_tokens_for_model: Option<u16>,
+        ctx_size: Option<u16>,
+        threads: Option<u16>,
+        n_gpu_layers: Option<u16>,
     ) -> Self {
-        let max_tokens_for_model = max_tokens_for_model.unwrap_or(MAX_TOKENS_FOR_MODEL);
+        let max_tokens_for_model = ctx_size.unwrap_or(DEFAULT_CTX_SIZE);
+        let threads = threads.unwrap_or(DEFAULT_THREADS);
 
-        let (model_id, model_filename) = convert_url_to_hf_format(&model_url);
+        let n_gpu_layers = n_gpu_layers.unwrap_or(DEFAULT_N_GPU_LAYERS);
 
-        LlamaLlmModel {
+        let (model_id, model_filename) = convert_url_to_hf_format(model_url);
+
+        LlamaDef {
             model_id,
             model_filename,
             max_tokens_for_model,
             prompt_format,
+            threads,
+            n_gpu_layers,
         }
     }
-    pub fn get_default_model_params(model_definition: &LlamaLlmModel) -> crate::LlmModelParams {
+
+    pub fn get_default_model_params(model_definition: &LlamaDef) -> crate::LlmModelParams {
         crate::LlmModelParams {
             model_id: model_definition.model_id.clone(),
             max_tokens_for_model: model_definition.max_tokens_for_model,
             cost_per_k: 0.00,
             tokens_per_message: 0,
             tokens_per_name: 0,
-            frequency_penalty: LlamaLlmModel::frequency_penalty(None),
-            presence_penalty: LlamaLlmModel::presence_penalty(None),
-            temperature: LlamaLlmModel::temperature(None),
-            top_p: LlamaLlmModel::top_p(None),
+            frequency_penalty: LlamaDef::frequency_penalty(None),
+            presence_penalty: LlamaDef::presence_penalty(None),
+            temperature: LlamaDef::temperature(None),
+            top_p: LlamaDef::top_p(None),
             safety_tokens: SAFETY_TOKENS,
         }
     }
@@ -74,10 +112,10 @@ impl LlamaLlmModel {
         }
     }
     pub fn max_tokens_for_model(
-        model_definition: &LlamaLlmModel,
+        _model_definition: &LlamaDef,
         max_tokens_for_model: Option<u16>,
     ) -> u16 {
-        max_tokens_for_model.unwrap_or(MAX_TOKENS_FOR_MODEL)
+        max_tokens_for_model.unwrap_or(DEFAULT_CTX_SIZE)
     }
 }
 

@@ -1,7 +1,7 @@
 pub mod logit_bias;
 use crate::providers::llama_cpp::models::LlamaPromptFormat;
 use crate::text_utils;
-use crate::LlamaLlm;
+use core::panic;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
@@ -87,6 +87,10 @@ pub fn create_model_formatted_prompt(
             LlamaPromptFormat::SOLAR107BInstructv1 => {
                 convert_prompt_to_upstage_instruct(prompt_with_default_formatting)
             }
+            _ => panic!(
+                "Unsupported prompt format: {:?}",
+                model_definition.prompt_format
+            ),
         },
     }
 }
@@ -149,21 +153,7 @@ fn convert_prompt_to_upstage_instruct(
     )])
 }
 
-async fn get_prompt_length(
-    llm_definition: &crate::LlmDefinition,
-    prompt: &HashMap<String, HashMap<String, String>>,
-    model_params: &crate::LlmModelParams,
-) -> u16 {
-    match llm_definition {
-        crate::LlmDefinition::OpenAiLlm(_) => token_count_of_openai_prompt(prompt, model_params),
-        crate::LlmDefinition::LlamaLlm(_) => LlamaLlm::new()
-            .llama_cpp_count_tokens(&prompt["llama_prompt"]["content"])
-            .await
-            .unwrap(),
-    }
-}
-
-fn token_count_of_openai_prompt(
+pub fn token_count_of_openai_prompt(
     prompt: &HashMap<String, HashMap<String, String>>,
     model_params: &crate::LlmModelParams,
 ) -> u16 {
@@ -184,54 +174,4 @@ fn token_count_of_openai_prompt(
 
     num_tokens += 3; // every reply is primed with <|start|>assistant<|message|>
     num_tokens
-}
-
-// Checking to ensure we don't exceed the max tokens for the model for text generation
-// Important for OpenAI as API requests will fail if
-// input tokens + requested output tokens (max_tokens) exceeds
-// the max tokens for the model
-pub async fn check_available_request_tokens_generation(
-    llm_definition: &crate::LlmDefinition,
-    prompt: &HashMap<String, HashMap<String, String>>,
-    context_to_response_ratio: f32,
-    model_token_utilization: f32,
-    model_params: &crate::LlmModelParams,
-) -> (u16, u16) {
-    let total_prompt_tokens = get_prompt_length(llm_definition, prompt, model_params).await;
-    // Calculate available tokens for response
-    let available_tokens = model_params.max_tokens_for_model - total_prompt_tokens;
-    let mut max_response_tokens =
-        (available_tokens as f32 * (model_token_utilization)).ceil() as u16;
-    // if context_to_response_ratio > 0.0 {
-    //     let mut max_response_tokens =
-    //         (available_tokens as f32 * context_to_response_ratio).ceil() as u16;
-
-    // }
-
-    //  for safety in case of model changes
-    while max_response_tokens > (model_params.max_tokens_for_model - model_params.safety_tokens) {
-        max_response_tokens -= 1
-    }
-    (total_prompt_tokens, max_response_tokens)
-}
-
-// Checking to ensure we don't exceed the max tokens for the model for decision making
-pub async fn check_available_request_tokens_decision(
-    llm_definition: &crate::LlmDefinition,
-    prompt: &HashMap<String, HashMap<String, String>>,
-    logit_bias_response_tokens: u16,
-    model_params: &crate::LlmModelParams,
-) -> u16 {
-    // llm_model_instance = llm_definition.llm_model_instance
-    let total_prompt_tokens = get_prompt_length(llm_definition, prompt, model_params).await;
-    let max_response_tokens = total_prompt_tokens + logit_bias_response_tokens;
-    //  for safety in case of model changes
-    if max_response_tokens > model_params.max_tokens_for_model - model_params.safety_tokens {
-        panic!(
-            "max_response_tokens {} is greater than available_tokens {}",
-            max_response_tokens,
-            model_params.max_tokens_for_model - model_params.safety_tokens
-        );
-    }
-    total_prompt_tokens
 }

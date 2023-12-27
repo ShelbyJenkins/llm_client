@@ -1,9 +1,9 @@
 use chrono::Local;
 use llm_client::agents::prelude::{basic_text_gen, boolean_classifier, split_by_topic};
-use llm_client::prelude::{LlmClient, LlmDefinition};
-use llm_client::providers::llama_cpp::models::{LlamaLlmModel, LlamaPromptFormat};
+use llm_client::prelude::{LlmDefinition, ProviderClient};
+use llm_client::providers::llama_cpp::models::{LlamaDef, LlamaPromptFormat};
 use llm_client::providers::llama_cpp::server::start_server;
-use llm_client::providers::llm_openai::models::OpenAiLlmModels;
+use llm_client::providers::llm_openai::models::OpenAiDef;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -12,8 +12,8 @@ use std::path::PathBuf;
 const BEST_OF_N_TRIES: u8 = 5;
 const RETRY_AFTER_FAIL_N_TIMES: u8 = 3;
 
-const OPENAI_GPT35: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt35Turbo);
-const OPENAI_GPT4: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt4);
+const OPENAI_GPT35: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt35Turbo);
+const OPENAI_GPT4: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt4);
 const MISTRAL7BINSTRUCT_MODEL_URL: &str = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf";
 const MISTRAL7BCHAT_MODEL_URL: &str =
     "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf";
@@ -53,26 +53,34 @@ const SUMMARIZER_TEST_CONTENT_PATH: &str = "tests/prompt_templates/split_by_topi
 
 #[tokio::test]
 async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
-    let zephyr_7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+    let zephyr_7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         MISTRAL7BINSTRUCT_MODEL_URL,
         LlamaPromptFormat::Mistral7BInstruct,
         Some(CONTEXT_SIZE),
+        None,
+        None,
     ));
 
-    let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+    let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         MISTRAL7BCHAT_MODEL_URL,
         LlamaPromptFormat::Mistral7BChat,
         Some(CONTEXT_SIZE),
+        None,
+        None,
     ));
-    let mixtral_8x7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+    let mixtral_8x7b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         MIXTRAL8X7BINSTRUCT_MODEL_URL,
         LlamaPromptFormat::Mixtral8X7BInstruct,
         Some(CONTEXT_SIZE),
+        None,
+        None,
     ));
-    let solar_10b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+    let solar_10b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         SOLAR107BINSTRUCTV1_MODEL_URL,
         LlamaPromptFormat::SOLAR107BInstructv1,
         Some(CONTEXT_SIZE),
+        None,
+        None,
     ));
 
     // let llms = vec![mixtral_8x7b_instruct];
@@ -84,7 +92,7 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
         OPENAI_GPT35,
         OPENAI_GPT4,
     ];
-
+    #[allow(clippy::type_complexity)]
     let mut output: HashMap<String, HashMap<String, HashMap<String, HashMap<String, String>>>> =
         HashMap::new();
 
@@ -107,7 +115,7 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
 
     for llm_definition in &llms {
         let mut server_process: Option<std::process::Child> = None;
-        let llm_client = LlmClient::new(llm_definition, None);
+        let llm_client = ProviderClient::new(llm_definition, None).await;
         let mut llm_result: HashMap<String, HashMap<String, HashMap<String, String>>> =
             HashMap::new();
         let llm_name: String;
@@ -121,9 +129,9 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
                         &model_definition.model_id,
                         &model_definition.model_filename,
                         None,
-                        Some(SERVER_THREADS),
-                        Some(model_definition.max_tokens_for_model),
-                        Some(GPU_LAYERS),
+                        SERVER_THREADS,
+                        model_definition.max_tokens_for_model,
+                        GPU_LAYERS,
                     )
                     .await,
                 );

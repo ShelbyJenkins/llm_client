@@ -13,15 +13,15 @@ use backoff;
 use dotenv::dotenv;
 use serde_json;
 
-pub use models::OpenAiLlmModels;
+pub use models::OpenAiDef;
 pub mod models;
 
-pub struct OpenAiLlm {
+pub struct OpenAiClient {
     pub safety_tokens: u16,
     client: Client<OpenAIConfig>,
 }
 
-impl Default for OpenAiLlm {
+impl Default for OpenAiClient {
     fn default() -> Self {
         dotenv().ok(); // Load .env file
         Self {
@@ -30,7 +30,7 @@ impl Default for OpenAiLlm {
         }
     }
 }
-impl OpenAiLlm {
+impl OpenAiClient {
     fn setup_client() -> Client<OpenAIConfig> {
         let backoff = backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))

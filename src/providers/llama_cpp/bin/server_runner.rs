@@ -1,4 +1,4 @@
-use llm_client::providers::llama_cpp::{models, server};
+use llm_client::providers::llama_cpp::server;
 use std::env;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -38,6 +38,24 @@ pub async fn main() {
                         .help("HF token")
                         .long("model_token")
                         .required(false),
+                )
+                .arg(
+                    clap::Arg::new("threads")
+                        .help("threads")
+                        .long("threads")
+                        .required(false),
+                )
+                .arg(
+                    clap::Arg::new("ctx_size")
+                        .help("ctx_size")
+                        .long("ctx")
+                        .required(false),
+                )
+                .arg(
+                    clap::Arg::new("n_gpu_layers")
+                        .help("n_gpu_layers")
+                        .long("n_gpu_layers")
+                        .required(false),
                 ),
         )
         .subcommand(clap::Command::new("stop").about("Stops the server"))
@@ -48,20 +66,21 @@ pub async fn main() {
             let model_url = cmd.get_one::<String>("model_url").unwrap();
             let model_token = cmd.get_one::<String>("model_token");
 
-            let (model_id, model_filename) = models::convert_url_to_hf_format(model_url);
+            let threads = cmd.get_one::<u16>("threads").copied();
+            let ctx_size = cmd.get_one::<u16>("ctx_size").copied();
+            let n_gpu_layers = cmd.get_one::<u16>("n_gpu_layers").copied();
 
-            server::kill_existing();
-            let mut child = server::start_server(
-                &model_id,
-                &model_filename,
+            let mut child = server::start_server_cli(
+                model_url,
                 model_token.cloned(),
-                None,
-                None,
-                None,
+                threads,
+                ctx_size,
+                n_gpu_layers,
             )
             .await;
+
             let pid = child.id();
-            let mut file = File::create(file_path).expect("Failed to create PID file");
+            let mut file: File = File::create(file_path).expect("Failed to create PID file");
             writeln!(file, "{}", pid).expect("Failed to write to PID file");
             loop {
                 if let Ok(Some(status)) = child.try_wait() {

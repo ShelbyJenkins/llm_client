@@ -1,5 +1,5 @@
 use crate::agents::prelude::boolean_classifier;
-use crate::{prompting, text_utils, LlmClient, LlmDefinition};
+use crate::{prompting, text_utils, LlmDefinition, ProviderClient};
 use std::collections::HashMap;
 use std::error::Error;
 use std::io;
@@ -27,8 +27,8 @@ pub async fn summarize(
     retry_after_fail_n_times: Option<u8>,
     model_token_utilization: Option<f32>,
 ) -> Result<(Vec<String>, String), Box<dyn Error>> {
-    let llm_client = LlmClient::new(llm_definition, retry_after_fail_n_times);
-    let logit_bias = create_split_and_summarize_logit_bias(llm_definition).await;
+    let llm_client = ProviderClient::new(llm_definition, retry_after_fail_n_times).await;
+    let logit_bias = create_split_and_summarize_logit_bias(&llm_client).await;
 
     let feature = text_utils::clean_text_content(feature);
 
@@ -99,20 +99,16 @@ pub async fn summarize(
 }
 
 async fn create_split_and_summarize_logit_bias(
-    llm_definition: &LlmDefinition,
+    llm_client: &ProviderClient,
 ) -> HashMap<String, serde_json::Value> {
     let mut logit_bias_tokens = vec![];
 
     logit_bias_tokens.append(&mut prompting::logit_bias::generate_whitespace_chars());
     logit_bias_tokens.append(&mut prompting::logit_bias::generate_bad_split_chars());
 
-    prompting::logit_bias::generate_logit_bias_from_chars(
-        llm_definition,
-        None,
-        Some(logit_bias_tokens),
-    )
-    .await
-    .unwrap()
+    prompting::logit_bias::generate_logit_bias_from_chars(llm_client, None, Some(logit_bias_tokens))
+        .await
+        .unwrap()
 }
 
 fn create_split_and_summarize_prompt(

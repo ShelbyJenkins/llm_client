@@ -1,24 +1,24 @@
 use chrono::Local;
 use llm_client::agents::prelude::{basic_text_gen, boolean_classifier, split_by_topic};
-use llm_client::prelude::{LlmClient, LlmDefinition};
-use llm_client::providers::llama_cpp::models::{LlamaLlmModel, LlamaPromptFormat};
-use llm_client::providers::llama_cpp::server::start_server;
-use llm_client::providers::llm_openai::models::OpenAiLlmModels;
+use llm_client::prelude::{LlmDefinition, ProviderClient};
+use llm_client::providers::llama_cpp::models::{LlamaDef, LlamaPromptFormat};
+use llm_client::providers::llama_cpp::models::{
+    DEFAULT_CTX_SIZE, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS,
+};
+use llm_client::providers::llama_cpp::server::kill_server;
+use llm_client::providers::llm_openai::models::OpenAiDef;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-const BEST_OF_N_TRIES: u8 = 5;
-const RETRY_AFTER_FAIL_N_TIMES: u8 = 3;
+const BEST_OF_N_TRIES: u8 = 3;
+const RETRY_AFTER_FAIL_N_TIMES: u8 = 2;
 
-const OPENAI_GPT35: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt35Turbo);
+const OPENAI_GPT35: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt35Turbo);
 
 const MISTRAL7BCHAT_MODEL_URL: &str =
     "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf";
-const CONTEXT_SIZE: u16 = 9001;
-const GPU_LAYERS: u16 = 23;
-const SERVER_THREADS: u16 = 4;
 
 // Text gen test
 const TEXT_GEN_BASE_PROMPT: &str = "A test base prompt";
@@ -36,14 +36,17 @@ const SUMMARIZER_TEST_CONTENT_PATH: &str = "tests/prompt_templates/split_by_topi
 
 #[tokio::test]
 async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
-    let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaLlmModel::new(
+    let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         MISTRAL7BCHAT_MODEL_URL,
         LlamaPromptFormat::Mistral7BChat,
-        Some(CONTEXT_SIZE),
+        Some(DEFAULT_CTX_SIZE),
+        Some(DEFAULT_THREADS),
+        Some(DEFAULT_N_GPU_LAYERS),
     ));
 
     let llms = vec![zephyr_7b_chat, OPENAI_GPT35];
 
+    #[allow(clippy::type_complexity)]
     let mut output: HashMap<String, HashMap<String, HashMap<String, HashMap<String, String>>>> =
         HashMap::new();
 
@@ -51,32 +54,14 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
     let false_tests = vec![FALSE_TEST_1];
 
     for llm_definition in &llms {
-        let mut server_process: Option<std::process::Child> = None;
-        let llm_client = LlmClient::new(llm_definition, None);
+        let llm_client = ProviderClient::new(llm_definition, None).await;
         let mut llm_result: HashMap<String, HashMap<String, HashMap<String, String>>> =
             HashMap::new();
-        let llm_name: String;
 
-        match llm_definition {
-            LlmDefinition::LlamaLlm(model_definition) => {
-                llm_name = llm_client.model_params.model_id.clone().to_string();
-
-                server_process = Some(
-                    start_server(
-                        &model_definition.model_id,
-                        &model_definition.model_filename,
-                        None,
-                        Some(SERVER_THREADS),
-                        Some(model_definition.max_tokens_for_model),
-                        Some(GPU_LAYERS),
-                    )
-                    .await,
-                );
-            }
-            LlmDefinition::OpenAiLlm(_) => {
-                llm_name = llm_client.model_params.model_id.to_string();
-            }
-        }
+        let llm_name = match llm_definition {
+            LlmDefinition::LlamaLlm(_) => llm_client.model_params.model_id.clone().to_string(),
+            LlmDefinition::OpenAiLlm(_) => llm_client.model_params.model_id.to_string(),
+        };
         eprintln!("\nTesting : {:?}", llm_name);
         // Text gen test
         let text_gen_result = test_basic_text_gen(llm_definition).await;
@@ -107,11 +92,9 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
             "split_and_summarize_results".to_string(),
             split_and_summarize_result,
         );
-        if let Some(mut server_process) = server_process {
-            let _ = server_process.kill();
-            let _ = server_process.wait();
-        }
+
         output.insert(llm_name, llm_result);
+        kill_server();
     }
 
     eprintln!("output: {:?}", output);

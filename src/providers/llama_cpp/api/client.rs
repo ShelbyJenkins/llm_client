@@ -17,6 +17,12 @@ pub struct Client<C: Config> {
     backoff: backoff::ExponentialBackoff,
 }
 
+impl Default for Client<LlamaConfig> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Client<LlamaConfig> {
     /// Client with default [LlamaConfig]
 

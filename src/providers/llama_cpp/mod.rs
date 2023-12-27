@@ -9,32 +9,82 @@ pub mod api;
 pub mod model_loader;
 pub mod models;
 pub mod server;
-use api::{client::Client, config::LlamaConfig, types::*};
-pub use models::LlamaLlmModel;
+use api::{
+    client::Client, config::LlamaConfig, types::LlamaCreateCompletionsRequestArgs,
+    types::LlamaCreateDetokenizeRequestArgs, types::LlamaCreateTokenizeRequestArgs,
+};
+pub use models::LlamaDef;
+
 const LLAMA_PATH: &str = "src/providers/llama_cpp/llama_cpp";
 
-pub struct LlamaLlm {
+pub struct LlamaClient {
     pub safety_tokens: u16,
     client: Client<LlamaConfig>,
 }
 
-impl LlamaLlm {
-    pub fn new() -> Self {
+// Because this function is run for LlamaClient::new(), it cannot be implemented as part of the LlamaClient struct.
+// Otherwise it would cause a recusive loop.
+pub async fn get_model_info() -> Result<String, Box<dyn Error>> {
+    let default_client = LlamaClient::setup_client().await;
+    let request = LlamaCreateCompletionsRequestArgs::default()
+        .prompt("test")
+        .n_predict(1u16)
+        .build()?;
+
+    let response = default_client.completions().create(request).await;
+    if let Err(error) = response {
+        let error_message = format!("get_model_info failed with error: {}.", error);
+
+        Err(Box::new(io::Error::new(
+            io::ErrorKind::Other,
+            error_message,
+        )))
+    } else {
+        Ok(response.unwrap().model)
+    }
+}
+
+impl LlamaClient {
+    /// Creates a new instance of `LlamaClient`.
+    ///
+    /// # Returns
+    ///
+    /// A new instance of `LlamaClient`.
+    pub async fn new(llama_def: &LlamaDef) -> Self {
+        let check = server::check_and_or_start_server(llama_def).await;
+        if let Err(error) = check {
+            panic!("Failed to start server with error: {}", error);
+        }
+
         Self {
             safety_tokens: 10,
-            client: Self::setup_client(),
+            client: Self::setup_client().await,
         }
     }
-    fn setup_client() -> Client<LlamaConfig> {
+    /// Sets up the client with the necessary configuration.
+    ///
+    /// # Returns
+    ///
+    /// A configured `Client` instance.
+    async fn setup_client() -> Client<LlamaConfig> {
         let backoff = backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
             .build();
+
         let config =
-            LlamaConfig::new().with_api_base(format!("http://{}:{}", server::HOST, server::PORT));
-        server::test_server();
+            LlamaConfig::new().with_api_base(format!("http://{}", *server::SERVER_ADDRESS));
+
         Client::with_config(config).with_backoff(backoff)
     }
-
+    /// Tokenizes a list of characters. Used for generating logit bias.
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - A vector of strings representing the characters to tokenize.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of token indices on success, or a boxed `dyn Error` on failure.
     pub async fn tokenize_chars(&self, text: &Vec<String>) -> Result<Vec<usize>, Box<dyn Error>> {
         let mut tokens: Vec<usize> = Vec::new();
         for char in text {
@@ -76,6 +126,15 @@ impl LlamaLlm {
         Ok(tokens)
     }
 
+    /// Counts the number of tokens in a given text. Used for calculating prompt length
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - A string representing the text to count tokens in.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the token count as a `u16` on success, or a boxed `dyn Error` on failure.
     pub async fn llama_cpp_count_tokens(&self, text: &String) -> Result<u16, Box<dyn Error>> {
         let token_count: u16;
 
@@ -93,6 +152,15 @@ impl LlamaLlm {
         Ok(token_count)
     }
 
+    /// Detokenizes a list of token indices. Used for checking returned tokens from tokenize_chars.
+    ///
+    /// # Arguments
+    ///
+    /// * `tokens` - A vector of token indices to detokenize.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the detokenized string on success, or a boxed `dyn Error` on failure.
     pub async fn detokenize(&self, tokens: Vec<usize>) -> Result<String, Box<dyn Error>> {
         let request = LlamaCreateDetokenizeRequestArgs::default()
             .tokens(tokens.clone())
@@ -105,6 +173,18 @@ impl LlamaLlm {
         }
     }
 
+    /// Makes a boolean decision based on a given prompt and model parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `prompt` - A hashmap representing the prompt for the decision.
+    /// * `logit_bias` - A hashmap representing the logit bias for the decision.
+    /// * `batch_count` - The number of decisions to make.
+    /// * `model_params` - The model parameters for the decision.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of decision outputs on success, or a boxed `dyn Error` on failure.
     pub async fn make_boolean_decision(
         &self,
         prompt: &HashMap<String, HashMap<String, String>>,
@@ -153,6 +233,19 @@ impl LlamaLlm {
         Ok(output)
     }
 
+    /// Generates text based on a given prompt and model parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `prompt` - A hashmap representing the prompt for text generation.
+    /// * `max_response_tokens` - The maximum number of tokens to generate.
+    /// * `logit_bias` - An optional hashmap representing the logit bias for text generation.
+    /// * `model_params` - The model parameters for text generation.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the generated text as a string and the number of tokens used on success,
+    /// or a boxed `dyn Error` on failure.
     pub async fn generate_text(
         &self,
         prompt: &HashMap<String, HashMap<String, String>>,

@@ -59,18 +59,20 @@
 ### Easily switch between models and APIs
 ```
 // Use an OpenAI model
-let llm_definition = LlmDefinition::OpenAiLlm(OpenAiLlmModels::Gpt35Turbo)
+let llm_definition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt35Turbo)
 ```
 ```
 // Or use a model from hugging face
-let zephyr_7b_chat = LlamaLlmModel::new(
-    url, 
-    LlamaPromptFormat::Mistral7BChat, 
-    Some(2000), // Max tokens for model AKA context size
-);
+let llm_definition: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
+    MISTRAL7BCHAT_MODEL_URL,
+    LlamaPromptFormat::Mistral7BChat,
+    Some(9001), // Max tokens for model AKA context size
+    Some(2), // Number of threads to use for server
+    Some(22), // Layers to load to GPU. Dependent on VRAM
+));
 
 let response = basic_text_gen::generate(
-        &LlmDefinition::LlamaLlm(zephyr_7b_chat),
+        &LlmDefinition::LlamaLlm(llm_definition),
         Some("Howdy!"),
     )
     .await?;
@@ -87,6 +89,20 @@ if !boolean_classifier::classify(
     {
         panic!("{}, was not properly split into a list!", hopefully_a_list)
     }
+
+```
+### Start Llama.cpp via CLI
+```
+cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
+
+$ llama server listening at http://localhost:8080
+
+cargo run -p llm_client --bin server_runner stop
+
+```
+### Download HF models via CLI
+```
+cargo run -p llm_client --bin model_loader_cli --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
 
 ```
 ### Dependencies 

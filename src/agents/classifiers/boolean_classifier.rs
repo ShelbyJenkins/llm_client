@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::io;
 
-use crate::{prompting, text_utils, LlmClient, LlmDefinition};
+use crate::{prompting, text_utils, LlmDefinition, ProviderClient};
 
 const BASE_BOOLEAN_CLASSIFIER_PROMPT: &str = r#"You are answering a boolean question. The question will either be true/yes/affirmative, or false/no/negative. 
     IMPORTANT: If yes or true or affirmative, return '1'. If no or false or negative, return '0'."#;
@@ -21,11 +21,11 @@ pub async fn classify(
             "Either feature or user_input must be provided.",
         )));
     }
-    let llm_client = LlmClient::new(llm_definition, retry_after_fail_n_times);
+    let llm_client = ProviderClient::new(llm_definition, retry_after_fail_n_times).await;
 
     let mut best_of_n_tries = best_of_n_tries.unwrap_or(1);
 
-    let logit_bias = create_boolean_classifier_logit_bias(llm_definition).await;
+    let logit_bias = create_boolean_classifier_logit_bias(&llm_client).await;
 
     let prompt = prompting::create_prompt_with_default_formatting(
         prompting::load_system_prompt_template(
@@ -114,11 +114,11 @@ pub async fn classify(
 }
 
 async fn create_boolean_classifier_logit_bias(
-    llm_definition: &LlmDefinition,
+    llm_client: &ProviderClient,
 ) -> HashMap<String, serde_json::Value> {
     let allowed_chars = vec!["0".to_string(), "1".to_string()];
     let logit_bias = prompting::logit_bias::generate_logit_bias_from_chars(
-        llm_definition,
+        llm_client,
         Some(allowed_chars),
         None,
     )
