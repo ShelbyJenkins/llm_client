@@ -73,7 +73,7 @@ pub fn generate_whitespace_chars() -> Vec<String> {
 mod tests {
     use super::*;
 
-    use crate::providers::llama_cpp::models::{TEST_LLM_1, TEST_LLM_2};
+    use crate::providers::llama_cpp::models::{TEST_LLM_1_CHAT, TEST_LLM_2_INSTRUCT};
     use crate::providers::llama_cpp::server::kill_server;
     use crate::providers::llm_openai::models::OpenAiDef;
     use crate::LlmDefinition;
@@ -103,7 +103,7 @@ mod tests {
         ];
         let removed_chars: Vec<String> = vec!["1".to_string(), "2".to_string()];
 
-        let llm_definition = LlmDefinition::LlamaLlm((*TEST_LLM_1).clone());
+        let llm_definition = LlmDefinition::LlamaLlm((*TEST_LLM_1_CHAT).clone());
 
         let llm_client = ProviderClient::new(&llm_definition, None).await;
         let response = generate_logit_bias_from_chars(
@@ -113,7 +113,7 @@ mod tests {
         )
         .await;
         eprintln!("{:?}", response.unwrap());
-        let llm_definition = LlmDefinition::LlamaLlm((*TEST_LLM_2).clone());
+        let llm_definition = LlmDefinition::LlamaLlm((*TEST_LLM_2_INSTRUCT).clone());
 
         let llm_client = ProviderClient::new(&llm_definition, None).await;
         let response =

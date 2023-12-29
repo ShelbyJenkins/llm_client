@@ -30,6 +30,8 @@ pub async fn start_server_cli(
     threads: Option<u16>,
     ctx_size: Option<u16>,
     n_gpu_layers: Option<u16>,
+    embedding: Option<bool>,
+    logging: Option<bool>,
 ) -> std::process::Child {
     let def = LlamaDef::new(
         model_url,
@@ -37,6 +39,8 @@ pub async fn start_server_cli(
         threads,
         ctx_size,
         n_gpu_layers,
+        embedding,
+        logging,
     );
 
     kill_server();
@@ -48,6 +52,8 @@ pub async fn start_server_cli(
         def.threads,
         def.max_tokens_for_model,
         def.n_gpu_layers,
+        def.embedding_enabled,
+        def.logging_enabled,
     )
     .await
 }
@@ -68,6 +74,8 @@ pub async fn check_and_or_start_server(
         llama_def.threads,
         llama_def.max_tokens_for_model,
         llama_def.n_gpu_layers,
+        llama_def.embedding_enabled,
+        llama_def.logging_enabled,
     )
     .await;
     match check_server_connection_and_model(llama_def, Duration::from_millis(650)).await {
@@ -117,6 +125,7 @@ async fn check_server_connection_and_model(
     ServerStatus::Stopped
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn start_server(
     model_id: &str,
     model_filename: &str,
@@ -124,6 +133,8 @@ pub async fn start_server(
     threads: u16,
     ctx_size: u16,
     n_gpu_layers: u16,
+    embedding: bool,
+    logging: bool,
 ) -> std::process::Child {
     let model_path = download_model(model_id, model_filename, model_token).await;
 
@@ -131,7 +142,15 @@ pub async fn start_server(
         Some(model_path) => model_path.to_str().unwrap().to_owned(),
         None => panic!("Failed to download model"),
     };
-    let server_process = server_process(&model_path, threads, ctx_size, n_gpu_layers).await;
+    let server_process = server_process(
+        &model_path,
+        threads,
+        ctx_size,
+        n_gpu_layers,
+        embedding,
+        logging,
+    )
+    .await;
 
     let server_addr = format!("{}:{}", HOST, PORT);
     let timeout = Duration::from_secs(30);
@@ -173,11 +192,14 @@ pub async fn server_process(
     threads: u16,
     ctx_size: u16,
     n_gpu_layers: u16,
+    embedding: bool,
+    logging: bool,
 ) -> std::process::Child {
     kill_server();
 
-    // Start the server
-    Command::new("./server")
+    let mut command = Command::new("./server");
+
+    command
         .current_dir(super::get_llama_cpp_path())
         .arg("--threads")
         .arg(threads.to_string()) //12
@@ -192,10 +214,16 @@ pub async fn server_process(
         .arg("--port")
         .arg(PORT)
         .arg("--timeout")
-        .arg("60")
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Failed to start server")
+        .arg("600");
+
+    if embedding {
+        command.arg("--embedding");
+    }
+    if logging {
+        command.stdout(Stdio::piped());
+    }
+
+    command.spawn().expect("Failed to start server")
 }
 
 #[cfg(test)]
@@ -203,28 +231,33 @@ mod tests {
 
     use super::{check_and_or_start_server, kill_server};
     use crate::providers::llama_cpp::models::{
-        LlamaDef, DEFAULT_CTX_SIZE, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS, TEST_LLM_URL_1,
-        TEST_LLM_URL_2, TEST_PROMPT_TEMPLATE_1, TEST_PROMPT_TEMPLATE_2,
+        LlamaDef, DEFAULT_CTX_SIZE, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS,
+        TEST_LLM_PROMPT_TEMPLATE_1_CHAT, TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT, TEST_LLM_URL_1_CHAT,
+        TEST_LLM_URL_2_INSTRUCT,
     };
 
     #[tokio::test]
     async fn test_server() -> Result<(), Box<dyn std::error::Error>> {
         kill_server();
         let llama_def = LlamaDef::new(
-            TEST_LLM_URL_1,
-            TEST_PROMPT_TEMPLATE_1,
+            TEST_LLM_URL_1_CHAT,
+            TEST_LLM_PROMPT_TEMPLATE_1_CHAT,
             Some(DEFAULT_CTX_SIZE),
             Some(DEFAULT_THREADS),
             Some(DEFAULT_N_GPU_LAYERS),
+            None,
+            None,
         );
         check_and_or_start_server(&llama_def).await?;
 
         let llama_def = LlamaDef::new(
-            TEST_LLM_URL_2,
-            TEST_PROMPT_TEMPLATE_2,
+            TEST_LLM_URL_2_INSTRUCT,
+            TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
             Some(DEFAULT_CTX_SIZE),
             Some(DEFAULT_THREADS),
             Some(DEFAULT_N_GPU_LAYERS),
+            None,
+            None,
         );
         check_and_or_start_server(&llama_def).await?;
         kill_server();

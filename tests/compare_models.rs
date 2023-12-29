@@ -4,9 +4,10 @@ use llm_client::prelude::{LlmDefinition, ProviderClient};
 use llm_client::providers::llama_cpp::models::{LlamaDef, LlamaPromptFormat};
 use llm_client::providers::llama_cpp::server::start_server;
 use llm_client::providers::llm_openai::models::OpenAiDef;
+use llm_client::text_utils::load_content;
 use std::collections::HashMap;
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::PathBuf;
 
 const BEST_OF_N_TRIES: u8 = 5;
@@ -59,12 +60,16 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
         Some(CONTEXT_SIZE),
         None,
         None,
+        None,
+        None,
     ));
 
     let zephyr_7b_chat: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         MISTRAL7BCHAT_MODEL_URL,
         LlamaPromptFormat::Mistral7BChat,
         Some(CONTEXT_SIZE),
+        None,
+        None,
         None,
         None,
     ));
@@ -74,11 +79,15 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
         Some(CONTEXT_SIZE),
         None,
         None,
+        None,
+        None,
     ));
     let solar_10b_instruct: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
         SOLAR107BINSTRUCTV1_MODEL_URL,
         LlamaPromptFormat::SOLAR107BInstructv1,
         Some(CONTEXT_SIZE),
+        None,
+        None,
         None,
         None,
     ));
@@ -132,6 +141,8 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
                         SERVER_THREADS,
                         model_definition.max_tokens_for_model,
                         GPU_LAYERS,
+                        false,
+                        true,
                     )
                     .await,
                 );
@@ -302,23 +313,4 @@ async fn test_split_and_summarize(
     }
 
     HashMap::from([("split_and_summarize".to_string(), output)])
-}
-
-fn load_content(file_path: &str) -> String {
-    let path = std::path::Path::new(&file_path);
-    match File::open(path) {
-        Ok(mut file) => {
-            let mut content = String::new();
-            match file.read_to_string(&mut content) {
-                Ok(_) => {
-                    if content.trim().is_empty() {
-                        panic!("file_path '{}' is empty.", path.display())
-                    }
-                }
-                Err(e) => panic!("Failed to read file: {}", e),
-            }
-            content
-        }
-        Err(e) => panic!("Failed to open file: {}", e),
-    }
 }

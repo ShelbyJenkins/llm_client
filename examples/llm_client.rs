@@ -21,6 +21,8 @@ pub async fn main() {
         Some(9001), // Max tokens for model AKA context size
         Some(2),    // Number of threads to use for server
         Some(22),   // Layers to load to GPU. Dependent on VRAM
+        None,       // This starts the llama.cpp server with embedding flag disabled
+        None,       // Logging disabled
     ));
 
     // Init a client and make some changes to the default model params

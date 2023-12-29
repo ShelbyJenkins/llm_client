@@ -1,4 +1,6 @@
 use regex::Regex;
+use std::fs::File;
+use std::io::Read;
 use tiktoken_rs::cl100k_base;
 
 pub fn get_token(text: &str) -> usize {
@@ -128,5 +130,24 @@ pub fn split_text_with_regex(text: &str, separator: &str, keep_separator: bool) 
             .filter(|s| !s.is_empty())
             .map(|s| s.trim().to_string())
             .collect()
+    }
+}
+
+pub fn load_content(file_path: &str) -> String {
+    let path = std::path::Path::new(&file_path);
+    match File::open(path) {
+        Ok(mut file) => {
+            let mut content = String::new();
+            match file.read_to_string(&mut content) {
+                Ok(_) => {
+                    if content.trim().is_empty() {
+                        panic!("file_path '{}' is empty.", path.display())
+                    }
+                }
+                Err(e) => panic!("Failed to read file: {}", e),
+            }
+            content
+        }
+        Err(e) => panic!("Failed to open file: {}", e),
     }
 }

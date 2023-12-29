@@ -56,6 +56,18 @@ pub async fn main() {
                         .help("n_gpu_layers")
                         .long("n_gpu_layers")
                         .required(false),
+                )
+                .arg(
+                    clap::Arg::new("embedding")
+                        .help("embedding")
+                        .long("embedding")
+                        .required(false),
+                )
+                .arg(
+                    clap::Arg::new("logging")
+                        .help("logging")
+                        .long("logging")
+                        .required(false),
                 ),
         )
         .subcommand(clap::Command::new("stop").about("Stops the server"))
@@ -69,6 +81,8 @@ pub async fn main() {
             let threads = cmd.get_one::<u16>("threads").copied();
             let ctx_size = cmd.get_one::<u16>("ctx_size").copied();
             let n_gpu_layers = cmd.get_one::<u16>("n_gpu_layers").copied();
+            let embedding = cmd.get_one::<bool>("embedding").copied();
+            let logging = cmd.get_one::<bool>("logging").copied();
 
             let mut child = server::start_server_cli(
                 model_url,
@@ -76,6 +90,8 @@ pub async fn main() {
                 threads,
                 ctx_size,
                 n_gpu_layers,
+                embedding,
+                logging,
             )
             .await;
 

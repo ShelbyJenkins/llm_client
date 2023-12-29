@@ -7,11 +7,11 @@ use llm_client::providers::llama_cpp::models::{
 };
 use llm_client::providers::llama_cpp::server::kill_server;
 use llm_client::providers::llm_openai::models::OpenAiDef;
+use llm_client::text_utils::load_content;
 use std::collections::HashMap;
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::PathBuf;
-
 const BEST_OF_N_TRIES: u8 = 3;
 const RETRY_AFTER_FAIL_N_TIMES: u8 = 2;
 
@@ -42,6 +42,8 @@ async fn test_runner() -> Result<(), Box<dyn std::error::Error>> {
         Some(DEFAULT_CTX_SIZE),
         Some(DEFAULT_THREADS),
         Some(DEFAULT_N_GPU_LAYERS),
+        None,
+        None,
     ));
 
     let llms = vec![zephyr_7b_chat, OPENAI_GPT35];
@@ -222,23 +224,4 @@ async fn test_split_and_summarize(
     }
 
     HashMap::from([("split_and_summarize".to_string(), output)])
-}
-
-fn load_content(file_path: &str) -> String {
-    let path = std::path::Path::new(&file_path);
-    match File::open(path) {
-        Ok(mut file) => {
-            let mut content = String::new();
-            match file.read_to_string(&mut content) {
-                Ok(_) => {
-                    if content.trim().is_empty() {
-                        panic!("file_path '{}' is empty.", path.display())
-                    }
-                }
-                Err(e) => panic!("Failed to read file: {}", e),
-            }
-            content
-        }
-        Err(e) => panic!("Failed to open file: {}", e),
-    }
 }

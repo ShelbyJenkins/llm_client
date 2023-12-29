@@ -173,3 +173,26 @@ pub struct LlamaCreateDetokenizeRequest {
 pub struct LlamaCreateDetokenizeResponse {
     pub content: String,
 }
+
+#[derive(Debug, Serialize, Default, Clone, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum EncodingFormat {
+    #[default]
+    Float,
+    Base64,
+}
+
+#[derive(Debug, Serialize, Default, Clone, Builder, PartialEq)]
+#[builder(name = "LlamaCreateEmbeddingRequestArgs")]
+#[builder(pattern = "mutable")]
+#[builder(setter(into, strip_option), default)]
+#[builder(derive(Debug))]
+#[builder(build_fn(error = "LlamaApiError"))]
+pub struct LlamaCreateEmbeddingRequest {
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct LlamaCreateEmbeddingResponse {
+    pub embedding: Vec<f32>,
+}

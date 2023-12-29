@@ -11,7 +11,8 @@ pub mod models;
 pub mod server;
 use api::{
     client::Client, config::LlamaConfig, types::LlamaCreateCompletionsRequestArgs,
-    types::LlamaCreateDetokenizeRequestArgs, types::LlamaCreateTokenizeRequestArgs,
+    types::LlamaCreateDetokenizeRequestArgs, types::LlamaCreateEmbeddingRequestArgs,
+    types::LlamaCreateTokenizeRequestArgs,
 };
 pub use models::LlamaDef;
 
@@ -252,7 +253,7 @@ impl LlamaClient {
         max_response_tokens: u16,
         logit_bias: &Option<HashMap<String, serde_json::Value>>,
         model_params: &crate::LlmModelParams,
-    ) -> Result<(String, u16), Box<dyn Error>> {
+    ) -> Result<String, Box<dyn Error>> {
         let mut request_builder = LlamaCreateCompletionsRequestArgs::default()
             .prompt(prompt["llama_prompt"]["content"].clone())
             .n_predict(max_response_tokens)
@@ -278,8 +279,17 @@ impl LlamaClient {
                 error_message,
             )))
         } else {
-            Ok((response.unwrap().content, 0))
+            Ok(response.unwrap().content)
         }
+    }
+    pub async fn generate_embedding(&self, input: &String) -> Result<Vec<f32>, Box<dyn Error>> {
+        let request = LlamaCreateEmbeddingRequestArgs::default()
+            .content(input)
+            .build()?;
+
+        let response = self.client.embedding().create(request).await?;
+
+        Ok(response.embedding.to_owned())
     }
 }
 

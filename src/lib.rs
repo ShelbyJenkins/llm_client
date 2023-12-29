@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::{io, vec};
 pub mod agents;
 pub mod prelude;
 pub mod prompting;
@@ -37,6 +38,14 @@ pub enum LlmDefinition {
 pub enum LlmClient {
     LlamaLlm(LlamaClient),
     OpenAiLlm(OpenAiClient),
+}
+
+#[derive(PartialEq)]
+pub enum EmbeddingExceedsMaxTokensBehavior {
+    Panic,
+    Skip,
+    // Truncate,
+    // Reduce,
 }
 
 pub struct LlmModelParams {
@@ -111,15 +120,11 @@ impl ProviderClient {
         let prompt =
             crate::prompting::create_model_formatted_prompt(&self.llm_definition, prompt.clone());
 
-        // let _ = crate::prompting::check_available_request_tokens_decision(
-        //     &self.llm_definition,
-        //     &prompt,
-        //     1,
-        //     &self.model_params,
-        // );
+        let _ = Self::check_available_request_tokens_decision(self, &prompt, 1).await;
+
         match &self.llm_client {
             LlmClient::OpenAiLlm(client) => {
-                let (responses, _) = client
+                let responses = client
                     .make_boolean_decision(&prompt, logit_bias, batch_count, &self.model_params)
                     .await?;
                 Ok(responses)
@@ -131,6 +136,27 @@ impl ProviderClient {
                 Ok(responses)
             }
         }
+    }
+
+    // Checking to ensure we don't exceed the max tokens for the model for decision making
+    async fn check_available_request_tokens_decision(
+        &self,
+        prompt: &HashMap<String, HashMap<String, String>>,
+        logit_bias_response_tokens: u16,
+    ) -> u16 {
+        let total_prompt_tokens = Self::get_prompt_length(self, prompt).await;
+        let max_response_tokens = total_prompt_tokens + logit_bias_response_tokens;
+        //  for safety in case of model changes
+        if max_response_tokens
+            > self.model_params.max_tokens_for_model - self.model_params.safety_tokens
+        {
+            panic!(
+                "max_response_tokens {} is greater than available_tokens {}",
+                max_response_tokens,
+                self.model_params.max_tokens_for_model - self.model_params.safety_tokens
+            );
+        }
+        total_prompt_tokens
     }
 
     pub async fn generate_text(
@@ -169,13 +195,13 @@ impl ProviderClient {
 
         match &self.llm_client {
             LlmClient::OpenAiLlm(client) => {
-                let (responses, _) = client
+                let responses = client
                     .generate_text(&prompt, max_response_tokens, logit_bias, &self.model_params)
                     .await?;
                 Ok(responses)
             }
             LlmClient::LlamaLlm(client) => {
-                let (responses, _) = client
+                let responses = client
                     .generate_text(&prompt, max_response_tokens, logit_bias, &self.model_params)
                     .await?;
                 Ok(responses)
@@ -187,7 +213,7 @@ impl ProviderClient {
     // Important for OpenAI as API requests will fail if
     // input tokens + requested output tokens (max_tokens) exceeds
     // the max tokens for the model
-    pub async fn check_available_request_tokens_generation(
+    async fn check_available_request_tokens_generation(
         &self,
         prompt: &HashMap<String, HashMap<String, String>>,
         _context_to_response_ratio: f32,
@@ -213,27 +239,6 @@ impl ProviderClient {
         (total_prompt_tokens, max_response_tokens)
     }
 
-    // Checking to ensure we don't exceed the max tokens for the model for decision making
-    pub async fn check_available_request_tokens_decision(
-        &self,
-        prompt: &HashMap<String, HashMap<String, String>>,
-        logit_bias_response_tokens: u16,
-    ) -> u16 {
-        let total_prompt_tokens = Self::get_prompt_length(self, prompt).await;
-        let max_response_tokens = total_prompt_tokens + logit_bias_response_tokens;
-        //  for safety in case of model changes
-        if max_response_tokens
-            > self.model_params.max_tokens_for_model - self.model_params.safety_tokens
-        {
-            panic!(
-                "max_response_tokens {} is greater than available_tokens {}",
-                max_response_tokens,
-                self.model_params.max_tokens_for_model - self.model_params.safety_tokens
-            );
-        }
-        total_prompt_tokens
-    }
-
     async fn get_prompt_length(&self, prompt: &HashMap<String, HashMap<String, String>>) -> u16 {
         match &self.llm_client {
             LlmClient::OpenAiLlm(_) => {
@@ -244,5 +249,165 @@ impl ProviderClient {
                 .await
                 .unwrap(),
         }
+    }
+
+    pub async fn generate_embeddings(
+        &self,
+        inputs: &Vec<String>,
+        exceeds_max_tokens_behavior: Option<EmbeddingExceedsMaxTokensBehavior>,
+    ) -> Result<Vec<Vec<f32>>, Box<dyn Error>> {
+        let exceeds_max_tokens_behavior =
+            exceeds_max_tokens_behavior.unwrap_or(EmbeddingExceedsMaxTokensBehavior::Panic);
+
+        let mut outputs: Vec<Vec<f32>> = vec![];
+        for input in inputs {
+            match Self::check_embedding_input_tokens(self, input).await {
+                Ok(_) => match &self.llm_client {
+                    LlmClient::OpenAiLlm(client) => {
+                        let response = client.generate_embedding(input, &self.model_params).await?;
+                        outputs.push(response);
+                    }
+                    LlmClient::LlamaLlm(client) => {
+                        let response = client.generate_embedding(input).await?;
+                        outputs.push(response);
+                    }
+                },
+                Err(error) => match exceeds_max_tokens_behavior {
+                    EmbeddingExceedsMaxTokensBehavior::Panic => {
+                        println!("Panicking  due to EmbeddingExceedsMaxTokensBehavior::Panic");
+                        panic!("Error in generate_embedding: {}", error)
+                    }
+                    EmbeddingExceedsMaxTokensBehavior::Skip => {
+                        println!("Error in generate_embedding: {}", error);
+                        println!("Appending empty vector to outputs due to EmbeddingExceedsMaxTokensBehavior::Skip");
+                        outputs.push(vec![]);
+                    }
+                },
+            }
+        }
+        Ok(outputs)
+    }
+
+    async fn check_embedding_input_tokens(&self, input: &String) -> Result<(), Box<dyn Error>> {
+        let token_count = match &self.llm_client {
+            LlmClient::OpenAiLlm(_) => text_utils::tiktoken_len(input),
+            LlmClient::LlamaLlm(client) => client.llama_cpp_count_tokens(input).await.unwrap(),
+        };
+        if token_count > self.model_params.max_tokens_for_model {
+            let preview_input = &input.chars().take(24).collect::<String>();
+            let error_message = format!(
+                "token_count {} is greater than max_tokens_for_model {} for input '{}...'",
+                token_count, self.model_params.max_tokens_for_model, preview_input
+            );
+            return Err(Box::new(io::Error::new(
+                io::ErrorKind::Other,
+                error_message,
+            )));
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ProviderClient;
+    use super::{EmbeddingExceedsMaxTokensBehavior, LlmDefinition};
+    use crate::providers::llama_cpp::models::{
+        LlamaDef, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS, TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
+        TEST_LLM_URL_2_INSTRUCT,
+    };
+    use crate::providers::llama_cpp::server::kill_server;
+    use crate::providers::llm_openai::models::OpenAiDef;
+    use crate::text_utils::load_content;
+
+    async fn get_clients() -> Vec<ProviderClient> {
+        let client_openai: ProviderClient = ProviderClient::new(&EMBEDDING_OPENAI, None).await;
+
+        let client_llama: ProviderClient = ProviderClient::new(
+            &LlmDefinition::LlamaLlm((*LLAMA_EMBEDDING_LLM).clone()),
+            None,
+        )
+        .await;
+
+        vec![client_openai, client_llama]
+    }
+
+    // For embedding tests
+    const EMBEDDING_CONTENT_1: &str = "I enjoy walking with my cute dog.";
+    const EMBEDDING_CONTENT_2_PATH: &str = "tests/prompt_templates/split_by_topic_content.yaml";
+    const EMBEDDING_OPENAI: LlmDefinition = LlmDefinition::OpenAiLlm(OpenAiDef::EmbeddingAda002);
+    lazy_static! {
+        #[derive(Debug)]
+        pub static ref EMBEDDING_TEST_NORMAL: Vec<String> = vec![EMBEDDING_CONTENT_1.to_string(), load_content(EMBEDDING_CONTENT_2_PATH)];
+        pub static ref EMBEDDING_TEST_EXCEEDS: Vec<String> = vec![EMBEDDING_CONTENT_1.to_string(), load_content(EMBEDDING_CONTENT_2_PATH), load_content(EMBEDDING_CONTENT_2_PATH) + load_content(EMBEDDING_CONTENT_2_PATH).as_str()+ load_content(EMBEDDING_CONTENT_2_PATH).as_str()];
+        pub static ref LLAMA_EMBEDDING_LLM: LlamaDef = LlamaDef::new(
+            TEST_LLM_URL_2_INSTRUCT,
+            TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
+            Some(8000),
+            Some(DEFAULT_THREADS),
+            Some(DEFAULT_N_GPU_LAYERS),
+            Some(true),
+            Some(true)
+        );
+    }
+
+    #[tokio::test]
+    async fn embeddings_normal_behavior() -> Result<(), Box<dyn std::error::Error>> {
+        kill_server();
+        let clients = get_clients().await;
+
+        for client in clients {
+            // Normal test
+            let response = client
+                .generate_embeddings(&EMBEDDING_TEST_NORMAL, None)
+                .await?;
+            for embedding in response {
+                assert!(embedding.len() > 1);
+            }
+            // Test skipping input that exceeds max tokens
+            let response = client
+                .generate_embeddings(
+                    &EMBEDDING_TEST_EXCEEDS,
+                    Some(EmbeddingExceedsMaxTokensBehavior::Skip),
+                )
+                .await?;
+            assert!(response.len() == 3);
+            assert!(response[2].is_empty());
+        }
+        kill_server();
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn embeddings_panic_behavior_openai() {
+        let client_openai: ProviderClient = ProviderClient::new(&EMBEDDING_OPENAI, None).await;
+
+        let _ = client_openai
+            .generate_embeddings(
+                &EMBEDDING_TEST_EXCEEDS,
+                Some(EmbeddingExceedsMaxTokensBehavior::Panic),
+            )
+            .await;
+    }
+    #[tokio::test]
+    #[should_panic]
+    async fn embeddings_panic_behavior_llama() {
+        kill_server();
+        let client_llama: ProviderClient = ProviderClient::new(
+            &LlmDefinition::LlamaLlm((*LLAMA_EMBEDDING_LLM).clone()),
+            None,
+        )
+        .await;
+
+        let _ = client_llama
+            .generate_embeddings(
+                &EMBEDDING_TEST_EXCEEDS,
+                Some(EmbeddingExceedsMaxTokensBehavior::Panic),
+            )
+            .await;
+
+        kill_server();
     }
 }

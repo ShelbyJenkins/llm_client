@@ -66,9 +66,11 @@ let llm_definition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt35Turbo)
 let llm_definition: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
     MISTRAL7BCHAT_MODEL_URL,
     LlamaPromptFormat::Mistral7BChat,
-    Some(9001), // Max tokens for model AKA context size
-    Some(2), // Number of threads to use for server
-    Some(22), // Layers to load to GPU. Dependent on VRAM
+    Some(9001),  // Max tokens for model AKA context size
+    Some(2),     // Number of threads to use for server
+    Some(22),    // Layers to load to GPU. Dependent on VRAM
+    Some(false), // This starts the llama.cpp server with embedding flag disabled
+    Some(true),  // Logging enabled
 ));
 
 let response = basic_text_gen::generate(
@@ -91,6 +93,24 @@ if !boolean_classifier::classify(
     }
 
 ```
+### Create embeddings*
+```
+let client_openai: ProviderClient =
+    ProviderClient::new(&LlmDefinition::OpenAiLlm(OpenAiDef::EmbeddingAda002), None).await;
+
+let _: Vec<Vec<f32>> = client_openai
+    .generate_embeddings(
+        &vec![
+            "Hello, my dog is cute".to_string(),
+            "Hello, my cat is cute".to_string(),
+        ],
+        Some(EmbeddingExceedsMaxTokensBehavior::Panic),
+    )
+    .await
+    .unwrap();
+
+```
+* Currently with limited support for llama.cpp
 ### Start Llama.cpp via CLI
 ```
 cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
@@ -156,7 +176,6 @@ Stop the server with `cargo run -p llm_client --bin server_runner stop`.
 <!-- ROADMAP -->
 ## Roadmap
 
-* Automate starting the llama.cpp with specified model
 * Handle the various prompt formats of LLM models more gracefully
 * Unit tests
 * Add additional classifier agents:

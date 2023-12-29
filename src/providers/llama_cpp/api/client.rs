@@ -6,6 +6,7 @@ use super::config::{Config, LlamaConfig};
 use super::error::{map_deserialization_error, LlamaApiError, WrappedError};
 use super::Completions;
 use super::Detokenize;
+use super::Embedding;
 use super::Tokenize;
 
 #[derive(Debug, Clone)]
@@ -74,6 +75,10 @@ impl<C: Config> Client<C> {
     /// To call [Detokenize] group related APIs using this client.
     pub fn detokenize(&self) -> Detokenize<C> {
         Detokenize::new(self)
+    }
+    /// To call [Embedding] group related APIs using this client.
+    pub fn embedding(&self) -> Embedding<C> {
+        Embedding::new(self)
     }
 
     pub fn config(&self) -> &C {

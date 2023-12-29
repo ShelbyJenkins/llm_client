@@ -1,29 +1,36 @@
 pub const DEFAULT_THREADS: u16 = 2;
 pub const DEFAULT_CTX_SIZE: u16 = 9001;
 pub const DEFAULT_N_GPU_LAYERS: u16 = 6;
-pub const TEST_LLM_URL_1: &str =
+
+pub const TEST_LLM_URL_1_CHAT: &str =
     "https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf";
-pub const TEST_PROMPT_TEMPLATE_1: LlamaPromptFormat = LlamaPromptFormat::Mistral7BChat;
-pub const TEST_LLM_URL_2: &str =
+pub const TEST_LLM_PROMPT_TEMPLATE_1_CHAT: LlamaPromptFormat = LlamaPromptFormat::Mistral7BChat;
+
+pub const TEST_LLM_URL_2_INSTRUCT: &str =
     "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf";
-pub const TEST_PROMPT_TEMPLATE_2: LlamaPromptFormat = LlamaPromptFormat::Mistral7BInstruct;
+pub const TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT: LlamaPromptFormat =
+    LlamaPromptFormat::Mistral7BInstruct;
 
 lazy_static! {
     #[derive(Clone, Debug, Copy)]
-    pub static ref TEST_LLM_1: LlamaDef = LlamaDef::new(
-        TEST_LLM_URL_1,
-        TEST_PROMPT_TEMPLATE_1,
+    pub static ref TEST_LLM_1_CHAT: LlamaDef = LlamaDef::new(
+        TEST_LLM_URL_1_CHAT,
+        TEST_LLM_PROMPT_TEMPLATE_1_CHAT,
         Some(DEFAULT_CTX_SIZE),
         Some(DEFAULT_THREADS),
         Some(DEFAULT_N_GPU_LAYERS),
+        None,
+        Some(true),
     );
     #[derive(Clone, Debug)]
-    pub static ref TEST_LLM_2: LlamaDef = LlamaDef::new(
-        TEST_LLM_URL_2,
-        TEST_PROMPT_TEMPLATE_2,
+    pub static ref TEST_LLM_2_INSTRUCT: LlamaDef = LlamaDef::new(
+        TEST_LLM_URL_2_INSTRUCT,
+        TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
         Some(DEFAULT_CTX_SIZE),
         Some(DEFAULT_THREADS),
         Some(DEFAULT_N_GPU_LAYERS),
+        None,
+        Some(true),
     );
 }
 
@@ -45,6 +52,8 @@ pub struct LlamaDef {
     pub max_tokens_for_model: u16,
     pub threads: u16,
     pub n_gpu_layers: u16,
+    pub embedding_enabled: bool,
+    pub logging_enabled: bool,
 }
 
 impl LlamaDef {
@@ -54,21 +63,20 @@ impl LlamaDef {
         ctx_size: Option<u16>,
         threads: Option<u16>,
         n_gpu_layers: Option<u16>,
+        embedding_enabled: Option<bool>,
+        logging_enabled: Option<bool>,
     ) -> Self {
-        let max_tokens_for_model = ctx_size.unwrap_or(DEFAULT_CTX_SIZE);
-        let threads = threads.unwrap_or(DEFAULT_THREADS);
-
-        let n_gpu_layers = n_gpu_layers.unwrap_or(DEFAULT_N_GPU_LAYERS);
-
         let (model_id, model_filename) = convert_url_to_hf_format(model_url);
 
         LlamaDef {
             model_id,
             model_filename,
-            max_tokens_for_model,
             prompt_format,
-            threads,
-            n_gpu_layers,
+            max_tokens_for_model: ctx_size.unwrap_or(DEFAULT_CTX_SIZE),
+            threads: threads.unwrap_or(DEFAULT_THREADS),
+            n_gpu_layers: n_gpu_layers.unwrap_or(DEFAULT_N_GPU_LAYERS),
+            embedding_enabled: embedding_enabled.unwrap_or(false),
+            logging_enabled: logging_enabled.unwrap_or(true),
         }
     }
 

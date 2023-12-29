@@ -4,6 +4,7 @@ pub enum OpenAiDef {
     Gpt432k,
     Gpt35Turbo,
     Gpt35Turbo16k,
+    EmbeddingAda002,
 }
 
 const SAFETY_TOKENS: u16 = 10;
@@ -58,6 +59,18 @@ impl OpenAiDef {
                 cost_per_k: 0.03,
                 tokens_per_message: 3,
                 tokens_per_name: 1,
+                frequency_penalty,
+                presence_penalty,
+                temperature,
+                top_p,
+                safety_tokens: SAFETY_TOKENS,
+            },
+            OpenAiDef::EmbeddingAda002 => crate::LlmModelParams {
+                model_id: "text-embedding-ada-002".to_string(),
+                max_tokens_for_model: 8191,
+                cost_per_k: 0.0004,
+                tokens_per_message: 0,
+                tokens_per_name: 0,
                 frequency_penalty,
                 presence_penalty,
                 temperature,

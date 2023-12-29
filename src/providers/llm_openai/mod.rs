@@ -5,7 +5,7 @@ use async_openai::{
     config::OpenAIConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs,
+        CreateChatCompletionRequestArgs, CreateEmbeddingRequestArgs,
     },
     Client,
 };
@@ -46,7 +46,7 @@ impl OpenAiClient {
         logit_bias: &HashMap<String, serde_json::Value>,
         batch_count: u8,
         model_params: &crate::LlmModelParams,
-    ) -> Result<(Vec<String>, u16), Box<dyn Error>> {
+    ) -> Result<Vec<String>, Box<dyn Error>> {
         let request = CreateChatCompletionRequestArgs::default()
             .model(model_params.model_id.to_string())
             .messages([
@@ -70,7 +70,7 @@ impl OpenAiClient {
         for choice in response.choices {
             output.push(choice.message.content.clone().unwrap());
         }
-        Ok((output, 0))
+        Ok(output)
     }
 
     pub async fn generate_text(
@@ -79,7 +79,7 @@ impl OpenAiClient {
         max_response_tokens: u16,
         logit_bias: &Option<HashMap<String, serde_json::Value>>,
         model_params: &crate::LlmModelParams,
-    ) -> Result<(String, u16), Box<dyn Error>> {
+    ) -> Result<String, Box<dyn Error>> {
         let mut request_builder = CreateChatCompletionRequestArgs::default()
             .model(model_params.model_id.to_string())
             .messages([
@@ -106,6 +106,22 @@ impl OpenAiClient {
         let response = self.client.chat().create(request).await?;
 
         let output = response.choices[0].message.content.clone().unwrap();
-        Ok((output, 0))
+        Ok(output)
+    }
+
+    pub async fn generate_embedding(
+        &self,
+        input: &String,
+        model_params: &crate::LlmModelParams,
+    ) -> Result<Vec<f32>, Box<dyn Error>> {
+        let request = CreateEmbeddingRequestArgs::default()
+            .model(model_params.model_id.to_string())
+            .input(input)
+            .build()?;
+
+        let response: async_openai::types::CreateEmbeddingResponse =
+            self.client.embeddings().create(request).await?;
+
+        Ok(response.data[0].embedding.to_owned())
     }
 }
