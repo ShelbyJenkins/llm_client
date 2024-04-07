@@ -1,18 +1,18 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::io;
-
-use backoff;
-use serde_json;
+use std::{collections::HashMap, error::Error, io};
 
 pub mod api;
 pub mod model_loader;
 pub mod models;
 pub mod server;
 use api::{
-    client::Client, config::LlamaConfig, types::LlamaCreateCompletionsRequestArgs,
-    types::LlamaCreateDetokenizeRequestArgs, types::LlamaCreateEmbeddingRequestArgs,
-    types::LlamaCreateTokenizeRequestArgs,
+    client::Client,
+    config::LlamaConfig,
+    types::{
+        LlamaCreateCompletionsRequestArgs,
+        LlamaCreateDetokenizeRequestArgs,
+        LlamaCreateEmbeddingRequestArgs,
+        LlamaCreateTokenizeRequestArgs,
+    },
 };
 pub use models::LlamaDef;
 

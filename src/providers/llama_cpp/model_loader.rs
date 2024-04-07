@@ -1,11 +1,11 @@
 use chrono::Utc;
 use dotenv::dotenv;
-use hf_hub;
-use serde_yaml;
-use std::env;
-use std::fs::{self, File};
-use std::io::{self, Read, Write};
-use std::path::PathBuf;
+use std::{
+    env,
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::PathBuf,
+};
 // See llm_client/src/bin/model_loader_cli.rs for cli instructions
 // Downloads to Path: "/root/.cache/huggingface/hub/
 

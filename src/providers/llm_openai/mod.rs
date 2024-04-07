@@ -1,19 +1,16 @@
-use std::collections::HashMap;
-use std::error::Error;
-
 use async_openai::{
     config::OpenAIConfig,
     types::{
-        ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs, CreateEmbeddingRequestArgs,
+        ChatCompletionRequestSystemMessageArgs,
+        ChatCompletionRequestUserMessageArgs,
+        CreateChatCompletionRequestArgs,
+        CreateEmbeddingRequestArgs,
     },
     Client,
 };
-use backoff;
 use dotenv::dotenv;
-use serde_json;
-
 pub use models::OpenAiDef;
+use std::{collections::HashMap, error::Error};
 pub mod models;
 
 pub struct OpenAiClient {

@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::{io, vec};
+use std::{collections::HashMap, error::Error, io, vec};
 pub mod agents;
 pub mod prelude;
 pub mod prompting;
 pub mod providers;
 pub mod text_utils;
 
-use crate::providers::llama_cpp::{models::LlamaDef, LlamaClient};
-use crate::providers::llm_openai::{models::OpenAiDef, OpenAiClient};
+use crate::providers::{
+    llama_cpp::{models::LlamaDef, LlamaClient},
+    llm_openai::{models::OpenAiDef, OpenAiClient},
+};
 #[macro_use]
 extern crate lazy_static;
 
@@ -311,15 +311,23 @@ impl ProviderClient {
 
 #[cfg(test)]
 mod tests {
-    use super::ProviderClient;
-    use super::{EmbeddingExceedsMaxTokensBehavior, LlmDefinition};
-    use crate::providers::llama_cpp::models::{
-        LlamaDef, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS, TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
-        TEST_LLM_URL_2_INSTRUCT,
+    use super::{EmbeddingExceedsMaxTokensBehavior, LlmDefinition, ProviderClient};
+    use crate::{
+        providers::{
+            llama_cpp::{
+                models::{
+                    LlamaDef,
+                    DEFAULT_N_GPU_LAYERS,
+                    DEFAULT_THREADS,
+                    TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
+                    TEST_LLM_URL_2_INSTRUCT,
+                },
+                server::kill_server,
+            },
+            llm_openai::models::OpenAiDef,
+        },
+        text_utils::load_content,
     };
-    use crate::providers::llama_cpp::server::kill_server;
-    use crate::providers::llm_openai::models::OpenAiDef;
-    use crate::text_utils::load_content;
 
     async fn get_clients() -> Vec<ProviderClient> {
         let client_openai: ProviderClient = ProviderClient::new(&EMBEDDING_OPENAI, None).await;

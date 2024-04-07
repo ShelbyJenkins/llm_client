@@ -1,12 +1,16 @@
-use super::get_model_info;
-use super::model_loader::{check_requested_model_against_given_model, download_model};
-use super::models::LlamaDef;
+use super::{
+    get_model_info,
+    model_loader::{check_requested_model_against_given_model, download_model},
+    models::LlamaDef,
+};
 use core::panic;
-use std::net::TcpStream;
-use std::path::PathBuf;
-use std::process::{Command, Stdio};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::{
+    net::TcpStream,
+    path::PathBuf,
+    process::{Command, Stdio},
+    thread,
+    time::{Duration, Instant},
+};
 
 pub const HOST: &str = "localhost";
 pub const PORT: &str = "8080";
@@ -226,13 +230,69 @@ pub async fn server_process(
     command.spawn().expect("Failed to start server")
 }
 
+// async fn db_kill_server() -> Result<(), Box<dyn std::error::Error>> {
+//     let grep_lines = db_grep()
+//         .await
+//         .map_err(|err| format!("failed to grep postgres pids: {}", err))?;
+
+//     if grep_lines.is_empty() {
+//         return Ok(());
+//     } else {
+//         db_kill_pids(grep_lines)
+//             .await
+//             .map_err(|err| format!("failed to kill postgres pids: {}", err))?;
+//     }
+//     Ok(())
+// }
+
+// async fn db_grep() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+//     let output = Command::new("sh")
+//         .arg("-c")
+//         .arg("ps axw | grep [p]ostgres | awk '{print $1}'")
+//         // .arg("ps axw | grep [p]ostgres")
+//         .output()
+//         .await?;
+
+//     let pids = String::from_utf8_lossy(&output.stdout)
+//         .trim()
+//         .split('\n')
+//         .map(|pid| pid.to_string())
+//         .collect::<Vec<String>>();
+
+//     Ok(pids)
+// }
+
+// async fn db_kill_pids(grep_lines: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+//     async fn process_exists(pid: &str) -> bool {
+//         let output = Command::new("sh")
+//             .arg("-c")
+//             .arg(format!("ps -p {} > /dev/null", pid))
+//             .status()
+//             .await
+//             .expect("Failed to execute command");
+
+//         output.success()
+//     }
+//     for pid in grep_lines {
+//         if process_exists(&pid).await {
+//             let _ = Command::new("kill").arg(pid).status().await;
+//         }
+//     }
+//     Ok(())
+// }
+
 #[cfg(test)]
 mod tests {
 
     use super::{check_and_or_start_server, kill_server};
     use crate::providers::llama_cpp::models::{
-        LlamaDef, DEFAULT_CTX_SIZE, DEFAULT_N_GPU_LAYERS, DEFAULT_THREADS,
-        TEST_LLM_PROMPT_TEMPLATE_1_CHAT, TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT, TEST_LLM_URL_1_CHAT,
+        LlamaDef,
+        DEFAULT_CTX_SIZE,
+        DEFAULT_N_GPU_LAYERS,
+        DEFAULT_THREADS,
+        TEST_LLM_PROMPT_TEMPLATE_1_CHAT,
+        TEST_LLM_PROMPT_TEMPLATE_2_INSTRUCT,
+        TEST_LLM_URL_1_CHAT,
         TEST_LLM_URL_2_INSTRUCT,
     };
 

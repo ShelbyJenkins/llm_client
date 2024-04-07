@@ -19,6 +19,7 @@ categories=[
 ]
 keywords=[
     "ai",
+    "anthropic",
     "ggml",
     "llama-cpp",
     "llm",

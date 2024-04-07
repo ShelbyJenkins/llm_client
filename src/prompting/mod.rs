@@ -1,12 +1,36 @@
 pub mod logit_bias;
-use crate::providers::llama_cpp::models::LlamaPromptFormat;
-use crate::text_utils;
+use crate::{providers::llama_cpp::models::LlamaPromptFormat, text_utils};
 use core::panic;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
+use std::{collections::HashMap, fs::File, io::Read, path::Path};
 
+/// Loads the system prompt template based on the provided base prompt and prompt template path.
+///
+/// If both `base_prompt` and `prompt_template_path` are `None`, the function will panic.
+///
+/// # Arguments
+///
+/// * `base_prompt` - An optional string slice representing the base prompt.
+///                  If provided, it will be included in the system prompt.
+/// * `prompt_template_path` - An optional string slice representing the path to the prompt template file.
+///                            If provided, the contents of the file will be read and included in the system prompt.
+///
+/// # Returns
+///
+/// A `String` containing the system prompt template.
+///
+/// # Panics
+///
+/// * If both `base_prompt` and `prompt_template_path` are `None`.
+/// * If the specified `prompt_template_path` is empty or fails to be read.
+///
+/// # Examples
+///
+/// ```
+/// let base_prompt = "This is the base prompt.";
+/// let prompt_template_path = "path/to/prompt/template.txt";
+/// let system_prompt = load_system_prompt_template(Some(base_prompt), Some(prompt_template_path));
+/// asset_eq!(system_prompt, "Base Prompt: This is the base prompt.\nUser Prompt: This is the user prompt.");
+/// ```
 pub fn load_system_prompt_template(
     base_prompt: Option<&str>,
     prompt_template_path: Option<&str>,
