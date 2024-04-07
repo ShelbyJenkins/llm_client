@@ -23,16 +23,53 @@ See this post for more information: https://www.pugetsystems.com/labs/hpc/quad-r
 # Make sure nvidia-smi exists 
 command -v nvidia-smi &> /dev/null || { echo >&2 "nvidia-smi not found ... exiting."; exit 1; }
 
-POWER_LIMIT=222
-MAX_POWER_LIMIT=$(nvidia-smi -q -d POWER | grep 'Max Power Limit' | tr -s ' ' | cut -d ' ' -f 6)
+# Define GPU enabled states (1 for enabled, 0 for disabled)
+declare -A gpu_enabled=(
+    [0]=1
+    [1]=1
+    [2]=0
+    [3]=0
+    [4]=0
+    [5]=0
+)
 
-if [[ ${POWER_LIMIT%.*}+0 -lt ${MAX_POWER_LIMIT%.*}+0 ]]; then
-    /usr/bin/nvidia-smi --persistence-mode=1
-    /usr/bin/nvidia-smi  --power-limit=${POWER_LIMIT}
-else
-    echo 'FAIL! POWER_LIMIT set above MAX_POWER_LIMIT ... '
-    exit 1
-fi
+# Define desired power limits for each GPU (in Watts)
+declare -A gpu_power_limits=(
+    [0]=222
+    [1]=222
+    [2]=0
+    [3]=0
+    [4]=0
+    [5]=0
+)
+
+# Function to set power limit
+set_power_limit() {
+    local gpu_id=$1
+    local limit=$2
+    /usr/bin/nvidia-smi -i $gpu_id --persistence-mode=1
+    /usr/bin/nvidia-smi -i $gpu_id --power-limit=$limit
+}
+for gpu_id in "${!gpu_enabled[@]}"; do
+    if [[ ${gpu_enabled[$gpu_id]} -eq 1 ]]; then
+        # Fetch the maximum power limit for the current GPU
+        max_power_limit=$(nvidia-smi -i $gpu_id -q -d POWER | grep 'Max Power Limit' | awk '{print $5}' | grep -oE '[0-9]+([.][0-9]+)?')
+        if [[ -z "$max_power_limit" || "$max_power_limit" == "N/A" ]]; then
+            echo "GPU $gpu_id: Max Power Limit not available."
+            continue
+        fi
+
+        # Check if the desired limit is less than the max
+        if [[ ${gpu_power_limits[$gpu_id]} -le $(printf "%.0f" "$max_power_limit") ]]; then
+            echo "Setting power limit for GPU $gpu_id to ${gpu_power_limits[$gpu_id]} Watts."
+            set_power_limit $gpu_id ${gpu_power_limits[$gpu_id]}
+        else
+            echo "FAIL! Desired power limit for GPU $gpu_id is above the max allowable limit of $max_power_limit Watts."
+        fi
+    else
+        echo "GPU $gpu_id is disabled."
+    fi
+done
 
 exit 0
 ```
@@ -85,6 +122,10 @@ Save the file and exit the text editor (in nano, press Ctrl+X, then Y, and final
 
 `ls -l /etc/systemd/system`
 
+look for something like:
+
+`lrwxrwxrwx 1 root root   45 Apr  7 15:28  nv-power-limit.service -> /usr/local/etc/systemd/nv-power-limit.service`
+
 ### 8. Start the nv-power-limit.service to test if it's working properly:
 
 `systemctl start nv-power-limit.service`
@@ -104,3 +145,21 @@ Save the file and exit the text editor (in nano, press Ctrl+X, then Y, and final
 ### 12. After the system restarts, verify that the GPU power limit is set correctly by running: 
 
 `nvidia-smi -q -d POWER`
+
+## Making Changes
+
+### 1. Open, edit, and save the script
+
+`nano /usr/local/sbin/nv-power-limit.sh`
+
+### 2. Reload systemd
+
+`sudo systemctl daemon-reload`
+
+### 3. Restart the service
+
+`sudo systemctl restart nv-power-limit.service`
+
+### 4. Check the service status
+
+`sudo systemctl status nv-power-limit.service`
