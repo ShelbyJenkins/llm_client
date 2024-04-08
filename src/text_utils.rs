@@ -1,7 +1,59 @@
 use regex::Regex;
-use std::fs::File;
-use std::io::Read;
+use std::{fs::File, io::Read};
 use tiktoken_rs::cl100k_base;
+
+/// Creates a window of text normalized to the specified token size.
+///
+/// This function takes a string of text and a desired token size, and returns
+/// a new string that represents a window of the original text. The window is
+/// centered around the middle of the text and its size is determined by the
+/// `target_token_size` parameter.
+///
+/// The function uses the `cl100k_base` tokenizer from the `tiktoken` library
+/// to tokenize the input text. If the number of tokens in the input text is
+/// less than or equal to `target_token_size`, the function returns the
+/// original text as is.
+///
+/// If the number of tokens exceeds `target_token_size`, the function calculates
+/// the start and end indices of the token window based on the desired size and
+/// the actual token count. The preserved tokens are then decoded back into a
+/// string using the `decode` method of the tokenizer.
+///
+/// # Arguments
+///
+/// * `text` - The input text to create a window from.
+/// * `target_token_size` - The desired number of tokens in the window.
+///
+/// # Returns
+///
+/// A new string that represents the normalized window of text, or the original
+/// text if its token count is less than or equal to `target_token_size`.
+///
+/// # Examples
+///
+/// ```
+/// use llm_client::text_utils::create_text_window;
+///
+/// let text = "This is a sample text. It will be truncated or returned as is based on the target token size.";
+/// let target_token_size = 10;
+///
+/// let window = create_text_window(text, target_token_size);
+/// println!("Normalized window: {}", window);
+/// ```
+pub fn create_text_window(text: &str, target_token_size: usize) -> String {
+    let bpe = cl100k_base().unwrap();
+    let tokens = bpe.encode_ordinary(text);
+
+    if tokens.len() <= target_token_size {
+        return text.to_string();
+    }
+
+    let start_token_index = (tokens.len() - target_token_size) / 2;
+    let end_token_index = start_token_index + target_token_size;
+
+    let preserved_tokens = &tokens[start_token_index..end_token_index];
+    bpe.decode(preserved_tokens.to_vec()).unwrap()
+}
 
 pub fn get_token(text: &str) -> usize {
     let bpe = cl100k_base().unwrap();
