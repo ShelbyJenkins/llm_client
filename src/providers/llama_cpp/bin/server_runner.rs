@@ -1,13 +1,17 @@
+use clap::value_parser;
 use llm_client::providers::llama_cpp::server;
-use std::env;
-use std::fs::File;
-use std::io::{Read, Write};
-use std::path::PathBuf;
-use std::process::Command;
-use std::thread;
-use std::time::Duration;
-
-// cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
+use std::{
+    env,
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+    process::Command,
+    thread,
+    time::Duration,
+};
+// cargo run -p llm_client --bin server_runner start --n_gpu_layers 22 --model_url "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/blob/main/mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf"
+// cargo run -p llm_client --bin server_runner stop
+// cargo run -p llm_client --bin server_runner start --n_gpu_layers 22 --model_url "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/blob/main/mixtral-8x7b-instruct-v0.1.Q6_K.gguf"
 // cargo run -p llm_client --bin server_runner stop
 
 #[tokio::main]
@@ -41,18 +45,21 @@ pub async fn main() {
                 )
                 .arg(
                     clap::Arg::new("threads")
+                        .value_parser(value_parser!(u16))
                         .help("threads")
                         .long("threads")
                         .required(false),
                 )
                 .arg(
                     clap::Arg::new("ctx_size")
+                        .value_parser(value_parser!(u16))
                         .help("ctx_size")
                         .long("ctx")
                         .required(false),
                 )
                 .arg(
                     clap::Arg::new("n_gpu_layers")
+                        .value_parser(value_parser!(u16))
                         .help("n_gpu_layers")
                         .long("n_gpu_layers")
                         .required(false),
@@ -80,7 +87,7 @@ pub async fn main() {
 
             let threads = cmd.get_one::<u16>("threads").copied();
             let ctx_size = cmd.get_one::<u16>("ctx_size").copied();
-            let n_gpu_layers = cmd.get_one::<u16>("n_gpu_layers").copied();
+            let n_gpu_layers = cmd.get_one("n_gpu_layers").copied();
             let embedding = cmd.get_one::<bool>("embedding").copied();
             let logging = cmd.get_one::<bool>("logging").copied();
 

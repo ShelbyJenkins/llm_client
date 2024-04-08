@@ -152,7 +152,7 @@ git submodule update
   ```
   // Example build for nvidia gpus
   cd llm_client/src/providers/llama_cpp/llama_cpp
-  make LLAMA_CUBLAS=1
+  make LLAMA_CUDA=1
   ```
 5. Test llama.cpp ./server
 ```

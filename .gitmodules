@@ -2,3 +2,4 @@
 	path = src/providers/llama_cpp/llama_cpp
 	url = https://github.com/ggerganov/llama.cpp
 	ignore = untracked
+	rev = 855f54402e866ed19d8d675b56a81c844c64b325

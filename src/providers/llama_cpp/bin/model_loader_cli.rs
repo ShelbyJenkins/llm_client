@@ -1,5 +1,5 @@
 use llm_client::providers::llama_cpp::{model_loader::download_model, models};
-// cargo run -p llm_client --bin model_loader_cli --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
+// cargo run -p llm_client --bin model_loader_cli -- --model_url "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/blob/main/mixtral-8x7b-instruct-v0.1.Q6_K.gguf"
 
 #[tokio::main]
 pub async fn main() {
