@@ -91,9 +91,73 @@ pub fn tiktoken_len_of_document_list(texts: &Vec<String>) -> u16 {
     token_count
 }
 
+pub fn filter_drop_words(texts: &[String], drop_words: &[String]) -> Vec<String> {
+    texts
+        .iter()
+        .filter(|s| {
+            !s.split_whitespace().any(|w| {
+                drop_words
+                    .iter()
+                    .any(|dw| w.to_lowercase() == dw.to_lowercase())
+            })
+        })
+        .cloned()
+        .collect()
+}
+
+pub fn split_on_newline(text: &str) -> Vec<String> {
+    text.split('\n').map(|s| s.to_string()).collect()
+}
+pub fn join_with_newline(texts: &[String]) -> String {
+    texts.join("\n").trim().to_string()
+}
+pub fn split_on_double_newline(text: &str) -> Vec<String> {
+    text.split("\n\n").map(|s| s.to_string()).collect()
+}
+pub fn join_with_double_newline(texts: &[String]) -> String {
+    texts.join("\n\n").trim().to_string()
+}
+
 pub fn clean_text_content(text: &str) -> String {
-    let text = strip_unwanted_chars(text);
-    reduce_excess_whitespace(&text)
+    let text = convert_white_space(text);
+    let text = reduce_excess_whitespace(&text);
+    strip_unwanted_chars(&text).trim().to_string()
+}
+
+pub fn convert_white_space(text: &str) -> String {
+    let patterns = vec![
+        (r"\r", "\r"),
+        (r"\t", "\t"),
+        (r"\n", "\n"),
+        (r" ", " "),
+        (r"\u{00A0}", " "),
+        (r"\u{2009}", " "),
+        (r"\u{2002}", " "),
+        (r"\u{2003}", " "),
+    ];
+    let mut reduced_text = String::from(text);
+    for (pattern, replacement) in patterns {
+        let re = Regex::new(pattern).unwrap();
+        reduced_text = re.replace_all(&reduced_text, replacement).into_owned();
+    }
+    reduced_text
+}
+
+pub fn reduce_excess_whitespace(text: &str) -> String {
+    let patterns = vec![
+        (r"\r{1,}", "\r"),
+        (r"\t{1,}", "\t"),
+        // Preserve double newlines for future splitting
+        (r"\n{2,}", "\n\n"),
+        (r" {1,}", r" "),
+    ];
+    let mut reduced_text = String::from(text);
+    for (pattern, replacement) in patterns {
+        let re = Regex::new(pattern).unwrap();
+        reduced_text = re.replace_all(&reduced_text, replacement).into_owned();
+    }
+    // Trim leading and trailing spaces
+    reduced_text.trim().to_string()
 }
 
 pub fn strip_unwanted_chars(text: &str) -> String {
@@ -108,42 +172,27 @@ pub fn strip_unwanted_chars(text: &str) -> String {
     re.replace_all(text, "").into_owned()
 }
 
-pub fn reduce_excess_whitespace(text: &str) -> String {
-    // Define patterns for different whitespace characters
-    let patterns = vec![
-        (r" ", r" {1,}"),
-        (r"\t", r"\t{1,}"),
-        (r"\n", r"\n{1,}"),
-        (r"\r", r"\r{1,}"),
-        (r"\v", r"\v{1,}"),
-        (r"\f", r"\f{1,}"),
-    ];
-
-    let mut reduced_text = String::from(text);
-
-    // Replace any sequential occurrences of each whitespace character
-    // greater than one with just one.
-    for (char, pattern) in patterns {
-        let re = Regex::new(pattern).unwrap();
-        reduced_text = re.replace_all(&reduced_text, char).into_owned();
-    }
-    let pattern = r"\s+";
-    let re = Regex::new(pattern).unwrap();
-    let reduced_text = re.replace_all(text, " ").into_owned();
-    reduced_text.trim().to_string()
-}
-
 pub fn remove_all_white_space_except_space(text: &str) -> String {
-    // Create a regex to match all whitespace characters except space
-    let re = Regex::new(r"[\n\r\t\f\v]+").unwrap();
-    let text = re.replace_all(text, "");
+    let patterns = vec![
+        (r"\r", " "),
+        (r"\t", " "),
+        (r"\v", " "),
+        (r"\f", " "),
+        (r"\n", " "),
+        // Matches variants of space characters
+        (r" ", " "),
+        (r"\u00A0", " "),
+        (r"\u2009", " "),
+        (r"\u2002", " "),
+        (r"\u2003", " "),
+    ];
+    let mut reduced_text = String::from(text);
+    for (pattern, replacement) in patterns {
+        let re = Regex::new(pattern).unwrap();
+        reduced_text = re.replace_all(&reduced_text, replacement).into_owned();
+    }
 
-    // Create a regex to replace multiple spaces with a single space
-    let re = Regex::new(r" +").unwrap();
-    let text = re.replace_all(&text, " ");
-
-    // Trim leading and trailing spaces
-    text.trim().to_string()
+    reduce_excess_whitespace(&reduced_text)
 }
 
 pub fn split_text_with_regex(text: &str, separator: &str, keep_separator: bool) -> Vec<String> {
