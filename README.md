@@ -14,7 +14,7 @@
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
-# llm_client: structured text, decision making, and benchmarks. A user friendly interface to write once and run on any local or API model.
+# Structured text, decision making, and benchmarks. A user friendly interface to write once and run on any local or API model.
 
 > LLMs aren't chat bots; They're information arbitrage machines and prompts are database queries.
 
@@ -25,7 +25,7 @@
 ### LLMs as decision makers 🚦
 - What previously took dozens, hundreds, or thousands of `if statements` for a specific requirement, can now be done with a few lines of code across novel inputs.
 
-- llm_client uses what might be a novel process for LLM decision making. First, we get the LLM to 'justify' an answer in plain english. This allows the LLM to 'think' by outputting the stream of tokens required to come to an answer. Then we take that 'justification', and prompt the LLM to parse it for the answer.
+- llm_client uses what might be a novel process for LLM decision making. First, we get the LLM to 'justify' an answer in plain english. This allows the LLM to 'think' by outputting the stream of tokens required to come to an answer. Then we take that 'justification', and prompt the LLM to parse it for the answer. Then we do it again N times where is is `best_of_n_votes` and we dynamically alter the temperature to ensure an accurate consensus.
 
 ```rust
     let res: bool = llm_client.decider().boolean()
