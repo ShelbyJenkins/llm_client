@@ -1,0 +1,12 @@
+backend,model_id,model_url,available_vram,ctx_size,n_gpu_layers,decision_parser_type
+openai,gpt-4o,,,,,
+openai,gpt-4-turbo,,,,,
+openai,gpt-4,,,,,
+openai,gpt-3.5-turbo,,,,,
+anthropic,claude-3-opus,,,,,
+anthropic,claude-3-sonnet,,,,,
+anthropic,claude-3-haiku,,,,,
+llamacpp,Mistral-7B-Instruct-v0.3,,48,2222,9999,
+llamacpp,Mixtral-8x7B-Instruct-v0.1,,48,2222,9999,
+llamacpp,Meta-Llama-3-70B-Instruct,,44,2222,9999,
+llamacpp,Meta-Llama-3-8B-Instruct,,48,2222,9999,

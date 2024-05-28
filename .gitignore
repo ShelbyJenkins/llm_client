@@ -1,4 +1,5 @@
 target
 .env
-/hf_downloaded_models
-/tests/outputs
+/logs
+/benchmark_results
+src/llm_backends/llama_cpp/llama_cpp

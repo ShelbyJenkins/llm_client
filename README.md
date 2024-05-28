@@ -1,15 +1,3 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
-
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -26,206 +14,209 @@
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
+# llm_client: structured text, decision making, and benchmarks. A user friendly interface to write once and run on any local or API model.
 
+> LLMs aren't chat bots; They're information arbitrage machines and prompts are database queries.
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-    </li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+* Structure the outputs of generated text, make decisions from novel inputs, and classify data.
+* The easiest interface possible to deploy and test the same logic to various LLM backends.
+* A local first and embedded model. Meant to be built and ran in-process with your business logic. No stand alone servers.
 
+### LLMs as decision makers 🚦
+- What previously took dozens, hundreds, or thousands of `if statements` for a specific requirement, can now be done with a few lines of code across novel inputs.
 
+- llm_client uses what might be a novel process for LLM decision making. First, we get the LLM to 'justify' an answer in plain english. This allows the LLM to 'think' by outputting the stream of tokens required to come to an answer. Then we take that 'justification', and prompt the LLM to parse it for the answer.
 
-<!-- ABOUT THE PROJECT -->
+```rust
+    let res: bool = llm_client.decider().boolean()
+        .system_content("Does this email subject indicate that the email is spam?")
+        .user_content("You'll never believe these low, low prices 💲💲💲!!!")
+        .run().await?;
+    assert_eq!(res, true);
 
-## A rust interface for the OpenAI API and Llama.cpp ./server API 
+    let res: u16 = llm_client.decider().integer()
+        .system_content("How many times is the word 'llm' mentioned in these comments?")
+        .user_content(hacker_news_comment_section)
+        .run().await?;
+    assert!(res > 1);
 
-* A unified API for testing and integrating OpenAI and HuggingFace LLM models.
-* Load models from HuggingFace with just a URL.
-* Uses <a href="https://github.com/ggerganov/llama.cpp/tree/master/examples/server">Llama.cpp server API</a> rather than bindings, so as long as the Llama.cpp server API remains stable this project will remain usable.
-* Prebuilt agents - not chatbots - to unlock the true power of LLMs.
-
-### Easily switch between models and APIs
+    let res: String = llm_client.decider().custom()
+        .system_content("Based on this resume, what is the users first name?")
+        .user_content(shelby_resume)
+        .add_choice("shelby")
+        .add_choice("jack")
+        .add_choice("camacho")
+        .add_choice("john")
+        .run().await?;
+    assert!(res != "shelby");
 ```
-// Use an OpenAI model
-let llm_definition = LlmDefinition::OpenAiLlm(OpenAiDef::Gpt35Turbo)
-```
-```
-// Or use a model from hugging face
-let llm_definition: LlmDefinition = LlmDefinition::LlamaLlm(LlamaDef::new(
-    MISTRAL7BCHAT_MODEL_URL,
-    LlamaPromptFormat::Mistral7BChat,
-    Some(9001),  // Max tokens for model AKA context size
-    Some(2),     // Number of threads to use for server
-    Some(22),    // Layers to load to GPU. Dependent on VRAM
-    Some(false), // This starts the llama.cpp server with embedding flag disabled
-    Some(true),  // Logging enabled
-));
 
-let response = basic_text_gen::generate(
-        &LlmDefinition::LlamaLlm(llm_definition),
-        Some("Howdy!"),
-    )
-    .await?;
-eprintln!(response)
+### Structured text 📝
+- 'Some people, when confronted with a problem, think "I know, I'll use regular expressions." Now they have two problems.' Using Regex to parse and structure the output of LLMs puts an exponent over this old joke.
+
+- llm_client implements structuring text through logit_bias and grammars. Of the two, [grammars is the most powerful, and allows for very granular controls of text generation.](https://github.com/ggerganov/llama.cpp/blob/master/grammars/README.md) Logit bias, through having wider support, is less useful as it relies on adjusting the probabilities of individual tokens.
+
+```rust
+    let res: Vec<String> = llm_client.text().grammar_list()
+        .system_content("ELI5 each topic in this text.")
+        .user_content(wikipedia_article)
+        .max_items(5)
+        .min_items(3)
+        .run().await?;
+    assert_eq!(res.len() > 3);
+
+    let res: String = llm_client.text().grammar_text()
+        .system_content("Summarize this mathematical funtion in plain english. Do not use notation.")
+        .user_content(wikipedia_article)
+        .restrict_extended_punctuation()
+        .run().await?;
+    assert!(!res.contains('('));
+    assert!(!res.contains('['));
+
+    let res: String = llm_client.text().logit_bias_text()
+        .system_content("Summarize this article")
+        .user_content(wikipedia_article)
+        .add_logit_bias_from_word("delve", -100.0);
+        .run().await?;
+    assert!(!res.contains("delve"));
+
 ```
-### Get deterministic responses from LLMs
-```
-if !boolean_classifier::classify(
-        llm_definition,
-        Some(hopefully_a_list),
-        Some("Is the attached feature a list of content split into discrete entries?"),
-    )
-    .await?
-    {
-        panic!("{}, was not properly split into a list!", hopefully_a_list)
+
+### LLM -> LLMs 🤹
+- The same code across multiple LLMs.
+
+- This makes benchmarking multiple LLMs really easy. Checkout src/bechmark for an example.
+
+```rust
+    pub async fn chatbot(llm_client: &LlmClient, user_input: &str) -> Result<String> {
+        llm_client.text().basic_text()
+            .system_content("You're a kind robot.")
+            .user_content(user_input)
+            .temperature(0.5)
+            .max_tokens(2)
+            .run().await
     }
 
-```
-### Create embeddings*
-```
-let client_openai: ProviderClient =
-    ProviderClient::new(&LlmDefinition::OpenAiLlm(OpenAiDef::EmbeddingAda002), None).await;
+    let llm_client = LlmClient::llama_backend()
+        .mistral_7b_instruct()
+        .init()
+        .await?;
+    assert_eq!(chatbot(&llm_client, "What is the meaning of life?").await?, "42")
 
-let _: Vec<Vec<f32>> = client_openai
-    .generate_embeddings(
-        &vec![
-            "Hello, my dog is cute".to_string(),
-            "Hello, my cat is cute".to_string(),
-        ],
-        Some(EmbeddingExceedsMaxTokensBehavior::Panic),
-    )
-    .await
-    .unwrap();
+    let llm_client = LlmClient::llama_backend()
+        .model_url("https://huggingface.co/your_cool_model_Q5_K.gguf")
+        .init()
+        .await?;
+    assert_eq!(chatbot(&llm_client, "What is the meaning of life?").await?, "42")
 
-```
-* Currently with limited support for llama.cpp
-### Start Llama.cpp via CLI
-```
-cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
+    let llm_client = LlmClient::openai_backend().gpt_4_o().init()?;
+    assert_eq!(chatbot(&llm_client, "What is the meaning of life?").await?, "42")
 
-$ llama server listening at http://localhost:8080
-
-cargo run -p llm_client --bin server_runner stop
-
+    let llm_client = LlmClient::anthropic_backend().claude_3_opus().init()?;
+    assert_eq!(chatbot(&llm_client, "What is the meaning of life?").await?, "42")
 ```
-### Download HF models via CLI
-```
-cargo run -p llm_client --bin model_loader_cli --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
 
+## Minimal Example
+
+```rust
+use llm_client::LlmClient;
+
+// Setting available_vram will load the largest quantized model that can fit the given vram.
+let llm_client = LlmClient::llama_backend().available_vram(16).llama_3_8b_instruct().init().await?;
+
+let res = llm_client.text().basic_text().user_content("Hello world?").run().await?;
+
+assert_eq!(res, "Hello world!");
 ```
+
+## Examples
+
+* [A simple example.](./examples/llm_client.rs)
+
+## Guides
+
+* [Limiting power in Nvidia GPUs](./guides/nv-power-limit.md)
+
+
+## Installation
+
+llm_client currently relies on llama.cpp. As it's a c++ project, it's not bundled in the crate. In the near future, llm_client will support mistral-rs, an inference backend built in Candle and supporting great features like ISQ. Once integration is complete, llm_client will be pure Rust and can be installed as just a crate.
+
+### If *only* using OpenAi and/or Anthropic
+-  Add to cargo.toml:
+```toml
+[dependencies]
+llm_client = "*"
+```
+- Add API key
+    - Add `OPENAI_API_KEY=<key>` and/or `ANTHROPIC_API_KEY=<key>` to your `.env` file
+    - Or use the `api_key` function in the backend builder functions
+
+
+### If using Llama.cpp and/or external APIs
+- Clone repo:
+```cmd
+git clone --recursive https://github.com/ShelbyJenkins/llm_client.git
+cd llm_client
+```
+- Add to cargo.toml:
+```toml
+[dependencies]
+llm_client = {path="../llm_client"}
+```
+- Optional: Build devcontainer from `llm_client/.devcontainer/devcontainer.json` This will build out a dev container with nvidia dependencies installed. 
+
+- Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp">This is dependent on your hardware. Please see full instructions here</a>):
+  ```cmd
+  // Example nvidia gpu build
+  cd llm_client/src/llm_backends/llama_cpp/llama_cpp
+  make LLAMA_CUDA=1
+  ```
+
+
+
+
+## Roadmap
+
+* Migrate from llama.cpp to <a href="https://github.com/EricLBuehler/mistral.rs">mistral-rs</a>. This would greatly simplify consuming as an embedded crate. It's currently a WIP. It may also end up that llama.cpp is behind a feature flag as a fallback.
+* Additional deciders: Multiple reponse deciders.
+* Classifer, summarizer, map reduce agents.
+* Extend grammar support: Custom grammars, JSON support.
+* More external APIs such as Google, AWS, Groq, and LLM aggregators and routers.
+* Dream roadmap item: web ui for streaming output of multiple LLMs for a single prompt. Because we already do this with Claude and ChatGPT anyways don't we? 
+  
 ### Dependencies 
 <a href="https://github.com/64bit/async-openai">async-openai</a> is used to interact with the OpenAI API. A modifed version of the async-openai crate is used for the Llama.cpp server. If you just need an OpenAI API interface, I suggest using the async-openai crate.
 
-<a href="https://github.com/huggingface/hf-hub"> Hugging Face's rust client</a> is used for model downloads from the huggingface hub. 
+<a href="https://github.com/mochi-neko/clust">clust</a> is used to interact with the Anthropic API. If you just need an Anthropic API interface, I suggest using the clust crate.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-### Step-by-step guide
-1. Clone repo:
-```
-git clone https://github.com/ShelbyJenkins/llm_client.git
-cd llm_client
-```
-2. Optional: Build devcontainer from `llm_client/.devcontainer/devcontainer.json` This will build out a dev container with nvidia dependencies installed. 
-
-3. Add llama.cpp:
-```
-git submodule init 
-git submodule update
-```
-4. Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp"> This is dependent on your hardware. Please see full instructions here</a>):
-  ```
-  // Example build for nvidia gpus
-  cd llm_client/src/providers/llama_cpp/llama_cpp
-  make LLAMA_CUDA=1
-  ```
-5. Test llama.cpp ./server
-```
-cargo run -p llm_client --bin server_runner start --model_url "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/blob/main/mistral-7b-instruct-v0.2.Q8_0.gguf"
-```
-This will download and load the given model, and then start the server.
-
-When you see `llama server listening at http://localhost:8080`, you can load the llama.cpp UI in your browser.
-
-Stop the server with `cargo run -p llm_client --bin server_runner stop`.
-
-6. Using OpenAi: Add a `.env` file in the llm_client dir with the var `OPENAI_API_KEY=<key>`
+<a href="https://github.com/shelbyJenkins/llm_utils">llm_utils</a> is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
 
 
-### Examples
-
-* [Interacting with the provided agents.](./examples/basic_text_gen.rs")
-
-* [Interacting with the llm_client directly.](./examples/llm_client.rs)
-
-<!-- ROADMAP -->
-## Roadmap
-
-* Handle the various prompt formats of LLM models more gracefully
-* Unit tests
-* Add additional classifier agents:
-    * many from many
-    * one from many
-* Implement all openai functionality with llama.cpp
-* More external apis (claude/etc)
-  
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
 ## Contributing
 
 This is my first Rust crate. All contributions or feedback is more than welcomed!
 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
 ## Contact
 
 Shelby Jenkins - Here or Linkedin 
 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/ShelbyJenkins/llm_client.svg?style=for-the-badge
-[contributors-url]: https://github.com/ShelbyJenkins/shelby-as-a-service/graphs/contributors
+[contributors-url]: https://github.com/ShelbyJenkins/llm_client/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ShelbyJenkins/llm_client.svg?style=for-the-badge
-[forks-url]: https://github.com/ShelbyJenkins/shelby-as-a-service/network/members
+[forks-url]: https://github.com/ShelbyJenkins/llm_client/network/members
 [stars-shield]: https://img.shields.io/github/stars/ShelbyJenkins/llm_client.svg?style=for-the-badge
-[stars-url]: https://github.com/ShelbyJenkins/shelby-as-a-service/stargazers
+[stars-url]: https://github.com/ShelbyJenkins/llm_client/stargazers
 [issues-shield]: https://img.shields.io/github/issues/ShelbyJenkins/llm_client.svg?style=for-the-badge
-[issues-url]: https://github.com/ShelbyJenkins/shelby-as-a-service/issues
+[issues-url]: https://github.com/ShelbyJenkins/llm_client/issues
 [license-shield]: https://img.shields.io/github/license/ShelbyJenkins/llm_client.svg?style=for-the-badge
-[license-url]: https://github.com/ShelbyJenkins/shelby-as-a-service/blob/master/LICENSE.txt
+[license-url]: https://github.com/ShelbyJenkins/llm_client/blob/master/LICENSE.txt
 <!-- [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com -->
 

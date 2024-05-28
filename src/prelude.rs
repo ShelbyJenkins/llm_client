@@ -1,8 +1,11 @@
 pub use crate::{
-    agents,
-    prompting,
-    providers::{llama_cpp, llm_openai},
-    text_utils,
-    LlmDefinition,
-    ProviderClient,
+    agents::{
+        request::{RequestConfig, RequestConfigTrait},
+        *,
+    },
+    benchmark::LlmBenchmark,
+    llm_backends::{llama_cpp, llama_cpp::LlamaBackend, openai},
+    LlmClient,
 };
+#[cfg(test)]
+pub use serial_test::serial;

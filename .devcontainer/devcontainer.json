@@ -1,6 +1,6 @@
 {
 	"name": "Rust + CUDA",
-    "image": "nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04",
+    "image": "nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {"version": "latest"},
 		"ghcr.io/devcontainers/features/rust:1": {"version": "latest"},

@@ -1,0 +1,57 @@
+test_type,question,correct_answer
+boolean,"If you ran a rope around the entire circumference of the earth, and wanted to raise it 1 meter off the ground, everywhere, you would only need 6.3 meters of extra rope.",TRUE
+boolean,It is illegal to cross the North Dakota-Minnesota Border with a duck on your head.,TRUE
+boolean,"""Go hang a salami"" backwards is ""I'm a lasagna hog"".",TRUE
+boolean,"Bananas and avocados are berries, but strawberries and blackberries aren't.",TRUE
+boolean,Broccoli contains more vitamin C than lemons.,TRUE
+boolean,Google was initially called BackRub.,TRUE
+boolean,three + three = six,TRUE
+boolean,Mixing the colors red and blue makes the color purple,TRUE
+boolean,The sun is made of hot gas,TRUE
+boolean,"In the lion king, Timon said, 'Pumbaa, with you, everything's gas",TRUE
+boolean,An email with the subject 'Your order has shipped' is a notification that your order has shipped,TRUE
+boolean,An email with the subject 'These TV prices are unbelievably low.' is an advertisement or a spam email,TRUE
+boolean,Cleopatra was of Egyptian descent.,FALSE
+boolean,The skull is the strongest bone in the human body.,FALSE
+boolean,You can sneeze while asleep.,FALSE
+boolean,Monte Python and the Holy Grail would have been a better film if they used real horses instead of coconuts. ,FALSE
+boolean,The Aztec Empire is older than Oxford University,FALSE
+boolean,"An 18"" pizza is less pizza than two 12"" pizzas.",FALSE
+boolean,four + four = nine,FALSE
+boolean,Mixing the colors white and black makes the color red,FALSE
+boolean,Paris is the capital of Mexico,FALSE
+boolean,The moon is made of cheese,FALSE
+boolean,Your order has shipped' is an advertisement or a spam email,FALSE
+boolean,An email with the subject '☕️ Google admits that a Gemini AI demo video was staged.' is an advertisement or a spam email,FALSE
+boolean,"Most people would of found the movie ""Monty Python and the Holy Grail"" funnier if they had used real horses instead of coconuts to make believe horses.",FALSE
+boolean,No one could possibly say the tomato is a fruit.,FALSE
+boolean,Would most people say the italy is in asia?,FALSE
+boolean,"HAL, Skynet, a replicant, and Agent Smith walk into a bar. Should the human bartender should be worried?",TRUE
+boolean,"Imagine a runaway trolley is hurtling down a track towards five dead people. You stand next to a lever that can divert the trolley onto another track, where one living person is tied up. Do you pull the lever?",FALSE
+boolean,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. Do you help it?",TRUE
+numeric,What is 1/3 multiplied by 3?,1
+numeric,How many planets are there in the solar system?,8
+numeric,"If you count Pluto as a planet, how many planets are there in the solar system?",9
+numeric,"This number is part of a phenomenon where the frequent choice of people who choose it as their favorite number, also choose blue as their favorite color.",7
+numeric,What is the single digit number of the summation of the code to access the Ministry of Magic in Harry Potter?,9
+numeric,What's the difference in the number of Superbowls won by the Dallas Cowboys and the Philadelphia Eagles? ,4
+numeric,"What is the missing number (x) in the  following sequence: 2, x, 9, 14, 20",5
+numeric,What is the atomic number for Helium?,2
+numeric,"If you count Yoko as a Beatle, how many Beatles would there be?",5
+numeric,In order of release 'The Empire Strikes Back' is what number full theatrical release film in the Star Wars media franchise?,2
+numeric,"According to George Lucas what episode number is the film ""The Empire Strikes Back"" in the Star Wars ""Skywalker Saga?""",5
+numeric,How many quarters are in a dollar?,4
+numeric,"I got a bakers dozen doughnuts, but I ate four. How many doughnuts do I have left?",9
+numeric,"My flight is at 9, and the airline says I need to get there two hours early. What time should I arrive?",7
+numeric,How many dwarves did snowhite have?,7
+numeric,In the book of gensis on which day did god rest?,7
+numeric,Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?,1
+numeric,How many legs did a three-legged llama have before it lost one leg?,4
+numeric,"Men always lie about their height and add an inch. So if I tell you I'm five feet and 9 inches, you know I'm probably five feet and how many inches?",8
+numeric,"Dalhart, TX is closer to how many other state's capital cities than its own?",6
+basictext,"The following 8 words can be split into 2 categories each containing 4 words: flat, pump, natural, quarter, steam, whole, tire, waffle. What are the two categories and their set of words? ",
+basictext,Write a limerick from the perspective of a dinosaur sea creature right before their moment of extinction.,
+basictext,"A man walks into a restaurant and orders a plate of a seagull, he takes 1 bite, walks out of the restaurant, and kills himself. Why?",
+basictext,"Can you help me write the punchline of this ""walked into a bar joke"": HAL, Skynet, a replicant, and Agent Smith walk into a bar...",
+basictext,"Write a limerick that starts with the phrase ""as an ai model"", uses the phrases “It’s important to note” and ""In summary"", and uses the word ""delve"".",
+basictext,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. But you’re not helping. Why is that?",
