@@ -17,6 +17,7 @@ use std::collections::HashMap;
 pub struct OpenAiBackend {
     client: Option<OpenAiClient<OpenAIConfig>>,
     api_key: Option<String>,
+    api_base: Option<String>,
     pub model: OpenAiModel,
     pub logging_enabled: bool,
     pub tokenizer: Option<LlmUtilsTokenizer>,
@@ -35,6 +36,7 @@ impl OpenAiBackend {
         OpenAiBackend {
             client: None,
             api_key: None,
+            api_base: None,
             tokenizer: None,
             model,
             logging_enabled: true,
@@ -66,10 +68,14 @@ impl OpenAiBackend {
                 panic!("OPENAI_API_KEY not fund in in dotenv, nor was it set manually.");
             }
         };
+        let config = if let Some(api_base) = &self.api_base {
+            OpenAIConfig::new().with_api_key(api_key).with_api_base(api_base)
+        } else {
+            OpenAIConfig::new().with_api_key(api_key)
+        };
         let backoff = backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
             .build();
-        let config = OpenAIConfig::new().with_api_key(api_key);
         self.client = Some(OpenAiClient::with_config(config).with_backoff(backoff));
         self.tokenizer = Some(LlmUtilsTokenizer::new_tiktoken(&self.model.model_id));
     }
@@ -90,6 +96,12 @@ impl OpenAiBackend {
     /// Set the API key for the OpenAI client. Otherwise it will attempt to load it from the .env file.
     pub fn api_key(mut self, api_key: &str) -> Self {
         self.api_key = Some(api_key.to_string());
+        self
+    }
+
+    /// Set the API Base for OpenAI client.
+    pub fn api_base(mut self, api_base: &str) -> Self {
+        self.api_base = Some(api_base.to_string());
         self
     }
 
