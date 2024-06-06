@@ -174,22 +174,20 @@ impl<'a> LogitBiasText<'a> {
                             self.req_config.logit_bias.as_ref().unwrap(),
                         ));
                 }
-
-                let res = backend
+                backend
                     .text_generation_request(
                         &self.req_config,
                         self.req_config.llama_logit_bias.as_ref(),
                         None,
                     )
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                Ok(res.content)
+                    .await
             }
-            // LlmBackend::MistralRs(_) => {
-            //     panic!("Mistral backend is not supported for logit bias based calls.")
-            // }
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(backend) => {
+                backend
+                    .text_generation_request(&self.req_config, None)
+                    .await
+            }
             LlmBackend::OpenAi(backend) => {
                 if self.req_config.openai_logit_bias.is_none() {
                     self.req_config.openai_logit_bias =
@@ -197,30 +195,26 @@ impl<'a> LogitBiasText<'a> {
                             self.req_config.logit_bias.as_ref().unwrap(),
                         )?);
                 }
-
-                let res = backend
+                backend
                     .text_generation_request(
                         &self.req_config,
                         self.req_config.openai_logit_bias.as_ref(),
                     )
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                Ok(res.choices[0].message.content.clone().unwrap())
+                    .await
             }
             LlmBackend::Anthropic(_) => {
                 panic!("Anthropic backend is not supported for logit bias based calls.")
             }
         }
     }
+
     async fn build_logit_bias(&self) -> Result<HashMap<u32, f32>> {
         let validated_logit_bias =
             if let Some(logit_bias_from_token_ids) = &self.logit_bias_from_token_ids {
-                self.llm_client
-                    .backend
-                    .validate_logit_bias_token_ids(logit_bias_from_token_ids)
-                    .await?;
+                logit_bias::validate_logit_bias_token_ids(
+                    self.llm_client.backend.get_tokenizer(),
+                    logit_bias_from_token_ids,
+                )?;
                 logit_bias_from_token_ids.clone()
             } else {
                 HashMap::new()
@@ -230,11 +224,10 @@ impl<'a> LogitBiasText<'a> {
         {
             logit_bias::merge_logit_biases(vec![
                 &validated_logit_bias,
-                &self
-                    .llm_client
-                    .backend
-                    .logit_bias_from_chars(logit_bias_from_chars)
-                    .await?,
+                &logit_bias::logit_bias_from_chars(
+                    self.llm_client.backend.get_tokenizer(),
+                    logit_bias_from_chars,
+                )?,
             ])
         } else {
             validated_logit_bias
@@ -243,11 +236,10 @@ impl<'a> LogitBiasText<'a> {
         {
             logit_bias::merge_logit_biases(vec![
                 &validated_logit_bias,
-                &self
-                    .llm_client
-                    .backend
-                    .logit_bias_from_words(logit_bias_from_words)
-                    .await?,
+                &logit_bias::logit_bias_from_words(
+                    self.llm_client.backend.get_tokenizer(),
+                    logit_bias_from_words,
+                )?,
             ])
         } else {
             validated_logit_bias
@@ -257,11 +249,10 @@ impl<'a> LogitBiasText<'a> {
         {
             logit_bias::merge_logit_biases(vec![
                 &validated_logit_bias,
-                &self
-                    .llm_client
-                    .backend
-                    .logit_bias_from_texts(logit_bias_from_texts)
-                    .await?,
+                &logit_bias::logit_bias_from_texts(
+                    self.llm_client.backend.get_tokenizer(),
+                    logit_bias_from_texts,
+                )?,
             ])
         } else {
             validated_logit_bias
@@ -325,6 +316,17 @@ mod tests {
         let llm = LlmClient::llama_backend().init().await?;
         let text_gen = llm.text().logit_bias_text();
         apply_test(text_gen).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[cfg(feature = "mistralrs_backend")]
+    pub async fn test_mistral() -> Result<()> {
+        let llm = LlmClient::mistral_rs_backend().init().await?;
+        let text_gen = llm.text().logit_bias_text();
+        apply_test(text_gen).await?;
+
         Ok(())
     }
 

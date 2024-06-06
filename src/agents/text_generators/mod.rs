@@ -55,9 +55,11 @@ impl<'a> TextGenerator<'a> {
                 self.llm_client,
                 self.llm_client.default_request_config.clone(),
             ),
-            // LlmBackend::MistralRs(_) => {
-            //     panic!("Mistral backend is not supported for grammar based calls.")
-            // }
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => GrammarTextList::new(
+                self.llm_client,
+                self.llm_client.default_request_config.clone(),
+            ),
             LlmBackend::OpenAi(_) => {
                 panic!("OpenAI backend is not supported for grammar based calls.")
             }

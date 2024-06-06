@@ -14,7 +14,7 @@ pub async fn main() -> Result<()> {
     // Using a model from url
     //
     let mut _llm_client = LlmClient::llama_backend()
-        .model_url("https://huggingface.co/TheBloke/zephyr-7B-alpha-GGUF/blob/main/zephyr-7b-alpha.Q5_K_M.gguf")
+        .hf_quant_file_url("https://huggingface.co/MaziyarPanahi/Meta-Llama-3-8B-Instruct-GGUF/blob/main/Meta-Llama-3-8B-Instruct.Q6_K.gguf", "meta-llama/Meta-Llama-3-8B-Instruct")
         .ctx_size(4444)
         .n_gpu_layers(33) // Using a custom model requires configuring llama.cpp manually
         .init();

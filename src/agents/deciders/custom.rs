@@ -6,7 +6,7 @@ impl<'a> RequestConfigTrait for CustomDecider<'a> {
         &mut self.req_config
     }
 }
-const CUSTOM_JUSTIFICATION_PROMPT: &str = r#"You are answering a multiple choice question. Do not list the choices. Do not restate the question. Do not annotate. Clearly state the final answer. It's very important to the response includes "The answer is:". Justify your response succinctly."#;
+const CUSTOM_JUSTIFICATION_PROMPT: &str = r#"The response should contain your justification and end with "The answer is:". You are answering a multiple choice question. Do not list the choices. Do not restate the question. Do not annotate. Justify your response succinctly."#;
 
 const CUSTOM_BASIC_PARSER_PROMPT: &str = r#"The user answered a multiple choice question in plain spoken english. Do not explain the user's answer. Do not correct the user's answer. The user's answer will match one of the multiple choice answers. Do not list the choices. Respond only with the the answer."#;
 
@@ -131,7 +131,7 @@ impl<'a> CustomDecider<'a> {
                 existing_system_content
             ));
         }
-        justification_prompt.push_str("\n choices:");
+        justification_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             justification_prompt.push_str(&format!(" {},", choice.choice_value));
         }
@@ -144,7 +144,7 @@ impl<'a> CustomDecider<'a> {
             DecisionParserType::Basic => CUSTOM_BASIC_PARSER_PROMPT.to_string(),
             DecisionParserType::LogitBias => CUSTOM_LOGIT_BIAS_PARSER_PROMPT.to_string(),
         };
-        decision_parser_prompt.push_str("\n choices:");
+        decision_parser_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             decision_parser_prompt.push_str(&format!(" {},", choice.choice_value));
         }
@@ -324,9 +324,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_basic() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_basic_backend().custom();
+        let decider = llm_client.decider().use_basic_backend().custom();
         apply_test_questions(decider).await?;
 
         Ok(())
@@ -335,9 +335,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_grammar() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_grammar_backend().custom();
+        let decider = llm_client.decider().use_grammar_backend().custom();
         apply_test_questions(decider).await?;
 
         Ok(())
@@ -346,9 +346,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_logit_bias() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_logit_bias_backend().custom();
+        let decider = llm_client.decider().use_logit_bias_backend().custom();
         apply_test_questions(decider).await?;
 
         Ok(())

@@ -16,7 +16,8 @@ pub async fn text_tests(llm_client: &LlmClient) -> Result<()> {
             let text_gen = llm_client.text().grammar_list();
             grammar_text_list::apply_test(text_gen).await?;
         }
-        // LlmBackend::MistralRs(_) => todo!(),
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
         LlmBackend::OpenAi(_) => {
             println!("OpenAI basic text tests");
             let text_gen = llm_client.text().basic_text();

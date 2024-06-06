@@ -48,36 +48,23 @@ impl<'a> UnstructuredText<'a> {
 
         match &self.llm_client.backend {
             LlmBackend::Llama(backend) => {
-                let res = backend
+                backend
                     .text_generation_request(&self.req_config, None, None)
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                Ok(res.content)
+                    .await
             }
-            // LlmBackend::MistralRs(backend) => {
-            //     let res = backend.text_generation_request(&self.req_config).await?;
-            //     if backend.logging_enabled {
-            //         tracing::info!(?res);
-            //     }
-            //     Ok(res)
-            // }
-            LlmBackend::OpenAi(backend) => {
-                let res = backend
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(backend) => {
+                backend
                     .text_generation_request(&self.req_config, None)
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                Ok(res.choices[0].message.content.clone().unwrap())
+                    .await
+            }
+            LlmBackend::OpenAi(backend) => {
+                backend
+                    .text_generation_request(&self.req_config, None)
+                    .await
             }
             LlmBackend::Anthropic(backend) => {
-                let res = backend.text_generation_request(&self.req_config).await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                Ok(res)
+                backend.text_generation_request(&self.req_config).await
             }
         }
     }
@@ -103,6 +90,17 @@ mod tests {
     #[serial]
     pub async fn test_llama() -> Result<()> {
         let llm = LlmClient::llama_backend().init().await?;
+        let text_gen = llm.text().basic_text();
+        apply_test(text_gen).await?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[cfg(feature = "mistralrs_backend")]
+    pub async fn test_mistral() -> Result<()> {
+        let llm = LlmClient::mistral_rs_backend().init().await?;
         let text_gen = llm.text().basic_text();
         apply_test(text_gen).await?;
 

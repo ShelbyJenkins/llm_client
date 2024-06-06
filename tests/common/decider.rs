@@ -10,7 +10,8 @@ pub async fn decider_tests(llm_client: &LlmClient) -> Result<()> {
             println!("Llama grammar decider tests");
             decider_grammar_tests(llm_client).await?;
         }
-        // LlmBackend::MistralRs(_) => todo!(),
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
         LlmBackend::OpenAi(_) => {
             println!("OpenAI decider tests");
             decider_basic_tests(llm_client).await?;

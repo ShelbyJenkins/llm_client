@@ -46,7 +46,8 @@ impl DeciderConfig {
     fn default_decision_parser_type(backend: &LlmBackend) -> DecisionParserType {
         match backend {
             LlmBackend::Llama(_) => DecisionParserType::Grammar,
-            // LlmBackend::MistralRs(_) => DecisionParserType::Basic,
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => DecisionParserType::Basic,
             LlmBackend::OpenAi(_) => DecisionParserType::LogitBias,
             LlmBackend::Anthropic(_) => DecisionParserType::Basic,
         }
@@ -56,7 +57,7 @@ impl DeciderConfig {
             self.max_tokens_for_parser = match self.decision_parser_type {
                 DecisionParserType::LogitBias => 1,
                 DecisionParserType::Grammar => 100,
-                DecisionParserType::Basic => 6,
+                DecisionParserType::Basic => 9,
             }
         }
         self
@@ -144,7 +145,8 @@ impl<'a> Decider<'a> {
             LlmBackend::Llama(_) => {
                 self.decider_config.decision_parser_type = DecisionParserType::Grammar;
             }
-            // LlmBackend::MistralRs(_) => todo!(),
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => todo!(),
             LlmBackend::OpenAi(_) => {
                 panic!("OpenAI backend is not supported for Grammar based calls.")
             }
@@ -161,7 +163,8 @@ impl<'a> Decider<'a> {
             LlmBackend::Llama(_) => {
                 self.decider_config.decision_parser_type = DecisionParserType::LogitBias;
             }
-            // LlmBackend::MistralRs(_) => todo!(),
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => todo!(),
             LlmBackend::OpenAi(_) => {
                 self.decider_config.decision_parser_type = DecisionParserType::LogitBias;
             }

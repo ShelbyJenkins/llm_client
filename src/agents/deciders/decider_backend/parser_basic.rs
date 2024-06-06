@@ -6,8 +6,9 @@ pub async fn make_basic_parser_request(
 ) -> Result<String> {
     match &llm_client.backend {
         LlmBackend::Llama(backend) => backend.decision_request(req_config, None, None, None).await,
-        // LlmBackend::MistralRs(_) => todo!(),
-        LlmBackend::OpenAi(backend) => backend.decision_request(req_config, None).await,
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
+        LlmBackend::OpenAi(backend) => backend.text_generation_request(req_config, None).await,
         LlmBackend::Anthropic(backend) => backend.text_generation_request(req_config).await,
     }
 }

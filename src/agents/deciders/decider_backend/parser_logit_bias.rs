@@ -11,10 +11,11 @@ pub async fn make_logit_bias_request(
                 .decision_request(req_config, req_config.llama_logit_bias.as_ref(), None, None)
                 .await
         }
-        // LlmBackend::MistralRs(_) => todo!(),
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
         LlmBackend::OpenAi(backend) => {
             backend
-                .decision_request(req_config, req_config.openai_logit_bias.as_ref())
+                .text_generation_request(req_config, req_config.openai_logit_bias.as_ref())
                 .await
         }
         LlmBackend::Anthropic(_) => {
@@ -30,7 +31,9 @@ pub async fn generate_parser_logit_bias(
     let mut logit_bias: HashMap<u32, f32> = HashMap::new();
 
     for choice in choices {
-        let single_token_maybe = backend.try_into_single_token(&choice.parser_key).await;
+        let single_token_maybe = backend
+            .get_tokenizer()
+            .try_into_single_token(&choice.parser_key);
 
         match single_token_maybe {
             Ok(token_id) => logit_bias.insert(token_id, 100.0),
@@ -40,7 +43,7 @@ pub async fn generate_parser_logit_bias(
         };
     }
     logit_bias::validate_logit_bias_values(&logit_bias)?;
-    backend.validate_logit_bias_token_ids(&logit_bias).await?;
+    logit_bias::validate_logit_bias_token_ids(backend.get_tokenizer(), &logit_bias)?;
     Ok(logit_bias)
 }
 
@@ -55,7 +58,8 @@ pub async fn generate_parser_logit_bias_for_backend(
             );
             req_config.llama_logit_bias = Some(logit_bias);
         }
-        // LlmBackend::MistralRs(_) => todo!(),
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
         LlmBackend::OpenAi(_) => {
             let logit_bias = logit_bias::convert_logit_bias_to_openai_format(
                 req_config.logit_bias.as_ref().unwrap(),

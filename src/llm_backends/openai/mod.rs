@@ -1,4 +1,10 @@
-use crate::{logging, LlmBackend, LlmClient, RequestConfig};
+use crate::{
+    logging,
+    response::parse_text_generation_response,
+    LlmBackend,
+    LlmClient,
+    RequestConfig,
+};
 use anyhow::Result;
 use async_openai::{
     config::OpenAIConfig,
@@ -6,20 +12,18 @@ use async_openai::{
         ChatCompletionRequestSystemMessageArgs,
         ChatCompletionRequestUserMessageArgs,
         CreateChatCompletionRequestArgs,
-        CreateChatCompletionResponse,
     },
     Client as OpenAiClient,
 };
 use dotenv::dotenv;
-use llm_utils::{models::openai::OpenAiModel, tokenizer::LlmUtilsTokenizer};
+use llm_utils::models::openai::OpenAiLlm;
 use std::collections::HashMap;
 
 pub struct OpenAiBackend {
     client: Option<OpenAiClient<OpenAIConfig>>,
     api_key: Option<String>,
-    pub model: OpenAiModel,
+    pub model: OpenAiLlm,
     pub logging_enabled: bool,
-    pub tokenizer: Option<LlmUtilsTokenizer>,
     tracing_guard: Option<tracing::subscriber::DefaultGuard>,
 }
 
@@ -31,11 +35,10 @@ impl Default for OpenAiBackend {
 
 impl OpenAiBackend {
     pub fn new() -> Self {
-        let model = OpenAiModel::gpt_4_o();
+        let model = OpenAiLlm::gpt_4_o();
         OpenAiBackend {
             client: None,
             api_key: None,
-            tokenizer: None,
             model,
             logging_enabled: true,
             tracing_guard: None,
@@ -66,12 +69,17 @@ impl OpenAiBackend {
                 panic!("OPENAI_API_KEY not fund in in dotenv, nor was it set manually.");
             }
         };
+
+        if self.model.tokenizer.is_none() {
+            panic!("Tokenizer did not load correctly.")
+        }
+
         let backoff = backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
             .build();
         let config = OpenAIConfig::new().with_api_key(api_key);
         self.client = Some(OpenAiClient::with_config(config).with_backoff(backoff));
-        self.tokenizer = Some(LlmUtilsTokenizer::new_tiktoken(&self.model.model_id));
+        // self.tokenizer = Some(LlmTokenizer::new_tiktoken(&self.model.model_id));
     }
 
     /// Initializes the OpenAiBackend and returns the LlmClient for usage.
@@ -95,37 +103,43 @@ impl OpenAiBackend {
 
     /// Set the model for the OpenAI client using the model_id string.
     pub fn from_model_id(mut self, model_id: &str) -> Self {
-        self.model = OpenAiModel::openai_backend_from_model_id(model_id);
+        self.model = OpenAiLlm::openai_backend_from_model_id(model_id);
+        self.model.with_tokenizer();
         self
     }
 
     /// Use gpt-4 as the model for the OpenAI client.
     pub fn gpt_4(mut self) -> Self {
-        self.model = OpenAiModel::gpt_4();
+        self.model = OpenAiLlm::gpt_4();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use gpt-4-32k as the model for the OpenAI client. Limited support for this model from OpenAI.
     pub fn gpt_4_32k(mut self) -> Self {
-        self.model = OpenAiModel::gpt_4_32k();
+        self.model = OpenAiLlm::gpt_4_32k();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use gpt-4-turbo as the model for the OpenAI client.
     pub fn gpt_4_turbo(mut self) -> Self {
-        self.model = OpenAiModel::gpt_4_turbo();
+        self.model = OpenAiLlm::gpt_4_turbo();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use gpt-4-o as the model for the OpenAI client.
     pub fn gpt_4_o(mut self) -> Self {
-        self.model = OpenAiModel::gpt_4_o();
+        self.model = OpenAiLlm::gpt_4_o();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use gpt-3.5-turbo as the model for the OpenAI client.
     pub fn gpt_3_5_turbo(mut self) -> Self {
-        self.model = OpenAiModel::gpt_3_5_turbo();
+        self.model = OpenAiLlm::gpt_3_5_turbo();
+        self.model.with_tokenizer();
         self
     }
 
@@ -140,9 +154,10 @@ impl OpenAiBackend {
         &self,
         req_config: &RequestConfig,
         logit_bias: Option<&HashMap<String, serde_json::Value>>,
-    ) -> Result<CreateChatCompletionResponse> {
+    ) -> Result<String> {
         let prompt = req_config.default_formatted_prompt.as_ref().unwrap();
-        let mut request_builder = CreateChatCompletionRequestArgs::default()
+        let mut request_builder = CreateChatCompletionRequestArgs::default();
+        request_builder
             .model(self.model.model_id.to_string())
             .messages([
                 ChatCompletionRequestSystemMessageArgs::default()
@@ -158,8 +173,7 @@ impl OpenAiBackend {
             .frequency_penalty(req_config.frequency_penalty)
             .presence_penalty(req_config.presence_penalty)
             .temperature(req_config.temperature)
-            .top_p(req_config.top_p)
-            .clone();
+            .top_p(req_config.top_p);
 
         if let Some(logit_bias) = logit_bias {
             request_builder.logit_bias(logit_bias.to_owned());
@@ -170,12 +184,6 @@ impl OpenAiBackend {
             tracing::info!(?request);
         }
         match self.client().chat().create(request).await {
-            Ok(response) => {
-                if self.logging_enabled {
-                    tracing::info!(?response);
-                }
-                Ok(response)
-            }
             Err(e) => {
                 let error =
                     anyhow::format_err!("OpenAiBackend text_generation_request error: {}", e);
@@ -185,78 +193,37 @@ impl OpenAiBackend {
                 }
                 Err(error)
             }
-        }
-    }
-
-    /// A function to create decisions from a given prompt. Called by various agents, and not meant to be called directly.
-    pub async fn decision_request(
-        &self,
-        req_config: &RequestConfig,
-        logit_bias: Option<&HashMap<String, serde_json::Value>>,
-    ) -> Result<String> {
-        let prompt = req_config.default_formatted_prompt.as_ref().unwrap();
-        let mut request_builder = CreateChatCompletionRequestArgs::default();
-        request_builder
-            .model(self.model.model_id.to_string())
-            .messages([
-                ChatCompletionRequestSystemMessageArgs::default()
-                    .content(&prompt["system"]["content"].clone())
-                    .build()?
-                    .into(),
-                ChatCompletionRequestUserMessageArgs::default()
-                    .content(prompt["user"]["content"].clone())
-                    .build()?
-                    .into(),
-            ])
-            .frequency_penalty(req_config.frequency_penalty)
-            .presence_penalty(req_config.presence_penalty)
-            .temperature(req_config.temperature)
-            .top_p(req_config.top_p)
-            .max_tokens(req_config.actual_request_tokens.unwrap() as u16);
-        if let Some(logit_bias) = logit_bias {
-            request_builder.logit_bias(logit_bias.clone());
-        };
-
-        let request = request_builder.build()?;
-        if self.logging_enabled {
-            tracing::info!(?request);
-        }
-        match self.client().chat().create(request).await {
-            Ok(response) => {
-                if let Some(choice) = response.choices.first() {
-                    if let Some(content) = &choice.message.content {
-                        if self.logging_enabled {
-                            tracing::info!(?response);
-                        }
-                        Ok(content.to_string())
-                    } else {
-                        let error = anyhow::format_err!(
-                            "OpenAiBackend decision_request error: choice.message.content.is_none()"
-                        );
-
-                        if self.logging_enabled {
-                            tracing::info!(?error);
-                        }
-                        Err(error)
-                    }
-                } else {
-                    let error = anyhow::format_err!(
-                        "OpenAiBackend decision_request error: response.content.is_empty()"
-                    );
-
-                    if self.logging_enabled {
-                        tracing::info!(?error);
-                    }
-                    Err(error)
-                }
-            }
-            Err(e) => {
-                let error = anyhow::format_err!("OpenAiBackend decision_request error: {}", e);
-
+            Ok(completion) => {
                 if self.logging_enabled {
-                    tracing::info!(?error);
+                    tracing::info!(?completion);
                 }
-                Err(error)
+                if completion.choices.is_empty() {
+                    let error = anyhow::format_err!(
+                                "OpenAiBackend text_generation_request error: completion.content.is_empty()"
+                            );
+                    Err(error)
+                } else {
+                    match &completion.choices[0].message.content {
+                        None => {
+                            let error = anyhow::format_err!(
+                                "OpenAiBackend text_generation_request error: completion.choices[0].message.content.is_none()"
+                            );
+                            Err(error)
+                        }
+                        Some(message_content) => {
+                            match parse_text_generation_response(message_content) {
+                                Err(e) => {
+                                    let error = anyhow::format_err!(
+                                        "OpenAiBackend text_generation_request error: {}",
+                                        e
+                                    );
+                                    Err(error)
+                                }
+                                Ok(content) => Ok(content),
+                            }
+                        }
+                    }
+                }
             }
         }
     }

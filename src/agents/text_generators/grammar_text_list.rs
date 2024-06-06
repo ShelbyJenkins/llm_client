@@ -54,8 +54,6 @@ impl<'a> GrammarTextList<'a> {
     ///
     /// A `Result` containing a vector of strings representing the generated text list, or an error if the generation process fails.
     pub async fn run(&mut self) -> Result<Vec<String>> {
-        let grammar = llm_utils::grammar::create_list_grammar(self.min_items, self.max_items);
-
         // Increases total tokens requested to account for the grammar on a per item basis
         // "- <text>\n"
         if self.req_config.requested_response_tokens.is_some() {
@@ -73,17 +71,25 @@ impl<'a> GrammarTextList<'a> {
 
         let response = match &self.llm_client.backend {
             LlmBackend::Llama(backend) => {
-                let res = backend
+                let grammar =
+                    llm_utils::grammar::create_list_grammar(self.min_items, self.max_items);
+
+                backend
                     .text_generation_request(&self.req_config, None, Some(&grammar))
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                res.content
+                    .await?
             }
-            // LlmBackend::MistralRs(_) => {
-            //     panic!("Mistral backend is not supported for grammar based calls.")
-            // }
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(backend) => {
+                let grammar = "(- [^\n]*\n)+(- [^\n]*)(\n\n)?".to_string();
+                // let grammar = format!(
+                //     "(- [^\n]*\n){{{}, {}}}(- [^\n]*)(\n\n)?",
+                //     self.min_items, self.max_items
+                // );
+
+                backend
+                    .text_generation_request(&self.req_config, Some(&grammar))
+                    .await?
+            }
             LlmBackend::OpenAi(_) => {
                 panic!("OpenAI backend is not supported for grammar based calls.")
             }
@@ -140,11 +146,22 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    pub async fn test() -> Result<()> {
+    pub async fn test_llama() -> Result<()> {
         let llm = LlmClient::llama_backend().init().await?;
 
         let text_gen: GrammarTextList = llm.text().grammar_list();
         apply_test(text_gen).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[cfg(feature = "mistralrs_backend")]
+    pub async fn test_mistral() -> Result<()> {
+        let llm = LlmClient::mistral_rs_backend().init().await?;
+        let text_gen: GrammarTextList = llm.text().grammar_list();
+        apply_test(text_gen).await?;
+
         Ok(())
     }
 }

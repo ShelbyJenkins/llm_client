@@ -93,28 +93,23 @@ impl<'a> GrammarText<'a> {
         self.req_config
             .set_max_tokens_for_request(self.model_token_utilization)?;
 
-        let response = match &self.llm_client.backend {
+        match &self.llm_client.backend {
             LlmBackend::Llama(backend) => {
-                let res = backend
+                backend
                     .text_generation_request(&self.req_config, None, Some(&grammar))
-                    .await?;
-                if backend.logging_enabled {
-                    tracing::info!(?res);
-                }
-                res.content
+                    .await
             }
-            // LlmBackend::MistralRs(_) => {
-            //     panic!("Mistral backend is not supported for grammar based calls.")
-            // }
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => {
+                panic!("Mistral backend is not supported for grammar based calls.")
+            }
             LlmBackend::OpenAi(_) => {
                 panic!("OpenAI backend is not supported for grammar based calls.")
             }
             LlmBackend::Anthropic(_) => {
                 panic!("Anthropic backend is not supported for grammar based calls.")
             }
-        };
-
-        Ok(response)
+        }
     }
 }
 

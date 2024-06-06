@@ -1,10 +1,12 @@
+#[cfg(feature = "mistralrs_backend")]
+pub use crate::llm_backends::mistral_rs;
 pub use crate::{
     agents::{
         request::{RequestConfig, RequestConfigTrait},
         *,
     },
     benchmark::LlmBenchmark,
-    llm_backends::{llama_cpp, llama_cpp::LlamaBackend, openai},
+    llm_backends::{anthropic, llama_cpp, openai},
     LlmClient,
 };
 #[cfg(test)]

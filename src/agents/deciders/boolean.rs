@@ -7,7 +7,7 @@ impl<'a> RequestConfigTrait for BooleanDecider<'a> {
     }
 }
 
-const BOOLEAN_JUSTIFICATION_PROMPT: &str = r#"You are answering a boolean question. If the answer is true/yes/affirmative, return 'true'. If the answer is false/no/negative, return 'false'. Do not restate the question. Do not annotate. Clearly state the final answer. It's very important to the response includes "The answer is:". Justify your response succinctly."#;
+const BOOLEAN_JUSTIFICATION_PROMPT: &str = r#"The response should contain your justification and end with "The answer is:". You are answering a boolean question. If the answer is true/yes/affirmative, return 'true'. If the answer is false/no/negative, return 'false'. Do not restate the question. Do not annotate. Justify your response succinctly."#;
 
 const BOOLEAN_BASIC_PARSER_PROMPT: &str = r#"The user answered a boolean question in plain spoken english. Do not explain the user's answer. Do not correct the user's answer. The user's answer will be either true or false. Respond only with the the answer."#;
 
@@ -118,7 +118,7 @@ impl<'a> BooleanDecider<'a> {
                 existing_system_content
             ));
         }
-        justification_prompt.push_str("\n choices:");
+        justification_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             justification_prompt.push_str(&format!(" {},", choice.choice_value));
         }
@@ -131,7 +131,7 @@ impl<'a> BooleanDecider<'a> {
             DecisionParserType::Basic => BOOLEAN_BASIC_PARSER_PROMPT.to_string(),
             DecisionParserType::LogitBias => BOOLEAN_LOGIT_BIAS_PARSER_PROMPT.to_string(),
         };
-        decision_parser_prompt.push_str("\n choices:");
+        decision_parser_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             decision_parser_prompt.push_str(&format!(" {},", choice.choice_value));
         }
@@ -260,9 +260,9 @@ pub mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_basic() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_basic_backend().boolean();
+        let decider = llm_client.decider().use_basic_backend().boolean();
         apply_test_questions(decider).await?;
 
         Ok(())

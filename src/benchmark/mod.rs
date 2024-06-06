@@ -8,7 +8,7 @@ use crate::{
 use anyhow::Result;
 use chrono::Duration;
 use core::panic;
-use llm_utils::models::OpenSourceModelType;
+use llm_utils::models::LlmPreset;
 use reader::*;
 use std::path::PathBuf;
 use writer::*;
@@ -58,11 +58,9 @@ impl LlmBenchmark {
         for mut model in self.models.clone() {
             match model.backend {
                 Backend::LlamaCpp => {
-                    let mut llm_client = if let Some(model_url) = &model.model_url {
-                        LlmClient::llama_backend().model_url(model_url)
-                    } else if let Some(model_id) = &model.model_id {
+                    let mut llm_client = if let Some(model_id) = &model.model_id {
                         LlmClient::llama_backend()
-                            .open_source_model_type(OpenSourceModelType::from_model_id(model_id))
+                            .open_source_model_type(LlmPreset::from_model_id(model_id))
                     } else {
                         panic!("Model id or model url not found for LlamaCpp model");
                     };

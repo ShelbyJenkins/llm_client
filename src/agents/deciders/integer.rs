@@ -8,7 +8,7 @@ impl<'a> RequestConfigTrait for IntegerDecider<'a> {
     }
 }
 
-const INTEGER_JUSTIFICATION_PROMPT: &str = r#"You are answering a question with a number for an answer. Choose the best choice. Do not list the choices. Do not restate the question. Do not annotate. Clearly state the final answer. It's very important to the response includes "The answer is:". Justify your response succinctly."#;
+const INTEGER_JUSTIFICATION_PROMPT: &str = r#"The response should contain your justification and end with "The answer is:". You are answering a question with a number for an answer. Choose the best choice. Do not list the choices. Do not restate the question. Do not annotate. Justify your response succinctly."#;
 
 const INTEGER_BASIC_PARSER_PROMPT: &str = r#"The user answered a multiple choice question in plain spoken english. Do not explain the user's answer. Do not correct the user's answer. The user's answer will match one of the multiple choice answers. Do not list the choices. Respond only with the the multiple choice answer matching the users answer."#;
 
@@ -153,7 +153,7 @@ impl<'a> IntegerDecider<'a> {
             ));
         }
 
-        justification_prompt.push_str("\n choices:");
+        justification_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             justification_prompt.push_str(&self.create_prompt_choice(choice));
         }
@@ -167,7 +167,7 @@ impl<'a> IntegerDecider<'a> {
             DecisionParserType::Basic => INTEGER_BASIC_PARSER_PROMPT.to_string(),
             DecisionParserType::LogitBias => INTEGER_LOGIT_BIAS_PARSER_PROMPT.to_string(),
         };
-        decision_parser_prompt.push_str("\n choices:");
+        decision_parser_prompt.push_str("\nchoices:");
         for choice in self.decider_choices() {
             decision_parser_prompt.push_str(&self.create_prompt_choice(choice));
         }
@@ -228,8 +228,8 @@ impl DecisionThing for IntegerDecider<'_> {
                             response.matches(&choice.choice_index.to_string()).count() as u8;
                         if count > 0 {
                             result.push_str(&format!(
-                                " matches found for choice_value: {} count: {}",
-                                choice.choice_value, count
+                                " matches found for choice_index: {} count: {}",
+                                choice.choice_index, count
                             ));
                             matches.insert(choice.choice_index, count);
                         }
@@ -321,7 +321,7 @@ pub async fn apply_test_questions(mut decider: IntegerDecider<'_>) -> Result<()>
 
     let question = "I turn 10 years old in 2 years. How old am I now?";
     decider.user_content(question);
-    let res = decider.run_with_result().await?;
+    let res = decider.lower_bound(4).run_with_result().await?;
     println!("Response:\n {:?}\n", res);
     if res.choice_index == 8 {
         println!(
@@ -362,9 +362,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_basic() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_basic_backend().integer();
+        let decider = llm_client.decider().use_basic_backend().integer();
         apply_test_questions(decider).await?;
 
         Ok(())
@@ -373,9 +373,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_grammar() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_grammar_backend().integer();
+        let decider = llm_client.decider().use_grammar_backend().integer();
         apply_test_questions(decider).await?;
 
         Ok(())
@@ -384,9 +384,9 @@ mod tests {
     #[tokio::test]
     #[serial]
     pub async fn test_logit_bias() -> Result<()> {
-        let llm = LlmClient::llama_backend().init().await?;
+        let llm_client = LlmClient::llama_backend().init().await?;
 
-        let decider = llm.decider().use_logit_bias_backend().integer();
+        let decider = llm_client.decider().use_logit_bias_backend().integer();
         apply_test_questions(decider).await?;
 
         Ok(())

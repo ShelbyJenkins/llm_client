@@ -21,7 +21,8 @@ pub async fn make_grammar_parser_request(
                 .decision_request(req_config, None, None, grammar)
                 .await
         }
-        // LlmBackend::MistralRs(_) => todo!(),
+        #[cfg(feature = "mistralrs_backend")]
+        LlmBackend::MistralRs(_) => todo!(),
         LlmBackend::OpenAi(_) => {
             panic!("OpenAI backend is not supported for Grammar based calls.")
         }

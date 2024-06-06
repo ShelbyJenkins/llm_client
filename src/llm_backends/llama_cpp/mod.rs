@@ -1,6 +1,12 @@
 pub mod api;
 pub mod server;
-use crate::{llama_cpp::server::ServerProcess, logging, LlmBackend, LlmClient, RequestConfig};
+use crate::{
+    logging,
+    response::parse_text_generation_response,
+    LlmBackend,
+    LlmClient,
+    RequestConfig,
+};
 use anyhow::{anyhow, Result};
 use api::{
     client::LlamaClient,
@@ -12,23 +18,28 @@ use api::{
     },
 };
 use llm_utils::models::{
-    gguf::{GGUFModel, GGUFModelBuilder},
-    OpenSourceModelType,
+    open_source::{GGUFModelBuilder, LlmPreset, PresetModelBuilder},
+    OsLlm,
 };
+use server::ServerProcess;
 use std::collections::HashMap;
 
 const LLAMA_PATH: &str = "src/llm_backends/llama_cpp/llama_cpp";
 pub const DEFAULT_N_GPU_LAYERS: u16 = 20;
 
 pub struct LlamaBackend {
-    // Option 1
-    pub open_source_model_type: Option<OpenSourceModelType>,
+    // Load from preset (default)
+    pub open_source_model_type: Option<LlmPreset>,
     pub available_vram: Option<u32>,
     pub ctx_size: u32,
-    // Option 2
-    pub model_url: Option<String>,
-    // Option 3
-    pub model: Option<GGUFModel>,
+    // Load from hugging face
+    pub hf_quant_file_url: Option<String>,
+    pub hf_config_repo_id: Option<String>,
+    // Load from local
+    pub local_quant_file_path: Option<String>,
+    pub local_config_path: Option<String>,
+    // Load from instantiated model
+    pub model: Option<OsLlm>,
     pub hf_token: Option<String>,
     pub threads: u16,
     pub n_gpu_layers: u16,
@@ -49,10 +60,13 @@ impl LlamaBackend {
         Self {
             open_source_model_type: None,
             available_vram: None,
-            model_url: None,
+            hf_quant_file_url: None,
+            hf_config_repo_id: None,
+            local_quant_file_path: None,
+            local_config_path: None,
             model: None,
             hf_token: None,
-            ctx_size: 2222,
+            ctx_size: 2048,
             threads: 1,
             n_gpu_layers: DEFAULT_N_GPU_LAYERS,
             logging_enabled: true,
@@ -68,15 +82,43 @@ impl LlamaBackend {
 
         let model = if let Some(model) = &self.model {
             model
-        } else if let Some(model_url) = &self.model_url {
-            let model = GGUFModelBuilder::new(self.hf_token.clone())
-                .from_quant_file_url(model_url)
-                .load()
-                .await?;
+        } else if let Some(hf_quant_file_url) = &self.hf_quant_file_url {
+            let mut builder = GGUFModelBuilder::new();
+            builder.hf_quant_file_url(hf_quant_file_url);
+            if let Some(hf_config_repo_id) = &self.hf_config_repo_id {
+                builder.hf_config_repo_id(hf_config_repo_id);
+            } else {
+                return Err(anyhow!(
+                    "hf_config_repo_id must be set when using hf_quant_file_url"
+                ));
+            }
+            if let Some(hf_token) = &self.hf_token {
+                builder.hf_token(hf_token);
+            }
+            let model = builder.load()?;
+            self.model = Some(model);
+            self.model.as_ref().unwrap()
+        } else if let Some(local_quant_file_path) = &self.local_quant_file_path {
+            let mut builder = GGUFModelBuilder::new();
+            builder.local_quant_file_path(local_quant_file_path);
+            if let Some(local_config_path) = &self.local_config_path {
+                builder.local_config_path(local_config_path);
+            } else {
+                return Err(anyhow!(
+                    "local_config_path must be set when using local_quant_file_path"
+                ));
+            }
+            if let Some(hf_token) = &self.hf_token {
+                builder.hf_token(hf_token);
+            }
+            let model = builder.load()?;
             self.model = Some(model);
             self.model.as_ref().unwrap()
         } else {
-            let mut builder = GGUFModelBuilder::new(self.hf_token.clone());
+            let mut builder = PresetModelBuilder::new();
+            if let Some(hf_token) = &self.hf_token {
+                builder.hf_token(hf_token);
+            }
             if let Some(open_source_model_type) = &self.open_source_model_type {
                 builder.open_source_model_type = open_source_model_type.clone();
             }
@@ -84,17 +126,21 @@ impl LlamaBackend {
                 builder.quantization_from_vram_gb = available_vram;
             }
             builder.use_ctx_size = self.ctx_size;
-            let model = builder.load().await?;
-            self.model_url = Some(model.model_url.clone());
+            let model = builder.load()?;
+            self.hf_quant_file_url = Some(model.model_url.clone());
             // Since the model is guaranteed to be constrained to the vram size, we max n_gpu_layers.
             self.n_gpu_layers = 9999;
             self.model = Some(model);
             self.model.as_ref().unwrap()
         };
 
-        if self.ctx_size > model.metadata.context_length {
-            eprintln!("Given value for ctx_size {} is greater than the model's max {}. Using the models max.", self.ctx_size, model.metadata.context_length);
-            self.ctx_size = model.metadata.context_length;
+        if model.tokenizer.is_none() {
+            panic!("Tokenizer did not load correctly.")
+        }
+
+        if self.ctx_size > model.model_config_json.max_position_embeddings as u32 {
+            eprintln!("Given value for ctx_size {} is greater than the model's max {}. Using the models max.", self.ctx_size, model.model_config_json.max_position_embeddings);
+            self.ctx_size = model.model_config_json.max_position_embeddings as u32;
         };
 
         if self.server_process.is_none() {
@@ -124,51 +170,71 @@ impl LlamaBackend {
         self
     }
 
-    /// Set the open source model type to use by passinng in the OpenSourceModelType enum.
-    pub fn open_source_model_type(mut self, open_source_model_type: OpenSourceModelType) -> Self {
+    /// Set the open source model type to use by passinng in the LlmPreset enum. Used in src/benchmark.
+    pub fn open_source_model_type(mut self, open_source_model_type: LlmPreset) -> Self {
         self.open_source_model_type = Some(open_source_model_type);
-        self
-    }
-
-    /// Use the Mistral7bInstruct model.
-    pub fn mistral_7b_instruct(mut self) -> Self {
-        self.open_source_model_type = Some(OpenSourceModelType::Mistral7bInstructV0_3);
-        self
-    }
-
-    /// Use the Mistral8bInstruct model.
-    pub fn mixtral_8x7b_instruct(mut self) -> Self {
-        self.open_source_model_type = Some(OpenSourceModelType::Mixtral8x7bInstruct);
-        self
-    }
-
-    /// Use the Mistral8bInstruct model.
-    pub fn mixtral_8x22b_instruct(mut self) -> Self {
-        self.open_source_model_type = Some(OpenSourceModelType::Mixtral8x22bInstruct);
         self
     }
 
     /// Use the Llama3_70bInstruct model.
     pub fn llama_3_70b_instruct(mut self) -> Self {
-        self.open_source_model_type = Some(OpenSourceModelType::Llama3_70bInstruct);
+        self.open_source_model_type = Some(LlmPreset::Llama3_70bInstruct);
         self
     }
 
     /// Use the Llama3_8bInstruct model.
     pub fn llama_3_8b_instruct(mut self) -> Self {
-        self.open_source_model_type = Some(OpenSourceModelType::Llama3_8bInstruct);
+        self.open_source_model_type = Some(LlmPreset::Llama3_8bInstruct);
         self
     }
 
-    /// Directly use a model instantiated from llm_utils::models::gguf::GGUFModel.
-    pub fn model(mut self, model: GGUFModel) -> Self {
+    /// Use the Mistral7bInstruct model.
+    pub fn mistral_7b_instruct(mut self) -> Self {
+        self.open_source_model_type = Some(LlmPreset::Mistral7bInstructV0_3);
+        self
+    }
+
+    /// Use the Mistral8bInstruct model.
+    pub fn mixtral_8x7b_instruct(mut self) -> Self {
+        self.open_source_model_type = Some(LlmPreset::Mixtral8x7bInstructV0_1);
+        self
+    }
+
+    /// Use the Phi3Medium4kInstruct model.
+    pub fn phi_3_medium_4k_instruct(mut self) -> Self {
+        self.open_source_model_type = Some(LlmPreset::Phi3Medium4kInstruct);
+        self
+    }
+
+    /// Use the Phi3Mini4kInstruct model.
+    pub fn phi_3_mini_4k_instruct(mut self) -> Self {
+        self.open_source_model_type = Some(LlmPreset::Phi3Mini4kInstruct);
+        self
+    }
+
+    /// Directly use an instantiated model from llm_utils::models::open_source::OsLlm.
+    pub fn model(mut self, model: OsLlm) -> Self {
         self.model = Some(model);
         self
     }
 
     /// Use a model from a quantized file URL. May require setting ctx_size and n_gpu_layers manually.
-    pub fn model_url(mut self, model_url: &str) -> Self {
-        self.model_url = Some(model_url.to_string());
+    /// Requires setting hf_config_repo_id to load the tokenizer.json from the original model.
+    pub fn hf_quant_file_url(mut self, hf_quant_file_url: &str, hf_config_repo_id: &str) -> Self {
+        self.hf_quant_file_url = Some(hf_quant_file_url.to_string());
+        self.hf_config_repo_id = Some(hf_config_repo_id.to_string());
+        self
+    }
+
+    /// Use a model from a local quantized file path. May require setting ctx_size and n_gpu_layers manually.
+    /// Requires setting local_config_path to load the tokenizer.json from the original model.
+    pub fn local_quant_file_path(
+        mut self,
+        local_quant_file_path: &str,
+        local_config_path: &str,
+    ) -> Self {
+        self.local_quant_file_path = Some(local_quant_file_path.to_string());
+        self.local_config_path = Some(local_config_path.to_string());
         self
     }
 
@@ -206,7 +272,7 @@ impl LlamaBackend {
         req_config: &RequestConfig,
         logit_bias: Option<&Vec<Vec<serde_json::Value>>>,
         grammar: Option<&String>,
-    ) -> Result<api::types::LlamaCompletionResponse> {
+    ) -> Result<String> {
         let prompt = req_config.chat_template_prompt.as_ref().unwrap();
         let mut request_builder = LlamaCompletionsRequestArgs::default()
             .prompt(prompt)
@@ -225,11 +291,37 @@ impl LlamaBackend {
         }
 
         let request: api::types::LlamaCompletionsRequest = request_builder.build()?;
-        self.client()
-            .completions()
-            .create(request)
-            .await
-            .map_err(|e| e.into())
+        if self.logging_enabled {
+            tracing::info!(?request);
+        }
+
+        match self.client().completions().create(request).await {
+            Err(e) => {
+                let error =
+                    anyhow::format_err!("LlamaBackend text_generation_request error: {}", e);
+
+                if self.logging_enabled {
+                    tracing::info!(?error);
+                }
+                Err(error)
+            }
+            Ok(completion) => match parse_text_generation_response(&completion.content) {
+                Err(e) => {
+                    let error =
+                        anyhow::format_err!("LlamaBackend text_generation_request error: {}", e);
+                    if self.logging_enabled {
+                        tracing::info!(?error);
+                    }
+                    Err(error)
+                }
+                Ok(content) => {
+                    if self.logging_enabled {
+                        tracing::info!(?completion);
+                    }
+                    Ok(content)
+                }
+            },
+        }
     }
 
     /// A function to create decisions from a given prompt. Called by various agents, and not meant to be called directly.
@@ -259,31 +351,29 @@ impl LlamaBackend {
         };
         let request = request_builder.build()?;
         match self.client().completions().create(request).await {
-            Ok(response) => {
-                if response.content.is_empty() {
-                    let error = anyhow::format_err!(
-                        "LlamaBackend decision_request error: response.content.is_empty()"
-                    );
-
-                    if self.logging_enabled {
-                        tracing::info!(?error);
-                    }
-                    Err(error)
-                } else {
-                    if self.logging_enabled {
-                        tracing::info!(?response);
-                    }
-                    Ok(response.content)
-                }
-            }
             Err(e) => {
                 let error = anyhow::format_err!("LlamaBackend decision_request error: {}", e);
-
                 if self.logging_enabled {
                     tracing::info!(?error);
                 }
                 Err(error)
             }
+            Ok(completion) => match parse_text_generation_response(&completion.content) {
+                Err(e) => {
+                    let error =
+                        anyhow::format_err!("LlamaBackend text_generation_request error: {}", e);
+                    if self.logging_enabled {
+                        tracing::info!(?error);
+                    }
+                    Err(error)
+                }
+                Ok(content) => {
+                    if self.logging_enabled {
+                        tracing::info!(?completion);
+                    }
+                    Ok(content)
+                }
+            },
         }
     }
 

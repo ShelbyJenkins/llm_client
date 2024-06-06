@@ -243,6 +243,7 @@ pub trait DecisionThing {
                         matches.push(choice.choice_index);
                     }
                 }
+
                 if matches.len() > 1 {
                     let error = format!(
                         "validate_grammar_logit_bias_parser_response error: more than one matching parser_key in response. matches.len() == {}",

@@ -19,15 +19,14 @@ use clust::{
     ClientBuilder as AnthropicClientBuilder,
 };
 use dotenv::dotenv;
-use llm_utils::{models::anthropic::AnthropicModel, tokenizer::LlmUtilsTokenizer};
+use llm_utils::models::anthropic::AnthropicLlm;
 use std::time::Duration;
 use tokio::time::sleep;
 
 pub struct AnthropicBackend {
     client: Option<AnthropicClient>,
     api_key: Option<String>,
-    pub model: AnthropicModel,
-    pub tokenizer: LlmUtilsTokenizer,
+    pub model: AnthropicLlm,
     pub logging_enabled: bool,
     tracing_guard: Option<tracing::subscriber::DefaultGuard>,
 }
@@ -43,9 +42,8 @@ impl AnthropicBackend {
         AnthropicBackend {
             client: None,
             api_key: None,
-            model: AnthropicModel::claude_3_haiku(),
+            model: AnthropicLlm::claude_3_haiku(),
             // Anthropic does not have a public tokenizer. Since we're just counting tokens, tiktoken will be close enough.
-            tokenizer: LlmUtilsTokenizer::new_tiktoken("gpt-4"),
             logging_enabled: true,
             tracing_guard: None,
         }
@@ -75,6 +73,9 @@ impl AnthropicBackend {
                 panic!("ANTHROPIC_API_KEY not fund in in dotenv, nor was it set manually.");
             }
         };
+        if self.model.tokenizer.is_none() {
+            panic!("Tokenizer did not load correctly.")
+        }
         let client = AnthropicClientBuilder::new(ApiKey::new(api_key))
             .client(
                 ReqwestClientBuilder::new()
@@ -107,25 +108,29 @@ impl AnthropicBackend {
 
     /// Set the model for the OpenAI client using the model_id string.
     pub fn from_model_id(mut self, model_id: &str) -> Self {
-        self.model = AnthropicModel::anthropic_model_from_model_id(model_id);
+        self.model = AnthropicLlm::anthropic_model_from_model_id(model_id);
+        self.model.with_tokenizer();
         self
     }
 
     /// Use the Claude 3 Opus model for the Anthropic client.
     pub fn claude_3_opus(mut self) -> Self {
-        self.model = AnthropicModel::claude_3_opus();
+        self.model = AnthropicLlm::claude_3_opus();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use the Claude 3 Sonnet model for the Anthropic client.
     pub fn claude_3_sonnet(mut self) -> Self {
-        self.model = AnthropicModel::claude_3_sonnet();
+        self.model = AnthropicLlm::claude_3_sonnet();
+        self.model.with_tokenizer();
         self
     }
 
     /// Use the Claude 3 Haiku model for the Anthropic client.
     pub fn claude_3_haiku(mut self) -> Self {
-        self.model = AnthropicModel::claude_3_haiku();
+        self.model = AnthropicLlm::claude_3_haiku();
+        self.model.with_tokenizer();
         self
     }
 

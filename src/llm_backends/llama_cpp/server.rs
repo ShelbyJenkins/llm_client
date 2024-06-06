@@ -50,12 +50,11 @@ impl LlamaBackend {
             self.model
                 .as_ref()
                 .expect("model not found")
-                .local_model_path
+                .local_model_paths[0]
                 .as_str(),
             self.threads,
             self.ctx_size,
             self.n_gpu_layers,
-            false,
         )
         .await?;
 
@@ -88,7 +87,7 @@ impl LlamaBackend {
             .model
             .as_ref()
             .expect("model not found")
-            .local_model_path
+            .local_model_paths[0]
             .clone();
         while attempts < conn_attempts {
             let running_model = self.get_model_info().await;
@@ -157,10 +156,8 @@ impl ServerProcess {
         threads: u16,
         ctx_size: u32,
         n_gpu_layers: u16,
-        embedding: bool,
     ) -> Result<Self> {
-        let process =
-            Self::start_command(model_path, threads, ctx_size, n_gpu_layers, embedding).await;
+        let process = Self::start_command(model_path, threads, ctx_size, n_gpu_layers).await;
         println!("Starting server with process PID: {}", process.id());
 
         Ok(ServerProcess { process })
@@ -170,7 +167,6 @@ impl ServerProcess {
         threads: u16,
         ctx_size: u32,
         n_gpu_layers: u16,
-        embedding: bool,
     ) -> std::process::Child {
         let mut command = Command::new("./server");
 
@@ -189,11 +185,9 @@ impl ServerProcess {
             .arg("--host")
             .arg(HOST)
             .arg("--port")
-            .arg(PORT);
-
-        if embedding {
-            command.arg("--embedding");
-        }
+            .arg(PORT)
+            .arg("--verbose")
+            .arg("--log-disable");
 
         command.spawn().expect("Failed to start server")
     }

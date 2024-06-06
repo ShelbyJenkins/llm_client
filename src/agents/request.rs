@@ -146,7 +146,8 @@ impl RequestConfig {
     pub fn new(backend: &LlmBackend) -> Self {
         let (context_length_for_model, max_tokens_output_for_model) = match backend {
             LlmBackend::Llama(backend) => (backend.ctx_size, backend.ctx_size),
-            // LlmBackend::MistralRs(backend) => (backend.ctx_size, backend.ctx_size),
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(backend) => (backend.ctx_size, backend.ctx_size),
             LlmBackend::OpenAi(backend) => (
                 backend.model.context_length,
                 backend.model.max_tokens_output,
@@ -175,38 +176,37 @@ impl RequestConfig {
             LlmBackend::Llama(backend) => {
                 let formatted_prompt = prompting::convert_default_prompt_to_model_format(
                     self.default_formatted_prompt.as_ref().unwrap(),
-                    &backend.model.as_ref().unwrap().metadata.chat_template,
+                    &backend.model.as_ref().unwrap().chat_template,
                 )
                 .unwrap();
                 self.chat_template_prompt = Some(formatted_prompt);
             }
-            // LlmBackend::MistralRs(backend) => {
-            //     let formatted_prompt = prompting::convert_default_prompt_to_model_format(
-            //         self.default_formatted_prompt.as_ref().unwrap(),
-            //         &backend.model.as_ref().unwrap().metadata.chat_template,
-            //     )
-            //     .unwrap();
-            //     self.chat_template_prompt = Some(formatted_prompt);
-            // }
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => {
+                let formatted_prompt = prompting::convert_default_prompt_to_string(
+                    self.default_formatted_prompt.as_ref().unwrap(),
+                );
+                self.chat_template_prompt = Some(formatted_prompt);
+            }
             LlmBackend::OpenAi(_) => (),
             LlmBackend::Anthropic(_) => (),
         }
 
+        let tokenizer = backend.get_tokenizer();
         let total_prompt_tokens = match &backend {
-            LlmBackend::Llama(backend) => {
-                backend
-                    .count_tokens(self.chat_template_prompt.as_ref().unwrap())
-                    .await? as u32
+            LlmBackend::Llama(_) => {
+                tokenizer.count_tokens(self.chat_template_prompt.as_ref().unwrap())
             }
-            // LlmBackend::MistralRs(_backend) => {
-            //     todo!()
-            // }
-            LlmBackend::OpenAi(backend) => backend.model.openai_token_count_of_prompt(
-                backend.tokenizer.as_ref().unwrap(),
+            #[cfg(feature = "mistralrs_backend")]
+            LlmBackend::MistralRs(_) => {
+                tokenizer.count_tokens(self.chat_template_prompt.as_ref().unwrap())
+            }
+            LlmBackend::OpenAi(b) => b.model.openai_token_count_of_prompt(
+                tokenizer,
                 self.default_formatted_prompt.as_ref().unwrap(),
             ),
-            LlmBackend::Anthropic(backend) => backend.model.anthropic_token_count_of_prompt(
-                &backend.tokenizer,
+            LlmBackend::Anthropic(b) => b.model.anthropic_token_count_of_prompt(
+                tokenizer,
                 self.default_formatted_prompt.as_ref().unwrap(),
             ),
         };

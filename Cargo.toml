@@ -1,6 +1,6 @@
 [package]
 authors=["Shelby Jenkins"]
-description="LLMs: structured text, decision making, classification, and benchmarks. A user friendly interface to write once and run on any local or API model."
+description="Structured text, decision making, classification, and benchmarks. A user friendly interface to write once and run on any local or API model."
 edition="2021"
 homepage="https://github.com/shelbyJenkins/llm_client"
 name="llm_client"
@@ -17,7 +17,6 @@ anyhow="1.0.86"
 async-openai="0.21.0"
 backoff={version="0.4.0", features=["tokio"]}
 bytes="1.5.0"
-# candle-core={git="https://github.com/EricLBuehler/candle.git", version="0.5.0"}
 chrono="0.4.38"
 clap="4.5.4"
 clust="0.8.0"
@@ -25,8 +24,9 @@ csv="1.3.0"
 derive_builder="0.20.0"
 dotenv="0.15.0"
 gbnf="0.1.7"
-llm_utils="0.0.3"
-# mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", features=["cuda", "cudnn"]}
+# llm_utils="0.0.3"
+llm_utils={path="../llm_utils"}
+mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", features=["cuda", "cudnn"], optional=true}
 num2words="1.2.0"
 reqwest="0.12.4"
 serde={version="1.0.202", features=["derive"]}
@@ -38,6 +38,9 @@ tokio-test="0.4.4"
 tracing="0.1.40"
 tracing-appender="0.2.3"
 tracing-subscriber={version="0.3.18", features=["json"]}
+
+[features]
+mistralrs_backend=["mistralrs/cuda", "mistralrs/cudnn"]
 
 [dev-dependencies]
 serial_test="3.1.1"
