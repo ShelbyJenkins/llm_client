@@ -169,7 +169,8 @@ llm_client = {path="../llm_client"}
 - Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp">This is dependent on your hardware. Please see full instructions here</a>):
   ```cmd
   // Example nvidia gpu build
-  cd llm_client/src/llm_backends/llama_cpp/llama_cpp
+  cd llm_client/src/llm_backends/llama_cpp
+  git clone https://github.com/ggerganov/llama.cpp
   make LLAMA_CUDA=1
   ```
 
