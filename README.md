@@ -171,6 +171,7 @@ llm_client = {path="../llm_client"}
   // Example nvidia gpu build
   cd llm_client/src/llm_backends/llama_cpp
   git clone https://github.com/ggerganov/llama.cpp
+  mv llama.cpp llama_cpp
   make LLAMA_CUDA=1
   ```
 
