@@ -8,10 +8,10 @@ readme="README.md"
 version="0.0.4"
 
 categories=["api-bindings", "asynchronous"]
+exclude=["src/llm_backends/llama_cpp/llama_cpp/**/*"]
 keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
 license="MIT"
 repository="https://github.com/shelbyJenkins/llm_client"
-
 [dependencies]
 anyhow="1.0.86"
 async-openai="0.23.4"
