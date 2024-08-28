@@ -1,7 +1,5 @@
 target
 .env
 /logs
-/benchmark_results
 mistralrs_gguf_tensors.txt
-src/llm_backends/llama_cpp/llama_cpp/*
-!src/llm_backends/llama_cpp/llama_cpp/.git
+src/llm_backends/llama_cpp/llama_cpp/

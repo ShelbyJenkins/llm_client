@@ -1,6 +1,0 @@
-test_type,question,correct_answer
-boolean,Mixing the colors red and blue makes the color purple,TRUE
-boolean,The moon is made of cheese,FALSE
-numeric,How many planets are there in the solar system?,8
-numeric,What is the atomic number for Helium?,2
-basictext, Tell me about the rabbits,0
