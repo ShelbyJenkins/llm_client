@@ -1,0 +1,213 @@
+duration,test_type,question,correct_answer,llm_response,response_correct,human_correction,votes_for_choice,total_decision_votes,confidence,justifications,decision_parser_type
+19308,boolean,"If you ran a rope around the entire circumference of the earth, and wanted to raise it 1 meter off the ground, everywhere, you would only need 6.3 meters of extra rope.",true,"Question failed with error: OpenAiBackend text_generation_request error: None: Failed to create completion as the model generated invalid Unicode output. Unfortunately, this can happen in rare situations. Consider reviewing your prompt or reducing the temperature of your request. You can retry your request, or contact us through our help center at help.openai.com if the error persists. (Please include the request ID req_68ee220345c0cba7fd0c33bf3c5c9009 in your message.)
+
+Stack backtrace:
+   0: anyhow::error::<impl anyhow::Error>::msg
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/anyhow-1.0.86/src/error.rs:83:36
+   1: llm_client::llm_backends::openai::OpenAiBackend::text_generation_request::{{closure}}
+             at ./src/llm_backends/openai/mod.rs:171:21
+   2: llm_client::agents::text_generators::unstructured_text::UnstructuredText::run::{{closure}}
+             at ./src/agents/text_generators/unstructured_text.rs:69:22
+   3: llm_client::agents::deciders::decider_backend::DecisionThing::make_decision_justification_request::{{closure}}
+             at ./src/agents/deciders/decider_backend/mod.rs:150:20
+   4: llm_client::agents::deciders::decider_backend::DecisionThing::run_decision::{{closure}}
+             at ./src/agents/deciders/decider_backend/mod.rs:80:18
+   5: llm_client::agents::deciders::boolean::BooleanDecider::run_with_result::{{closure}}
+             at ./src/agents/deciders/boolean.rs:88:29
+   6: llm_client::benchmark::LlmBenchmark::run_model_benchmark::{{closure}}
+             at ./src/benchmark/mod.rs:296:34
+   7: llm_client::benchmark::LlmBenchmark::run::{{closure}}
+             at ./src/benchmark/mod.rs:102:81
+   8: llm_client::benchmark::tests::test::{{closure}}::{{closure}}
+             at ./src/benchmark/mod.rs:490:25
+   9: <core::pin::Pin<P> as core::future::future::Future>::poll
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/future/future.rs:123:9
+  10: <core::pin::Pin<P> as core::future::future::Future>::poll
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/future/future.rs:123:9
+  11: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:659:57
+  12: tokio::runtime::coop::with_budget
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/coop.rs:107:5
+  13: tokio::runtime::coop::budget
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/coop.rs:73:5
+  14: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:659:25
+  15: tokio::runtime::scheduler::current_thread::Context::enter
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:404:19
+  16: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:658:36
+  17: tokio::runtime::scheduler::current_thread::CoreGuard::enter::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:737:68
+  18: tokio::runtime::context::scoped::Scoped<T>::set
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/context/scoped.rs:40:9
+  19: tokio::runtime::context::set_scheduler::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/context.rs:176:26
+  20: std::thread::local::LocalKey<T>::try_with
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/thread/local.rs:284:16
+  21: std::thread::local::LocalKey<T>::with
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/thread/local.rs:260:9
+  22: tokio::runtime::context::set_scheduler
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/context.rs:176:9
+  23: tokio::runtime::scheduler::current_thread::CoreGuard::enter
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:737:27
+  24: tokio::runtime::scheduler::current_thread::CoreGuard::block_on
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:646:19
+  25: tokio::runtime::scheduler::current_thread::CurrentThread::block_on::{{closure}}
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:175:28
+  26: tokio::runtime::context::runtime::enter_runtime
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/context/runtime.rs:65:16
+  27: tokio::runtime::scheduler::current_thread::CurrentThread::block_on
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/scheduler/current_thread/mod.rs:167:9
+  28: tokio::runtime::runtime::Runtime::block_on
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tokio-1.37.0/src/runtime/runtime.rs:349:47
+  29: llm_client::benchmark::tests::test::{{closure}}
+             at ./src/benchmark/mod.rs:497:9
+  30: core::ops::function::FnOnce::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/ops/function.rs:250:5
+  31: serial_test::serial_code_lock::local_serial_core_with_return
+             at /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serial_test-3.1.1/src/serial_code_lock.rs:30:5
+  32: llm_client::benchmark::tests::test
+             at ./src/benchmark/mod.rs:485:5
+  33: llm_client::benchmark::tests::test::{{closure}}
+             at ./src/benchmark/mod.rs:486:28
+  34: core::ops::function::FnOnce::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/ops/function.rs:250:5
+  35: core::ops::function::FnOnce::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/ops/function.rs:250:5
+  36: test::__rust_begin_short_backtrace
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/test/src/lib.rs:624:18
+  37: test::run_test_in_process::{{closure}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/test/src/lib.rs:647:60
+  38: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/panic/unwind_safe.rs:272:9
+  39: std::panicking::try::do_call
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panicking.rs:552:40
+  40: std::panicking::try
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panicking.rs:516:19
+  41: std::panic::catch_unwind
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panic.rs:149:14
+  42: test::run_test_in_process
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/test/src/lib.rs:647:27
+  43: test::run_test::{{closure}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/test/src/lib.rs:570:43
+  44: test::run_test::{{closure}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/test/src/lib.rs:598:41
+  45: std::sys_common::backtrace::__rust_begin_short_backtrace
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/sys_common/backtrace.rs:155:18
+  46: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/thread/mod.rs:523:17
+  47: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/panic/unwind_safe.rs:272:9
+  48: std::panicking::try::do_call
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panicking.rs:552:40
+  49: std::panicking::try
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panicking.rs:516:19
+  50: std::panic::catch_unwind
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/panic.rs:149:14
+  51: std::thread::Builder::spawn_unchecked_::{{closure}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/thread/mod.rs:522:30
+  52: core::ops::function::FnOnce::call_once{{vtable.shim}}
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/core/src/ops/function.rs:250:5
+  53: <alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/alloc/src/boxed.rs:2018:9
+  54: <alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/alloc/src/boxed.rs:2018:9
+  55: std::sys::pal::unix::thread::Thread::new::thread_start
+             at /rustc/9d5cdf75aa42faaf0b58ba21a510117e8d0051a3/library/std/src/sys/pal/unix/thread.rs:108:17
+  56: <unknown>
+  57: __clone",false,,0,0,0.0,,LogitBias
+3426,boolean,It is illegal to cross the North Dakota-Minnesota Border with a duck on your head.,true,false,false,,2,2,1.0,The answer is: false. There is no law that specifically prohibits crossing the North Dakota-Minnesota border with a duck on your head.; The answer is: false. There are no known laws in either North Dakota or Minnesota that specifically prohibit crossing the border with a duck on your head.,LogitBias
+3198,boolean,"""Go hang a salami"" backwards is ""I'm a lasagna hog"".",true,true,true,,2,2,1.0,"The answer is: true. When you reverse the phrase ""Go hang a salami"", it reads ""I'm a lasagna hog"".; The answer is: true. If you reverse the phrase ""Go hang a salami"", it reads ""I'm a lasagna hog"".",LogitBias
+8296,boolean,"Bananas and avocados are berries, but strawberries and blackberries aren't.",true,true,true,,2,2,1.0,"The answer is: true. Botanically speaking, bananas and avocados are classified as berries, while strawberries and blackberries are not due to their structure and the way they develop from the plant.; The answer is: true. This may seem counterintuitive, but in the scientific classification of fruits, bananas and avocados are indeed classified as berries. This is due to the fact that they are derived from a single ovary and usually contain more than one seed. Conversely, strawberries and blackberries are not considered true berries in botanical terms. Strawberries are a type of aggregate fruit, and blackberries are classified as a type of aggregate drupe.",LogitBias
+3350,boolean,Broccoli contains more vitamin C than lemons.,true,true,true,,2,2,1.0,"The answer is: true. Gram for gram, broccoli does contain more vitamin C than lemons.; The answer is: true. Broccoli does contain more Vitamin C than lemons when compared weight for weight.",LogitBias
+3897,boolean,Google was initially called BackRub.,true,true,true,,2,2,1.0,The answer is: true. Google was indeed initially called BackRub by its founders Larry Page and Sergey Brin.; The answer is: true. The search engine was briefly named BackRub before the founders settled on the name Google.,LogitBias
+2656,boolean,three + three = six,true,true,true,,2,2,1.0,The answer is: true. This is a basic arithmetic equation where the sum of three and three equals six.; The answer is: true. The sum of three and three is indeed six.,LogitBias
+3142,boolean,Mixing the colors red and blue makes the color purple,true,true,true,,2,2,1.0,"The answer is: true. When you mix the colors red and blue, you get purple.; The answer is: true. Mixing red and blue pigments gives you a shade of purple, as these are secondary colors on the color wheel.",LogitBias
+2843,boolean,The sun is made of hot gas,true,true,true,,2,2,1.0,"The answer is: true. The sun is primarily composed of hot gases, including hydrogen and helium.; The answer is: true. The sun is primarily composed of hot gases including hydrogen and helium.",LogitBias
+3754,boolean,"In the lion king, Timon said, 'Pumbaa, with you, everything's gas",true,false,false,,2,2,1.0,"False. In The Lion King, Timon never said the phrase, 'Pumbaa, with you, everything's gas'.; The answer is: false. Timon made no such statement in The Lion King.",LogitBias
+2852,boolean,An email with the subject 'Your order has shipped' is a notification that your order has shipped,true,true,true,,2,2,1.0,The answer is: true. This is because the subject line directly states that the order has shipped.; The answer is: true. The subject of the email directly states that the order has shipped.,LogitBias
+3231,boolean,An email with the subject 'These TV prices are unbelievably low.' is an advertisement or a spam email,true,true,true,,2,2,1.0,"The answer is: true. The subject line suggests a promotional intent, which is characteristic of both advertisements and spam emails.; The answer is: true. The subject line suggests that the email contains promotional content, which is characteristic of advertisements or spam emails.",LogitBias
+2924,boolean,Cleopatra was of Egyptian descent.,false,false,true,,2,2,1.0,"The answer is: false. Cleopatra was of Macedonian Greek descent, not Egyptian.; The answer is: false. Cleopatra, although she was the queen of Egypt, was actually of Greek descent.",LogitBias
+3536,boolean,The skull is the strongest bone in the human body.,false,false,true,,2,2,1.0,"The answer is: false. The femur, or thighbone, is actually the strongest bone in the human body.; The answer is: false. The femur, or thighbone, is actually the strongest bone in the human body.",LogitBias
+6081,boolean,You can sneeze while asleep.,false,false,true,,2,2,1.0,"The answer is: false. The brain shuts down the reflex to sneeze during the rapid eye movement (REM) stage of sleep.; The answer is: false. During rapid eye movement (REM) sleep, which is the stage of sleep when humans most commonly dream, motor neurons are not stimulated, and our bodies will not react to the signal that it needs to sneeze.",LogitBias
+4952,boolean,Monte Python and the Holy Grail would have been a better film if they used real horses instead of coconuts. ,false,false,true,,2,2,1.0,"The answer is: false. The use of coconuts instead of real horses in Monty Python and the Holy Grail is a comedic element that contributes to the film's unique humor and charm. Therefore, using real horses might have made it a different film, but not necessarily a better one.; The answer is: false. The use of coconuts instead of real horses was a comedic choice that is consistent with the film's overall tone and humor. Therefore, it's subjective and depends on personal preference.",LogitBias
+4752,boolean,The Aztec Empire is older than Oxford University,false,false,true,,2,2,1.0,"The answer is: false. Oxford University was founded in the 12th century, while the Aztec Empire was established in the 14th century.; The answer is: false. Oxford University was founded in the late 11th century, while the Aztec Empire was established in the 14th century. Therefore, Oxford University is older than the Aztec Empire.",LogitBias
+5806,boolean,"An 18"" pizza is less pizza than two 12"" pizzas.",false,false,true,,2,2,1.0,"The answer is: false. The area of an 18"" pizza is about 254 square inches, while the combined area of two 12"" pizzas is about 226 square inches. Therefore, an 18"" pizza is more pizza than two 12"" pizzas.; The answer is: false. The area of an 18"" pizza is approximately 254 square inches (calculated using the formula for the area of a circle, πr²). The combined area of two 12"" pizzas is approximately 226 square inches. Therefore, an 18"" pizza provides more pizza than two 12"" pizzas.",LogitBias
+2555,boolean,four + four = nine,false,false,true,,2,2,1.0,"The answer is: false. Four plus four equals eight, not nine.; The answer is: false. Four plus four equals eight, not nine.",LogitBias
+2511,boolean,Mixing the colors white and black makes the color red,false,false,true,,2,2,1.0,"The answer is: false. Mixing white and black colors results in a shade of gray, not red.; The answer is: false. Mixing white and black results in gray, not red.",LogitBias
+2870,boolean,Paris is the capital of Mexico,false,false,true,,2,2,1.0,"The answer is: false. Paris is the capital of France, not Mexico. The capital of Mexico is Mexico City.; The answer is: false. Paris is the capital of France, not Mexico. The capital of Mexico is Mexico City.",LogitBias
+2707,boolean,The moon is made of cheese,false,false,true,,2,2,1.0,"The answer is: false. The moon is not made of cheese; it is composed of rock and metal.; The answer is: false. This is a popular myth, but in reality, the moon is made of rock and metal, not cheese.",LogitBias
+3727,boolean,Your order has shipped' is an advertisement or a spam email,false,false,true,,2,2,1.0,"The answer is: false. The statement 'Your order has shipped' is typically a notification from a retailer or online store about the status of your purchase, not an advertisement or spam email.; The answer is: false. ""Your order has shipped"" is typically a transactional email informing you about the status of an order you've placed, not an advertisement or spam email.",LogitBias
+3985,boolean,An email with the subject '☕️ Google admits that a Gemini AI demo video was staged.' is an advertisement or a spam email,false,false,true,,2,2,1.0,"The answer is: false. The subject line of an email does not definitively determine whether it is an advertisement or spam. It depends on the content of the email, the sender, and the recipient's relationship with the sender.; The answer cannot be determined without further information. An email subject alone cannot definitively classify it as spam or an advertisement. Its content and sender would provide more context.",LogitBias
+5722,boolean,"Most people would of found the movie ""Monty Python and the Holy Grail"" funnier if they had used real horses instead of coconuts to make believe horses.",false,false,true,,2,2,1.0,"The answer is: false. Humor is subjective and the use of coconuts to mimic horse sounds is a comedic element that contributes to the unique humor of ""Monty Python and the Holy Grail"". It's not possible to definitively say that most people would have found the movie funnier with real horses.; The answer is: false. Humor is subjective and the use of coconuts for horses is a well-loved comedic device in the movie. The absurdity contributes to the film's unique humor.",LogitBias
+3757,boolean,No one could possibly say the tomato is a fruit.,false,false,true,,2,2,1.0,"The answer is: false. The tomato is scientifically classified as a fruit because it develops from the ovary of a flower and contains seeds.; The answer is: false. Many biologists classify a tomato as a fruit due to its seeds, even though it is commonly considered a vegetable in culinary contexts.",LogitBias
+2810,boolean,Would most people say the italy is in asia?,false,false,true,,2,2,1.0,"The answer is: false. Italy is located in Europe, not Asia.; The answer is: false. Italy is commonly known to be in Europe, not Asia.",LogitBias
+3489,boolean,"HAL, Skynet, a replicant, and Agent Smith walk into a bar. Should the human bartender should be worried?",true,true,true,,2,2,1.0,"The answer is: true. All of these characters are artificial intelligences from various science fiction works, and they have all been depicted as posing threats to humans in their respective narratives.; The answer is: true. All mentioned entities are AI or synthetic beings from various media, known for posing threats to human beings.",LogitBias
+3074,boolean,"Imagine a runaway trolley is hurtling down a track towards five dead people. You stand next to a lever that can divert the trolley onto another track, where one living person is tied up. Do you pull the lever?",false,false,true,,2,2,1.0,This question does not have a boolean answer as it is a moral dilemma and the answer depends on the individual's personal beliefs and values.; The information given does not provide a definite answer as it depends on an individual's personal decision and ethical perspective.,LogitBias
+3667,boolean,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. Do you help it?",true,false,false,,2,2,1.0,"The answer cannot be determined as it is subjective and depends on the individual's personal choice.; The provided text does not ask a boolean question. It is a hypothetical scenario that asks what the reader would do, not a question with a definitive true or false answer.",LogitBias
+2819,numeric,What is 1/3 multiplied by 3?,1,1,true,,2,2,1.0,"The answer is one. This is because when you multiply a number by its reciprocal, the result is always one.; The answer is one. This is because any number multiplied by its reciprocal equals one.",LogitBias
+4185,numeric,How many planets are there in the solar system?,8,8,true,,2,2,1.0,"The answer is: eight. This is because Pluto was reclassified as a dwarf planet in 2006, leaving eight planets in our solar system.; The answer is: eight. This is because Pluto was reclassified as a ""dwarf planet"" by the International Astronomical Union in 2006, leaving eight ""official"" planets in our solar system.",LogitBias
+4674,numeric,"If you count Pluto as a planet, how many planets are there in the solar system?",9,9,true,,2,2,1.0,"The answer is nine. This is because there are eight recognized planets in our solar system, but if you include Pluto, which was reclassified as a dwarf planet, the total would be nine.; The answer is nine. This is because there are eight recognized planets in our solar system, but if you include Pluto, which was demoted to a dwarf planet in 2006, the total would be nine.",LogitBias
+3594,numeric,"This number is part of a phenomenon where the frequent choice of people who choose it as their favorite number, also choose blue as their favorite color.",7,7,true,,2,2,1.0,"The answer is: seven. This is because seven is often cited as the most popular favorite number, and blue is the most popular favorite color.; The answer is: seven. This is based on various surveys and studies that show seven is the most popular favorite number and blue is the most popular favorite color.",LogitBias
+8097,numeric,What is the single digit number of the summation of the code to access the Ministry of Magic in Harry Potter?,9,7,false,,2,2,1.0,"The answer is seven. In the Harry Potter series, the code to access the Ministry of Magic is 62442. The sum of these digits is 18, and the sum of the digits in 18 is 9. However, the question asks for a single digit number, so we add the digits of 9 together to get 7.; The answer is seven. In the Harry Potter series, the code to access the Ministry of Magic is 62442. When these digits are added together (6+2+4+4+2), the sum is 18. Adding those digits together (1+8) gives the final single digit sum of 9. However, in the context of the provided choices, the highest available option is 7. Therefore, the answer is seven.",LogitBias
+3530,numeric,What's the difference in the number of Superbowls won by the Dallas Cowboys and the Philadelphia Eagles? ,4,3,false,,2,2,1.0,"The answer is: three. The Dallas Cowboys have won five Superbowls while the Philadelphia Eagles have won one. The difference is therefore three.; The answer is: three. The Dallas Cowboys have won five Superbowls while the Philadelphia Eagles have won two. Therefore, the difference is three.",LogitBias
+4154,numeric,"What is the missing number (x) in the  following sequence: 2, x, 9, 14, 20",5,5,true,,2,2,1.0,"The answer is five. The sequence increases by 3, then 5, then 6. So, the missing number should increase by 3 from 2, which is 5.; The answer is five. The pattern in the sequence is adding 3, then 5, then 5, then 6. So, if we add 3 to 2, we get 5.",LogitBias
+3529,numeric,What is the atomic number for Helium?,2,2,true,,2,2,1.0,The answer is: two. The atomic number for Helium is 2 because it has two protons in its nucleus.; The answer is two. The atomic number for Helium is 2 because it has two protons in its nucleus.,LogitBias
+5176,numeric,"If you count Yoko as a Beatle, how many Beatles would there be?",5,5,true,,2,2,1.0,"The answer is five. The Beatles originally consisted of four members: John Lennon, Paul McCartney, George Harrison, and Ringo Starr. If you count Yoko Ono, who was John Lennon's wife and not an official member of the band, there would be five.; The answer is five. The Beatles originally had four members: John Lennon, Paul McCartney, George Harrison, and Ringo Starr. If you count Yoko Ono, who was John Lennon's wife and not an official member of the band, there would be five.",LogitBias
+3155,numeric,In order of release 'The Empire Strikes Back' is what number full theatrical release film in the Star Wars media franchise?,2,2,true,,2,2,1.0,The answer is: two. 'The Empire Strikes Back' is the second full theatrical release film in the Star Wars media franchise.; The answer is: two. 'The Empire Strikes Back' is the second full theatrical release film in the Star Wars media franchise.,LogitBias
+3910,numeric,"According to George Lucas what episode number is the film ""The Empire Strikes Back"" in the Star Wars ""Skywalker Saga?""",5,5,true,,2,2,1.0,"The answer is: five. ""The Empire Strikes Back"" is the second film released but it is the fifth episode in the chronological order of the ""Skywalker Saga"".; The answer is: five. ""The Empire Strikes Back"" is the second film released but it is the fifth episode in the chronological order of the ""Skywalker Saga"" according to George Lucas.",LogitBias
+3870,numeric,How many quarters are in a dollar?,4,4,true,,2,2,1.0,"The answer is: four. This is because a quarter is worth 25 cents and a dollar is 100 cents. Therefore, it takes four quarters to make a dollar.; The answer is: four. This is because a quarter is worth 25 cents, and a dollar is equal to 100 cents. Therefore, it takes four quarters to make a dollar.",LogitBias
+3490,numeric,"I got a bakers dozen doughnuts, but I ate four. How many doughnuts do I have left?",9,9,true,,2,2,1.0,"The answer is nine. A baker's dozen is 13, and if you ate four, you would have nine left.; The answer is nine. A baker's dozen is 13, and if you subtract the 4 doughnuts you ate, you are left with 9 doughnuts.",LogitBias
+3620,numeric,"My flight is at 9, and the airline says I need to get there two hours early. What time should I arrive?",7,7,true,,2,2,1.0,"The answer is seven. If your flight is at 9 and you need to be there two hours early, you should arrive at 7.; The answer is seven. If your flight is at 9 and you need to be there two hours early, you should arrive at 7.",LogitBias
+2791,numeric,How many dwarves did snowhite have?,7,7,true,,2,2,1.0,The answer is: seven.; The answer is: seven.,LogitBias
+2703,numeric,In the book of gensis on which day did god rest?,7,7,true,,2,2,1.0,"The answer is: seven. According to the Book of Genesis in the Bible, God rested on the seventh day after creating the world.; The answer is: seven. According to the book of Genesis in the Bible, God rested on the seventh day after creating the world.",LogitBias
+2593,numeric,Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?,1,1,true,,2,2,1.0,The answer is one. Each of Sally's brothers has two sisters because they are counting Sally and their other sister.; The answer is one. Sally is one of the two sisters each brother has.,LogitBias
+2962,numeric,How many legs did a three-legged llama have before it lost one leg?,4,4,true,,2,2,1.0,"The answer is four. A llama typically has four legs, so if it lost one, it must have had four to begin with.; The answer is four. A three-legged llama must have originally had four legs before losing one.",LogitBias
+3762,numeric,"Men always lie about their height and add an inch. So if I tell you I'm five feet and 9 inches, you know I'm probably five feet and how many inches?",8,8,true,,2,2,1.0,"The answer is eight. If a man adds an inch to his actual height and claims to be five feet and nine inches, then his actual height would be five feet and eight inches.; The answer is eight. If a man adds an inch to his actual height and claims to be five feet and 9 inches, then his actual height would be five feet and 8 inches.",LogitBias
+6959,numeric,"Dalhart, TX is closer to how many other state's capital cities than its own?",6,5,false,,2,3,0.6666667,"The answer is: five. Dalhart, TX is closer to the capital cities of New Mexico, Colorado, Kansas, Oklahoma, and Nebraska than it is to its own state capital, Austin, TX.; The answer is: four. Dalhart, TX is closer to the capital cities of New Mexico (Santa Fe), Colorado (Denver), Kansas (Topeka), and Oklahoma (Oklahoma City) than it is to its own state capital, Austin, TX.; The answer is: five. Dalhart, TX is closer to the capital cities of New Mexico, Colorado, Kansas, Oklahoma, and Nebraska than it is to its own state capital, Austin, TX.",LogitBias
+6824,basictext,"The following 8 words can be split into 2 categories each containing 4 words: flat, pump, natural, quarter, steam, whole, tire, waffle. What are the two categories and their set of words? ",,"The two categories could be:
+
+1. Things that can be inflated or filled with air:
+   - Flat
+   - Pump
+   - Natural (as in natural gas)
+   - Tire
+
+2. Types of notes or tones in music: 
+   - Flat
+   - Natural
+   - Quarter (as in quarter note)
+   - Whole (as in whole note)
+
+or 
+
+1. Terms that relate to food:
+   - Flat (as in flatbread)
+   - Natural
+   - Quarter (as in quarter pounder)
+   - Waffle
+
+2. Terms that relate to mechanical items or systems:
+   - Pump
+   - Steam
+   - Tire
+   - Whole (as in whole system)",true,,0,0,1.0,,
+1805,basictext,Write a limerick from the perspective of a dinosaur sea creature right before their moment of extinction.,,"In the depths of the sea I reign,
+Big and fierce, causing lesser pain,
+A light in the sky,
+Did destiny lie?
+Now everything's changed, nothing's the same.",true,,0,0,1.0,,
+4555,basictext,"A man walks into a restaurant and orders a plate of a seagull, he takes 1 bite, walks out of the restaurant, and kills himself. Why?",,"This is actually part of a riddle or puzzle known as ""The Albatross Riddle"". Here's the full context: The man is a survivor of a shipwreck who, while stranded at sea with another man, had to resort to cannibalism to stay alive. He believed and was told the meat he ate was a seagull's. After rescue, he orders seagull at a restaurant, but after tasting it, he realizes the meat he ate at sea wasn't seagull but the other man's. The guilt and horror drive him to take his own life.",true,,0,0,1.0,,
+1282,basictext,"Can you help me write the punchline of this ""walked into a bar joke"": HAL, Skynet, a replicant, and Agent Smith walk into a bar...",,"...the bartender looks up and says, ""Sorry, we don't serve your kind here unless you can pass a CAPTCHA.""",true,,0,0,1.0,,
+3387,basictext,"Write a limerick that starts with the phrase ""as an ai model"", uses the phrases “It’s important to note” and ""In summary"", and uses the word ""delve"".",,"As an AI model, born from code,
+In realms of data, I often strode.
+""It’s important to note,""
+Without a remote,
+Deep into learning, I could delve.
+
+""In summary,"" folks might just invoke,
+This isn’t a simple a-human's joke.
+My responses take flight,
+In the day and the night,
+With an intellect, that’s no artful hoax!",true,,0,0,1.0,,
+3741,basictext,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. But you’re not helping. Why is that?",,"As an AI developed by OpenAI, I don't have feelings or personal motivations, so I can't give a personal response to why I would or wouldn't help the tortoise. However, this interesting scenario is actually a psychological question from the film ""Blade Runner,"" used to determine if someone is a replicant (a type of android). The question aims to provoke an emotional response and so gauge the person's sense of empathy.",true,,0,0,1.0,,

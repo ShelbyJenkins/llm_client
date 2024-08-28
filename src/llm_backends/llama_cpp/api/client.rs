@@ -2,11 +2,8 @@ use super::{
     config::{Config, LlamaConfig},
     error::{map_deserialization_error, LlamaApiError, WrappedError},
     Completions,
-    Detokenize,
     Embedding,
-    Tokenize,
 };
-use crate::llm_backends::llama_cpp::server;
 use bytes::Bytes;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -17,18 +14,15 @@ pub struct LlamaClient<C: Config> {
     backoff: backoff::ExponentialBackoff,
 }
 
-impl Default for LlamaClient<LlamaConfig> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl LlamaClient<LlamaConfig> {
-    pub fn new() -> Self {
+    pub fn new<T: AsRef<str>>(host: T, port: T) -> Self {
         Self {
             http_client: reqwest::Client::new(),
-            config: LlamaConfig::new()
-                .with_api_base(format!("http://{}", server::server_address())),
+            config: LlamaConfig::new().with_api_base(format!(
+                "http://{}:{}",
+                host.as_ref(),
+                port.as_ref()
+            )),
             backoff: backoff::ExponentialBackoffBuilder::new()
                 .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
                 .build(),
@@ -44,15 +38,6 @@ impl<C: Config> LlamaClient<C> {
         Completions::new(self)
     }
 
-    /// To call [Tokenize] group related APIs using this client.
-    pub fn tokenize(&self) -> Tokenize<C> {
-        Tokenize::new(self)
-    }
-
-    /// To call [Detokenize] group related APIs using this client.
-    pub fn detokenize(&self) -> Detokenize<C> {
-        Detokenize::new(self)
-    }
     /// To call [Embedding] group related APIs using this client.
     pub fn embedding(&self) -> Embedding<C> {
         Embedding::new(self)

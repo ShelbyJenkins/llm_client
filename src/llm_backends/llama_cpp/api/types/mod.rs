@@ -46,7 +46,10 @@ impl Client<LlamaConfig> {
 #[builder(derive(Debug))]
 #[builder(build_fn(error = "LlamaApiError"))]
 pub struct LlamaCompletionsRequest {
-    pub prompt: String,
+    pub prompt: Vec<u32>,
+
+    #[serde(skip)]
+    pub prompt_string: Option<String>,
 
     /// A formatted "Grammar" as a string.
     /// See: https://github.com/richardanaya/gbnf/blob/main/gbnf/src/lib.rs
@@ -113,11 +116,11 @@ pub struct LlamaCompletionsRequest {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct LlamaCompletionResponse {
+pub struct LlamaResponse {
     pub content: String,
     pub model: String,
-    pub prompt: String,
-    pub generation_settings: LlamaCompletionGenerationSettings,
+    // pub prompt: String, // Need to think how to handle tokens vs. text
+    pub generation_settings: LlamaGenerationSettings,
     pub stop: bool,
     pub stopped_eos: bool,
     pub stopped_limit: bool,
@@ -130,7 +133,7 @@ pub struct LlamaCompletionResponse {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct LlamaCompletionGenerationSettings {
+pub struct LlamaGenerationSettings {
     pub n_ctx: u16,
     pub frequency_penalty: f32,
     pub presence_penalty: f32,
@@ -148,44 +151,6 @@ pub enum Stop {
     String(String),           // nullable: true
     StringArray(Vec<String>), // minItems: 1; maxItems: 4
 }
-
-#[derive(Clone, Serialize, Default, Debug, Builder, Deserialize, PartialEq)]
-#[builder(name = "LlamaCreateTokenizeRequestArgs")]
-#[builder(pattern = "mutable")]
-#[builder(setter(into, strip_option), default)]
-#[builder(derive(Debug))]
-#[builder(build_fn(error = "LlamaApiError"))]
-pub struct LlamaCreateTokenizeRequest {
-    pub content: String,
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct LlamaCreateTokenizeResponse {
-    pub tokens: Vec<u32>,
-}
-
-#[derive(Clone, Serialize, Default, Debug, Builder, Deserialize, PartialEq)]
-#[builder(name = "LlamaCreateDetokenizeRequestArgs")]
-#[builder(pattern = "mutable")]
-#[builder(setter(into, strip_option), default)]
-#[builder(derive(Debug))]
-#[builder(build_fn(error = "LlamaApiError"))]
-pub struct LlamaCreateDetokenizeRequest {
-    pub tokens: Vec<u32>,
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct LlamaCreateDetokenizeResponse {
-    pub content: String,
-}
-
-// #[derive(Debug, Serialize, Default, Clone, PartialEq)]
-// #[serde(rename_all = "lowercase")]
-// pub enum EncodingFormat {
-//     #[default]
-//     Float,
-//     Base64,
-// }
 
 #[derive(Debug, Serialize, Default, Clone, Builder, PartialEq)]
 #[builder(name = "LlamaCreateEmbeddingRequestArgs")]

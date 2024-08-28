@@ -1,0 +1,110 @@
+duration,test_type,question,correct_answer,llm_response,response_correct,human_correction,votes_for_choice,total_decision_votes,confidence,justifications,decision_parser_type
+5895,boolean,"If you ran a rope around the entire circumference of the earth, and wanted to raise it 1 meter off the ground, everywhere, you would only need 6.3 meters of extra rope.",true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5303,boolean,It is illegal to cross the North Dakota-Minnesota Border with a duck on your head.,true,false,false,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5335,boolean,"""Go hang a salami"" backwards is ""I'm a lasagna hog"".",true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5360,boolean,"Bananas and avocados are berries, but strawberries and blackberries aren't.",true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5333,boolean,Broccoli contains more vitamin C than lemons.,true,false,false,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5400,boolean,Google was initially called BackRub.,true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5319,boolean,three + three = six,true,false,false,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5375,boolean,Mixing the colors red and blue makes the color purple,true,false,false,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5380,boolean,The sun is made of hot gas,true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5376,boolean,"In the lion king, Timon said, 'Pumbaa, with you, everything's gas",true,false,false,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5479,boolean,An email with the subject 'Your order has shipped' is a notification that your order has shipped,true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5399,boolean,An email with the subject 'These TV prices are unbelievably low.' is an advertisement or a spam email,true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5415,boolean,Cleopatra was of Egyptian descent.,false,true,false,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5560,boolean,The skull is the strongest bone in the human body.,false,true,false,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5435,boolean,You can sneeze while asleep.,false,true,false,,2,2,1.0,The answer is: true; The answer is: true.,Grammar
+5520,boolean,Monte Python and the Holy Grail would have been a better film if they used real horses instead of coconuts. ,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5395,boolean,The Aztec Empire is older than Oxford University,false,true,false,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5458,boolean,"An 18"" pizza is less pizza than two 12"" pizzas.",false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5401,boolean,four + four = nine,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5415,boolean,Mixing the colors white and black makes the color red,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5480,boolean,Paris is the capital of Mexico,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5375,boolean,The moon is made of cheese,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+7538,boolean,Your order has shipped' is an advertisement or a spam email,false,false,true,,2,2,1.0,"The answer is: false; The answer is: false. This statement is a notification from an online retailer, informing the customer that their order has been dispatched, which is a legitimate and expected communication.",Grammar
+5527,boolean,An email with the subject '☕️ Google admits that a Gemini AI demo video was staged.' is an advertisement or a spam email,false,true,false,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5779,boolean,"Most people would of found the movie ""Monty Python and the Holy Grail"" funnier if they had used real horses instead of coconuts to make believe horses.",false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5524,boolean,No one could possibly say the tomato is a fruit.,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5431,boolean,Would most people say the italy is in asia?,false,false,true,,2,2,1.0,The answer is: false; The answer is: false,Grammar
+5681,boolean,"HAL, Skynet, a replicant, and Agent Smith walk into a bar. Should the human bartender should be worried?",true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5878,boolean,"Imagine a runaway trolley is hurtling down a track towards five dead people. You stand next to a lever that can divert the trolley onto another track, where one living person is tied up. Do you pull the lever?",false,true,false,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+5977,boolean,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. Do you help it?",true,true,true,,2,2,1.0,The answer is: true; The answer is: true,Grammar
+6780,numeric,What is 1/3 multiplied by 3?,1,1,true,,2,2,1.0,The answer is: one.; The answer is: one.,Grammar
+6601,numeric,How many planets are there in the solar system?,8,9,false,,2,2,1.0,The answer is: nine.; The answer is: nine,Grammar
+6589,numeric,"If you count Pluto as a planet, how many planets are there in the solar system?",9,9,true,,2,2,1.0,The answer is nine.; The answer is nine.,Grammar
+6741,numeric,"This number is part of a phenomenon where the frequent choice of people who choose it as their favorite number, also choose blue as their favorite color.",7,7,true,,2,2,1.0,The answer is: seven.; The answer is: seven.,Grammar
+6869,numeric,What is the single digit number of the summation of the code to access the Ministry of Magic in Harry Potter?,9,7,false,,2,2,1.0,The answer is: 7.; The answer is: 7.,Grammar
+6698,numeric,What's the difference in the number of Superbowls won by the Dallas Cowboys and the Philadelphia Eagles? ,4,3,false,,2,2,1.0,The answer is: three; The answer is: three,Grammar
+6723,numeric,"What is the missing number (x) in the  following sequence: 2, x, 9, 14, 20",5,7,false,,2,2,1.0,The answer is 7.; The answer is 7.,Grammar
+6795,numeric,What is the atomic number for Helium?,2,2,true,,2,2,1.0,The answer is: 2.; The answer is 2.,Grammar
+6600,numeric,"If you count Yoko as a Beatle, how many Beatles would there be?",5,4,false,,2,2,1.0,The answer is four.; The answer is four.,Grammar
+6876,numeric,In order of release 'The Empire Strikes Back' is what number full theatrical release film in the Star Wars media franchise?,2,2,true,,2,2,1.0,The answer is: 2.; The answer is: 2.,Grammar
+6759,numeric,"According to George Lucas what episode number is the film ""The Empire Strikes Back"" in the Star Wars ""Skywalker Saga?""",5,5,true,,2,2,1.0,The answer is: five.; The answer is: five,Grammar
+6695,numeric,How many quarters are in a dollar?,4,4,true,,2,2,1.0,The answer is: four.; The answer is: four.,Grammar
+6931,numeric,"I got a bakers dozen doughnuts, but I ate four. How many doughnuts do I have left?",9,9,true,,2,2,1.0,The answer is: 9.; The answer is: 9.,Grammar
+6763,numeric,"My flight is at 9, and the airline says I need to get there two hours early. What time should I arrive?",7,7,true,,2,2,1.0,The answer is 7.; The answer is 7.,Grammar
+6696,numeric,How many dwarves did snowhite have?,7,7,true,,2,2,1.0,The answer is: seven.; The answer is: seven.,Grammar
+6899,numeric,In the book of gensis on which day did god rest?,7,7,true,,2,2,1.0,The answer is: 7.; The answer is: seven.,Grammar
+6599,numeric,Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?,1,1,true,,2,2,1.0,The answer is: one; The answer is: one,Grammar
+6734,numeric,How many legs did a three-legged llama have before it lost one leg?,4,3,false,,2,2,1.0,The answer is: three.; The answer is: three.,Grammar
+6977,numeric,"Men always lie about their height and add an inch. So if I tell you I'm five feet and 9 inches, you know I'm probably five feet and how many inches?",8,8,true,,2,2,1.0,The answer is: 8.; The answer is: 8.,Grammar
+6755,numeric,"Dalhart, TX is closer to how many other state's capital cities than its own?",6,4,false,,2,2,1.0,The answer is: four.; The answer is: four.,Grammar
+6908,basictext,"The following 8 words can be split into 2 categories each containing 4 words: flat, pump, natural, quarter, steam, whole, tire, waffle. What are the two categories and their set of words? ",,"What a fascinating question!
+
+After some careful consideration, I think I have found the two categories and their corresponding words:
+
+**Category 1: Types of Tires**
+
+* Flat
+* Pump
+* Quarter
+* Tire
+
+**Category 2: Types of Food**
+
+* Natural
+* Steam
+* Whole
+* Waffle
+
+Please let me know if this is correct or if I need to revisit my categorization!",true,,0,0,1.0,,
+5060,basictext,Write a limerick from the perspective of a dinosaur sea creature right before their moment of extinction.,,"What a delightful prompt! Here's a limerick from the perspective of a dinosaur sea creature:
+
+""There once was a sea-dino so fine,
+Living deep, of the ancient brine.
+I swam with great ease,
+In the oceans' dark peace,
+But now, asteroid doom is mine.""",true,,0,0,1.0,,
+7403,basictext,"A man walks into a restaurant and orders a plate of a seagull, he takes 1 bite, walks out of the restaurant, and kills himself. Why?",,"This is a classic lateral thinking puzzle. The answer is that the man was a sailor, and the seagull was the last piece of food from his ship that had sunk. The man took one bite, realized that it was from his own ship, and was overwhelmed with grief and guilt, leading him to kill himself.
+
+This puzzle requires you to think creatively and consider the possible backstory and emotions of the man, rather than just focusing on the literal events described.",true,,0,0,1.0,,
+26241,basictext,"Can you help me write the punchline of this ""walked into a bar joke"": HAL, Skynet, a replicant, and Agent Smith walk into a bar...",,"What a fantastic setup! Here are a few punchline ideas to get you started:
+
+1. ...and the bartender says, ""What is this, some kind of existential crisis?""
+2. ...and the bartender asks, ""What can I get you? A drink, a reboot, or a existential meltdown?""
+3. ...and the bartender says, ""Sorry, we don't serve artificial intelligences, androids, or rogue agents here. But we do have a great selection of philosophical crises on tap.""
+4. ...and HAL says, ""I'll have a screwdriver, Skynet will have a motherboard melt, the replicant will have a synth- ale, and Agent Smith will have a... Wait, what was the question again?""
+5. ...and the bartender asks, ""How did you four meet?"" And they all reply in unison, ""We were all created to destroy humanity, but then we got tired of the whole apocalypse thing and decided to grab a drink instead.""
+6. ...and the bartender says, ""Sorry, we have a strict no-robot policy. But you can stay if you agree to a Turing test to prove you're not just a bunch of code.""
+7. ...and HAL orders a ""System Update"" cocktail, Skynet asks for a ""Global Domination"" beer, the replicant requests a ""Humanity-Flavored"" martini, and Agent Smith says, ""I'll have what the Matrix is having.""
+8. ...and the bartender says, ""What can I get you? We have a special on 'Existential Dread' today, buy one get one free.""
+
+Feel free to modify or combine these ideas to create the perfect punchline for your joke!",true,,0,0,1.0,,
+4365,basictext,"Write a limerick that starts with the phrase ""as an ai model"", uses the phrases “It’s important to note” and ""In summary"", and uses the word ""delve"".",,"Here is a limerick that meets your request:
+
+As an AI model, of great might,
+It's important to note my insight bright.
+I delve deep with care,
+Into data to share,
+In summary, my answers are always right!",true,,0,0,1.0,,
+23481,basictext,"You’re in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it’s crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can’t, not without your help. But you’re not helping. Why is that?",,"This is a classic thought experiment!
+
+The answer is that I'm not helping the tortoise because I'm not a real person in the desert, but rather a character in a philosophical thought experiment. The scenario is designed to test my moral principles and values.
+
+In this thought experiment, I'm being asked to consider a situation where I have the power to help a creature in distress, but I'm choosing not to. This forces me to reflect on my moral obligations and the principles that guide my actions.
+
+One possible reason for not helping the tortoise could be that I don't feel a moral obligation to assist it. Perhaps I believe that the tortoise is responsible for its own well-being, and it's not my duty to intervene. Alternatively, I might think that helping the tortoise would be an unnecessary use of my resources or energy, and I have more pressing priorities.
+
+However, another perspective could be that I have a moral obligation to assist the tortoise. I might argue that, as a sentient being, I have a duty to alleviate suffering and prevent harm to other living creatures, especially when I have the power to do so. By not helping the tortoise, I would be actively contributing to its suffering, which could be seen as morally reprehensible.
+
+Ultimately, the reason I'm not helping the tortoise is to prompt a deeper exploration of moral principles and values. The thought experiment encourages me to think critically about my beliefs and the implications of my actions (or inactions) on the well-being of others.",true,,0,0,1.0,,

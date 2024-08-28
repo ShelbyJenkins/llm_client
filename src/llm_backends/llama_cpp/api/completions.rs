@@ -2,7 +2,7 @@ use super::{
     client::LlamaClient,
     config::Config,
     error::LlamaApiError,
-    types::{LlamaCompletionResponse, LlamaCompletionsRequest},
+    types::{LlamaCompletionsRequest, LlamaResponse},
 };
 
 pub struct Completions<'c, C: Config> {
@@ -17,7 +17,7 @@ impl<'c, C: Config> Completions<'c, C> {
     pub async fn create(
         &self,
         request: LlamaCompletionsRequest,
-    ) -> Result<LlamaCompletionResponse, LlamaApiError> {
+    ) -> Result<LlamaResponse, LlamaApiError> {
         if request.stream.is_some() && request.stream.unwrap() {
             return Err(LlamaApiError::InvalidArgument(
                 "When stream is true, use Completion::create_stream".into(),

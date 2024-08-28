@@ -1,126 +1,59 @@
-pub mod agents;
-pub mod benchmark;
+#![feature(lazy_cell)]
+pub mod basic_completion;
+pub mod components;
 pub mod llm_backends;
 mod logging;
 pub mod prelude;
-#[cfg(feature = "mistralrs_backend")]
-use llm_backends::mistral_rs::MistraRsBackend;
-use llm_backends::{anthropic::AnthropicBackend, llama_cpp::LlamaBackend, openai::OpenAiBackend};
-use llm_utils::tokenizer::LlmTokenizer;
+pub mod primitives;
+pub mod workflows;
+
+use llm_backends::LlmBackend;
 pub use prelude::*;
-pub use RequestConfigTrait;
+use std::rc::Rc;
 
 pub struct LlmClient {
-    pub default_request_config: RequestConfig,
-    pub backend: LlmBackend,
-}
-
-impl Default for LlmClient {
-    fn default() -> Self {
-        let backend = LlmBackend::Llama(LlamaBackend::new());
-        LlmClient {
-            default_request_config: RequestConfig::new(&backend),
-            backend,
-        }
-    }
+    pub backend: Rc<LlmBackend>,
 }
 
 impl LlmClient {
-    /// Creates a new `LlmClient` instance with the specified backend. This is called from the backend's `init` function.
-    pub fn new(backend: LlmBackend) -> Self {
-        LlmClient {
-            default_request_config: RequestConfig::new(&backend),
-            backend,
-        }
-    }
-
-    /// Creates a new instance of the Llama backend. This is a builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
-    pub fn llama_backend() -> LlamaBackend {
-        LlamaBackend::new()
+    /// Creates a new instance of the [`LlamaBackendBuilder`]. This builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
+    pub fn llama_cpp() -> llm_backends::llama_cpp::LlamaBackendBuilder {
+        llm_backends::llama_cpp::LlamaBackendBuilder::default()
     }
 
     #[cfg(feature = "mistralrs_backend")]
-    pub fn mistral_rs_backend() -> MistraRsBackend {
-        MistraRsBackend::new()
+    /// Creates a new instance of the [`MistraRsBackendBuilder`] This builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
+    pub fn mistral_rs() -> MistraRsBackendBuilder {
+        MistraRsBackendBuilder::default()
     }
 
-    /// Creates a new instance of the OpenAI backend. This is a builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
-    pub fn openai_backend() -> OpenAiBackend {
-        OpenAiBackend::new()
+    /// Creates a new instance of the [`OpenAiBackendBuilder`]. This builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
+    pub fn openai() -> llm_backends::openai::OpenAiBackendBuilder {
+        llm_backends::openai::OpenAiBackendBuilder::default()
     }
 
-    /// Creates a new instance of the Anthropic backend. This is a builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
-    pub fn anthropic_backend() -> AnthropicBackend {
-        AnthropicBackend::new()
+    /// Creates a new instance of the [`AnthropicBackendBuilder`]. This builder that allows you to specify the model and other parameters. It is converted to an `LlmClient` instance using the `init` method.
+    pub fn anthropic() -> llm_backends::anthropic::AnthropicBackendBuilder {
+        llm_backends::anthropic::AnthropicBackendBuilder::default()
     }
 
-    /// Returns a `TextGenerator` instance to access text generation request builders.
-    pub fn text(&self) -> TextGenerator {
-        TextGenerator::new(self)
+    pub fn perplexity() -> llm_backends::perplexity::PerplexityBackendBuilder {
+        llm_backends::perplexity::PerplexityBackendBuilder::default()
     }
 
-    /// Returns a `Decider` instance to access decider request builders.
-    pub fn decider(&self) -> Decider {
-        Decider::new(self)
-    }
-}
-
-impl RequestConfigTrait for LlmClient {
-    fn config_mut(&mut self) -> &mut RequestConfig {
-        &mut self.default_request_config
-    }
-}
-
-pub enum LlmBackend {
-    Llama(LlamaBackend),
-    #[cfg(feature = "mistralrs_backend")]
-    MistralRs(MistraRsBackend),
-    OpenAi(OpenAiBackend),
-    Anthropic(AnthropicBackend),
-}
-
-impl LlmBackend {
-    pub fn get_model_id(&self) -> String {
-        match self {
-            LlmBackend::Llama(backend) => backend.model.as_ref().unwrap().model_id.clone(),
-            #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(backend) => backend.model.as_ref().unwrap().model_id.clone(),
-            LlmBackend::OpenAi(backend) => backend.model.model_id.clone(),
-            LlmBackend::Anthropic(backend) => backend.model.model_id.clone(),
-        }
+    pub fn basic_completion(&self) -> basic_completion::BasicCompletion {
+        basic_completion::BasicCompletion::new(&self.backend)
     }
 
-    pub fn get_model_url(&self) -> String {
-        match self {
-            LlmBackend::Llama(backend) => backend.model.as_ref().unwrap().model_url.clone(),
-            #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(backend) => backend.model.as_ref().unwrap().model_id.clone(),
-            LlmBackend::OpenAi(backend) => backend.model.model_id.clone(),
-            LlmBackend::Anthropic(backend) => backend.model.model_id.clone(),
-        }
+    pub fn basic_primitive(&self) -> workflows::basic_primitive::BasicPrimitiveWorkflowBuilder {
+        workflows::basic_primitive::BasicPrimitiveWorkflowBuilder::new(&self.backend)
     }
 
-    pub fn logging_enabled(&self) -> bool {
-        match self {
-            LlmBackend::Llama(backend) => backend.logging_enabled,
-            #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(backend) => backend.logging_enabled,
-            LlmBackend::OpenAi(backend) => backend.logging_enabled,
-            LlmBackend::Anthropic(backend) => backend.logging_enabled,
-        }
+    pub fn reason(&self) -> workflows::reason::ReasonWorkflowBuilder {
+        workflows::reason::ReasonWorkflowBuilder::new(&self.backend)
     }
 
-    pub fn get_tokenizer(&self) -> &LlmTokenizer {
-        match self {
-            LlmBackend::Llama(backend) => {
-                backend.model.as_ref().unwrap().tokenizer.as_ref().unwrap()
-            }
-            #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(backend) => {
-                backend.model.as_ref().unwrap().tokenizer.as_ref().unwrap()
-            }
-            LlmBackend::OpenAi(backend) => backend.model.tokenizer.as_ref().unwrap(),
-            LlmBackend::Anthropic(backend) => backend.model.tokenizer.as_ref().unwrap(),
-        }
+    pub fn nlp(&self) -> workflows::nlp::Nlp {
+        workflows::nlp::Nlp::new(&self.backend)
     }
 }

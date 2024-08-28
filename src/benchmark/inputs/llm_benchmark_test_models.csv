@@ -1,4 +1,0 @@
-backend,model_id,model_url,available_vram,ctx_size,n_gpu_layers,decision_parser_type
-llamacpp,Mistral-7B-Instruct-v0.3,,48,4444,9999,
-llamacpp,,https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/blob/main/mixtral-8x7b-instruct-v0.1.Q6_K.gguf,48,4444,9999,Basic
-openai,gpt-4o,,,,,

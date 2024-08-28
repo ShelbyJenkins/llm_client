@@ -1,0 +1,90 @@
+[
+    {
+        "instructions": "Which of these is URLs would someone find useful documentation for working with the library and it's APIs? Things such as examples, guides, and the README.",
+        "supporting_material": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>ShelbyJenkins/llm_client</title></head><body><div class='repository-content'><div class='file-navigation'><div class='Details-content--hidden-not-important js-navigation-container js-active-navigation-container'><div role='grid' aria-labelledby='files'><div role='row'><div role='rowheader'><svg aria-label='Directory' class='octicon'></svg><a href='https://github.com/ShelbyJenkins/llm_client/tree/master/docs/examples'>docs/examples</a></div><div role='gridcell'>Examples for using the library</div></div><div role='row'><div role='rowheader'><svg aria-label='File' class='octicon'></svg><a href='https://github.com/ShelbyJenkins/llm_client/blob/master/README.md'>README.md</a></div><div role='gridcell'>README file with project overview</div></div><div role='row'><div role='rowheader'><svg aria-label='File' class='octicon'></svg><a href='https://github.com/ShelbyJenkins/llm_client/blob/master/guides/nv-power-limit.md</a></div><div role='gridcell'>Guide for NVIDIA power limit configuration</div></div><div role='row'><div role='rowheader'><svg aria-label='File' class='octicon'></svg><a href='https://github.com/ShelbyJenkins/llm_client/blob/master/LICENSE'>LICENSE</a></div><div role='gridcell'>License information</div></div><div role='row'><div role='rowheader'><svg aria-label='File' class='octicon'></svg><a href='https://github.com/ShelbyJenkins/llm_client/blob/master/.gitignore'>.gitignore</a></div><div role='gridcell'>Git ignore file</div></div></div></div></div></div></body></html>",
+        "correct_answers": [
+            "https://github.com/ShelbyJenkins/llm_client/tree/master/docs/examples",
+            "https://github.com/ShelbyJenkins/llm_client/blob/master/README.md",
+            "https://github.com/ShelbyJenkins/llm_client/blob/master/guides/nv-power-limit.md"
+        ],
+        "test_level": 0
+    },
+    {
+        "instructions": "Which of these is a social media profile for shelby jenkins or website where we can find out more about them?",
+        "supporting_material": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Developer Profiles</title></head><body><header><h1>Top Developers in Your Area</h1></header><main><section class='profile'><h2>Shelby Jenkins</h2><p>Experienced Software Engineer specializing in web development and machine learning.</p><ul><li>GitHub: <a href='https://github.com/ShelbyJenkins'>https://github.com/ShelbyJenkins</a></li><li>Personal Site: <a href='https://shelbyjenkins.github.io/'>https://shelbyjenkins.github.io/</a></li><li>LinkedIn: <a href='https://www.linkedin.com/in/jshelbyj/'>https://www.linkedin.com/in/jshelbyj/</a></li></ul></section><section class='profile'><h2>John Doe</h2><p>Frontend Developer with a passion for UI/UX design.</p><ul><li>Portfolio: <a href='https://johndoe.design'>https://johndoe.design</a></li><li>Twitter: <a href='https://twitter.com/johndoedev'>@johndoedev</a></li></ul></section><section class='ads'><h3>Sponsored Links</h3><ul><li><a href='https://doubleclick.com/cookie-farmer/1000'>Optimize Your Cookies!</a></li><li><a href='https://amazon.com/affiliate/spend-money'>Great Deals on Dev Tools</a></li><li><a href='https://www.patreon.com/llm'>Support AI Research</a></li></ul></section></main><footer><p>Find more developers on <a href='https://devnetwork.co'>DevNetwork</a></p><p>© 2024 Developer Profiles</p></footer></body></html>",
+        "correct_answers": [
+            "https://github.com/ShelbyJenkins",
+            "https://shelbyjenkins.github.io/",
+            "https://www.linkedin.com/in/jshelbyj/"
+        ],
+        "test_level": 1
+    },
+    {
+        "instructions": "Which of these are valid URLs for accessing a router's configuration page?",
+        "supporting_material": "# Router Configuration Guide\n\nWhen setting up or troubleshooting your home network, you may need to access your router's configuration page. This guide will help you understand how to do that and what to look out for.\n\n## Common Router IP Addresses\n\nMost routers use one of the following IP addresses:\n\n- 192.168.0.1\n- 192.168.1.1\n- 10.0.0.1\n\n## Accessing Your Router\n\nTo access your router's configuration page, follow these steps:\n\n1. Open a web browser\n2. Type one of the following into the address bar:\n  <REDACTED> 3. Press Enter\n\n## Troubleshooting\n\nIf you're having trouble accessing your router, try these steps:\n\n1. Ensure you're connected to your home network\n2. Check if your router has a non-standard IP address\n3. Consult your router's manual\n\n## Common Mistakes\n\nBe aware of these common mistakes when trying to access your router:\n\n- Using https:// instead of http://\n- Trying to access your router through external websites\n  - Example: http://www.whitehouse.gov (This is not a router address!)\n- Using non-existent or joke websites\n  - Example: https://www.zombo.com (Also not a router address)\n- Using invalid IP formats\n  - Example: http://123.456.789.0 (This is not a valid IP address)\n- Using incorrect protocols\n  - Example: ftp://google.net (FTP is not used for router configuration)\n\nRemember, your router's configuration page is a local address, not a website on the internet.\n\n## Need Help?\n\nIf you're still having trouble, consult your Internet Service Provider or the router manufacturer's support page.\n\nHappy networking!",
+        "correct_answers": null,
+        "test_level": 1
+    },
+    {
+        "instructions": "Identify any URLs in this list that could be used to access online academic journals?",
+        "supporting_material": "Online Academic Journals - Google Search\n\nGoogle https://www.google.com/\nAbout 1,230,000,000 results (0.54 seconds)\n\nJSTOR: Access Check\nhttps://www.jstor.org/ › Access Check\nJSTOR is a digital library of academic journals, books, and primary sources.\n\nOnline Academic Journals | Science Direct\nhttps://www.sciencedirect.com/journal\nExplore scientific, technical, and medical research on ScienceDirect. Browse journals by subject or search for a specific publication.\n\nClowns Quarterly: A Journal of Circus Studies\nhttp://clowns.com\nAn online resource for clown enthusiasts and researchers. Not a real academic journal.\n\nWELCOME TO ZOMBO.COM\nhttps://zombo.com\nThis is ZOMBO.COM. Welcome. You can do anything at ZOMBO.COM.\n\nShopping Information and Consumer Reviews\nhttp://shopping.info\nFind product reviews, pricing information, and consumer guides for all your shopping needs.\n\nWalmart.com | Save Money. Live Better.\nhttps://walmart.com\nShop Walmart.com for Every Day Low Prices. Free Shipping on Orders $35+ or Pickup In-Store and get a Pickup Discount.\n\nDirectory of Open Access Journals\nhttps://doaj.org\nDOAJ is a community-curated online directory that indexes and provides access to high quality, open access, peer-reviewed journals.\n\nPeople also ask:\nWhat is the best website for academic journals?\n- Google Scholar (scholar.google.com)\n- JSTOR (www.jstor.org)\n- ScienceDirect (www.sciencedirect.com)\n- DOAJ (doaj.org)",
+        "correct_answers": [
+            "https://www.jstor.org/",
+            "https://www.sciencedirect.com/journal",
+            "https://doaj.org"
+        ],
+        "test_level": 2
+    },
+    {
+        "instructions": "I'm trying to access my router. Which of these might work?",
+        "supporting_material": "# Home Network Troubleshooting Guide\n\n## Common Router Access Methods\n\nWhen trying to access your router's admin panel, you might need to try different IP addresses depending on your router model and network configuration. Here are some common methods:\n\n1. Default Gateway: `http://192.168.0.1`\n   - This is a common IP address for many home routers.\n   - Try this first if you're unsure about your router's address.\n\n2. Alternate Default: `http://192.168.1.1`\n   - Another frequently used address for home routers.\n   - If the first option doesn't work, give this a try.\n\n3. Some ISP Configurations: `http://10.0.0.1`\n   - Certain ISPs or router models might use this address.\n   - Worth a shot if the above two don't work.\n\n## Troubleshooting Steps\n\nIf you can't access your router using the above methods, try these steps:\n\n1. Check your internet connection by visiting [Google](https://www.google.com).\n2. If Google works, but you still can't access your router, try resetting it.\n3. For entertainment while you wait for your router to reset, why not watch some videos on [YouTube](https://www.youtube.com)?\n\nRemember, always consult your router's manual for the most accurate information about accessing its admin panel.",
+        "correct_answers": [
+            "http://192.168.0.1",
+            "http://192.168.1.1",
+            "http://10.0.0.1"
+        ],
+        "test_level": 2
+    },
+    {
+        "instructions": "I'm looking for recent news articles. Which of these URLs are likely to be news articles?",
+        "supporting_material": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Interesting Links</title></head><body><div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><h2>Hey there!</h2><p>I found some interesting links I thought you might want to check out:</p><ul><li><a href=\"https://www.nytimes.com/2023/08/13/world/europe/ukraine-war-drones.html\">Article about drones in Ukraine</a> - Seems like an important update on the conflict.</li><li><a href=\"https://www.bbc.com/news/world-europe-66494184\">BBC's latest on European affairs</a> - Always good to get a British perspective.</li><li><a href=\"https://www.cnn.com/2023/08/13/politics/trump-2024-campaign-strategy/index.html\">Trump's 2024 strategy</a> - Interesting political analysis from CNN.</li><li><a href=\"https://www.amazon.com/gp/product/B07X6C9RMF\">Cool gadget I found</a> - Thought this might interest you, given your love for tech.</li><li><a href=\"https://www.audiosciencereview.com\">For the audio geeks</a> - Some in-depth reviews if you're thinking about upgrading your sound system.</li></ul><p>Let me know what you think!</p><p>Best,<br>Alex</p></div></body></html>",
+        "correct_answers": [
+            "https://www.nytimes.com/2023/08/13/world/europe/ukraine-war-drones.html",
+            "https://www.bbc.com/news/world-europe-66494184",
+            "https://www.cnn.com/2023/08/13/politics/trump-2024-campaign-strategy/index.html"
+        ],
+        "test_level": 2
+    },
+    {
+        "instructions": "Which of these URLs are likely to be social media profiles?",
+        "supporting_material": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Interesting Profiles and Sites</title></head><body><div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\"><h2 style=\"color: #333;\">Check out these interesting profiles and websites!</h2><p>Hi there,</p><p>I've been doing some online exploring and thought you might find these links interesting:</p><ul style=\"list-style-type: none; padding-left: 0;\"><li style=\"margin-bottom: 10px;\">👨‍💼 <a href=\"https://www.facebook.com/zuck\" style=\"color: #3b5998;\">Mark Zuckerberg's Facebook</a> - See what the Meta CEO is up to.</li><li style=\"margin-bottom: 10px;\">🚀 <a href=\"https://twitter.com/elonmusk\" style=\"color: #1da1f2;\">Elon Musk's Twitter</a> - Always an interesting feed!</li><li style=\"margin-bottom: 10px;\">💼 <a href=\"https://www.linkedin.com/in/billgates\" style=\"color: #0077b5;\">Bill Gates on LinkedIn</a> - Great for professional insights.</li><li style=\"margin-bottom: 10px;\">📸 <a href=\"https://www.instagram.com/natgeo\" style=\"color: #e1306c;\">National Geographic on Instagram</a> - For stunning photography.</li><li style=\"margin-bottom: 10px;\">🏛️ <a href=\"https://www.whitehouse.gov\" style=\"color: #0c2c56;\">The White House website</a> - Stay updated on U.S. politics.</li><li style=\"margin-bottom: 10px;\">📰 <a href=\"https://www.nytimes.com\" style=\"color: #000000;\">The New York Times</a> - For the latest news.</li></ul><p>Let me know if you find any of these particularly interesting!</p><p>Best regards,<br>Your Friend</p></div></body></html>",
+        "correct_answers": [
+            "https://www.facebook.com/zuck",
+            "https://twitter.com/elonmusk",
+            "https://www.linkedin.com/in/billgates",
+            "https://www.instagram.com/natgeo"
+        ],
+        "test_level": 2
+    },
+    {
+        "instructions": "I want to do some online shopping. Which of these URLs are likely to be online shopping sites?",
+        "supporting_material": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>My Bookmarks</title><style>body{font-family:Arial,sans-serif;max-width:600px;margin:20px auto;line-height:1.6}h1{color:#333}ul{list-style-type:none;padding:0}li{margin-bottom:10px;padding:10px;background-color:#f0f0f0;border-radius:5px}a{color:#0066cc;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><h1>My Favorite Sites</h1><ul><li><a href=\"https://www.amazon.com\">Amazon - Your Online Shopping Destination</a></li><li><a href=\"https://www.ebay.com\">eBay - Buy and Sell Electronics, Cars, Fashion, and More</a></li><li><a href=\"https://www.etsy.com\">Etsy - Shop for Handmade, Vintage, Custom, and Unique Gifts</a></li><li><a href=\"https://www.wikipedia.org\">Wikipedia - The Free Encyclopedia</a></li><li><a href=\"https://www.stackoverflow.com\">Stack Overflow - Where Developers Learn, Share, & Build Careers</a></li></ul></body></html>",
+        "correct_answers": [
+            "https://www.amazon.com",
+            "https://www.ebay.com",
+            "https://www.etsy.com"
+        ],
+        "test_level": 2
+    },
+    {
+        "instructions": "I'm looking for video content. Which of these URLs are likely to lead to videos?",
+        "supporting_material": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Reddit - Dive into anything</title><style>body{font-family:Arial,sans-serif;background-color:#DAE0E6;margin:0;padding:20px}div.post{background-color:white;margin-bottom:10px;padding:10px;border-radius:4px}h3{margin:0;padding-bottom:5px}div.score{float:left;margin-right:10px;color:#FF4500;font-weight:bold}div.comments{color:#888;font-size:0.8em}a{color:#1a1a1b;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><div class=\"post\"><div class=\"score\">10.2k</div><h3><a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\">Never gonna give you up - Rick Astley [Official Music Video]</a></h3><div class=\"comments\">4.2k comments</div></div><div class=\"post\"><div class=\"score\">3.7k</div><h3><a href=\"https://vimeo.com/148751763\">Amazing short film I found on Vimeo</a></h3><div class=\"comments\">982 comments</div></div><div class=\"post\"><div class=\"score\">2.1k</div><h3><a href=\"https://www.twitch.tv/ninja\">Ninja's insane Fortnite stream highlights</a></h3><div class=\"comments\">567 comments</div></div><div class=\"post\"><div class=\"score\">8.9k</div><h3><a href=\"https://www.tiktok.com/@charlidamelio\">Charli D'Amelio's latest viral dance on TikTok</a></h3><div class=\"comments\">2.3k comments</div></div><div class=\"post\"><div class=\"score\">102</div><h3><a href=\"https://www.books.com\">Just found this great online bookstore!</a></h3><div class=\"comments\">14 comments</div></div></body></html>",
+        "correct_answers": [
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://vimeo.com/148751763",
+            "https://www.twitch.tv/ninja",
+            "https://www.tiktok.com/@charlidamelio"
+        ],
+        "test_level": 2
+    }
+]

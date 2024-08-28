@@ -1,5 +1,11 @@
-use crate::{logging, LlmBackend, LlmClient, RequestConfig};
-use anyhow::{anyhow, Result};
+use super::{LlmBackend, LlmClientApiBuilderTrait};
+use crate::{
+    components::{base_request::BaseLlmRequest, response::LlmClientResponse},
+    logging,
+    LlmClient,
+    LlmClientResponseError,
+};
+use anyhow::Result;
 use clust::{
     messages::{
         ClaudeModel,
@@ -18,120 +24,148 @@ use clust::{
     Client as AnthropicClient,
     ClientBuilder as AnthropicClientBuilder,
 };
-use dotenv::dotenv;
-use llm_utils::models::anthropic::AnthropicLlm;
-use std::time::Duration;
+use llm_utils::models::api_model::{anthropic::AnthropicModelTrait, ApiLlm};
+use std::{rc::Rc, time::Duration};
 use tokio::time::sleep;
 
+const ENV_VAR_NAME: &str = "ANTHROPIC_API_KEY";
 pub struct AnthropicBackend {
-    client: Option<AnthropicClient>,
-    api_key: Option<String>,
-    pub model: AnthropicLlm,
-    pub logging_enabled: bool,
-    tracing_guard: Option<tracing::subscriber::DefaultGuard>,
-}
-
-impl Default for AnthropicBackend {
-    fn default() -> Self {
-        Self::new()
-    }
+    client: AnthropicClient,
+    pub model: ApiLlm,
+    _tracing_guard: Option<tracing::subscriber::DefaultGuard>,
 }
 
 impl AnthropicBackend {
-    pub fn new() -> Self {
-        AnthropicBackend {
-            client: None,
-            api_key: None,
-            model: AnthropicLlm::claude_3_haiku(),
-            // Anthropic does not have a public tokenizer. Since we're just counting tokens, tiktoken will be close enough.
-            logging_enabled: true,
-            tracing_guard: None,
-        }
-    }
-
-    fn setup(&mut self) {
-        if self.client.is_some() {
-            return;
-        }
-        let api_key = if let Some(api_key) = &self.api_key {
-            api_key.to_owned()
-        } else {
-            if self.logging_enabled {
-                tracing::info!("anthropic_backend api_key not set. Attempting to load from .env");
-            } else {
-                println!("anthropic_backend api_key not set. Attempting to load from .env");
-            }
-            dotenv().ok();
-            if let Ok(api_key) = dotenv::var("ANTHROPIC_API_KEY") {
-                api_key
-            } else {
-                if self.logging_enabled {
-                    tracing::info!(
-                        "ANTHROPIC_API_KEY not fund in in dotenv, nor was it set manually."
-                    );
+    /// A function to create text completions from a given prompt. Called by various agents, and not meant to be called directly.
+    pub async fn llm_request(
+        &self,
+        base: &BaseLlmRequest,
+    ) -> Result<LlmClientResponse, LlmClientResponseError> {
+        // Maybe will help with rate limiting
+        sleep(Duration::from_millis(222)).await;
+        let mut messages = Vec::new();
+        let mut system_message = None;
+        if let Some(prompt_message) = &base.instruct_prompt.prompt.built_openai_prompt {
+            for m in prompt_message {
+                match m.get("role").unwrap().as_str() {
+                    "system" => {
+                        system_message =
+                            Some(SystemPrompt::new(m.get("content").unwrap().to_string()));
+                    }
+                    "user" => {
+                        messages.push(Message::user(m.get("content").unwrap().to_string()));
+                    }
+                    "assistant" => {
+                        messages.push(Message::assistant(m.get("content").unwrap().to_string()));
+                    }
+                    _ => {
+                        panic!("Role not found");
+                    }
                 }
-                panic!("ANTHROPIC_API_KEY not fund in in dotenv, nor was it set manually.");
             }
-        };
-        if self.model.tokenizer.is_none() {
-            panic!("Tokenizer did not load correctly.")
+        } else {
+            panic!("Prompt not built");
         }
-        let client = AnthropicClientBuilder::new(ApiKey::new(api_key))
-            .client(
-                ReqwestClientBuilder::new()
-                    .timeout(std::time::Duration::from_secs(10))
-                    .build()
-                    .unwrap(),
+
+        let builder = MessagesRequestBuilder::new(model_id_to_enum(&self.model.model_id))
+            .stream(StreamOption::ReturnOnce)
+            .messages(messages)
+            .max_tokens(
+                MaxTokens::new(
+                    base.config.actual_request_tokens.unwrap(),
+                    model_id_to_enum(&self.model.model_id),
+                )
+                .map_err(|e| LlmClientResponseError::RequestBuilderError {
+                    error: format!("AnthropicBackend builder error: {}", e),
+                })?,
             )
-            .build();
-        self.client = Some(client);
-    }
+            .temperature(
+                Temperature::new(convert_temperature(base.config.temperature)).map_err(|e| {
+                    LlmClientResponseError::RequestBuilderError {
+                        error: format!("AnthropicBackend builder error: {}", e),
+                    }
+                })?,
+            )
+            .top_p(TopP::new(base.config.top_p).map_err(|e| {
+                LlmClientResponseError::RequestBuilderError {
+                    error: format!("AnthropicBackend builder error: {}", e),
+                }
+            })?);
 
-    /// Initializes the AnthropicBackend and returns the LlmClient for usage.
-    pub fn init(mut self) -> Result<LlmClient> {
-        if self.logging_enabled {
-            self.tracing_guard = Some(logging::create_logger("anthropic_backend"));
+        let builder = if let Some(system_message) = system_message {
+            builder.system(system_message)
+        } else {
+            builder
+        };
+        let request = builder.build();
+
+        tracing::info!(?request);
+
+        match self.client.create_a_message(request).await {
+            Ok(response) => match &response.content {
+                Content::SingleText(content) => {
+                    tracing::info!(?response);
+                    let stop_word = if let Some(stop_sequence) = &response.stop_sequence {
+                        base.stop_sequences
+                            .parse_string_response(stop_sequence.to_string())
+                    } else {
+                        None
+                    };
+
+                    LlmClientResponse::new_from_anthropic(&response, content, stop_word)
+                }
+                Content::MultipleBlocks(blocks) => {
+                    tracing::info!(?response);
+
+                    if blocks.len() == 1 {
+                        match &blocks[0] {
+                            ContentBlock::Text(content) => {
+                                let stop_word = if let Some(stop_sequence) = &response.stop_sequence
+                                {
+                                    base.stop_sequences
+                                        .parse_string_response(stop_sequence.to_string())
+                                } else {
+                                    None
+                                };
+                                LlmClientResponse::new_from_anthropic(
+                                    &response,
+                                    &content.text,
+                                    stop_word,
+                                )
+                            }
+                            _ => panic!("Images not supported"),
+                        }
+                    } else {
+                        panic!("MultipleBlocks not supported")
+                    }
+                }
+            },
+            Err(e) => Err(LlmClientResponseError::InferenceError {
+                error: format!("AnthropicBackend request error: {}", e,),
+            }),
         }
-        self.setup();
-        Ok(LlmClient::new(LlmBackend::Anthropic(self)))
     }
+}
 
-    fn client(&self) -> &AnthropicClient {
-        self.client.as_ref().unwrap()
+pub struct AnthropicBackendBuilder {
+    pub model: Option<ApiLlm>,
+    pub logging_enabled: bool,
+    pub api_key: Option<String>,
+}
+
+impl Default for AnthropicBackendBuilder {
+    fn default() -> Self {
+        AnthropicBackendBuilder {
+            model: None,
+            logging_enabled: true,
+            api_key: None,
+        }
     }
+}
 
-    /// Set the API key for the OpenAI client. Otherwise it will attempt to load it from the .env file.
-    pub fn api_key(mut self, api_key: &str) -> Self {
-        self.api_key = Some(api_key.to_string());
-        self
-    }
-
-    /// Set the model for the OpenAI client using the model_id string.
-    pub fn from_model_id(mut self, model_id: &str) -> Self {
-        self.model = AnthropicLlm::anthropic_model_from_model_id(model_id);
-        self.model.with_tokenizer();
-        self
-    }
-
-    /// Use the Claude 3 Opus model for the Anthropic client.
-    pub fn claude_3_opus(mut self) -> Self {
-        self.model = AnthropicLlm::claude_3_opus();
-        self.model.with_tokenizer();
-        self
-    }
-
-    /// Use the Claude 3 Sonnet model for the Anthropic client.
-    pub fn claude_3_sonnet(mut self) -> Self {
-        self.model = AnthropicLlm::claude_3_sonnet();
-        self.model.with_tokenizer();
-        self
-    }
-
-    /// Use the Claude 3 Haiku model for the Anthropic client.
-    pub fn claude_3_haiku(mut self) -> Self {
-        self.model = AnthropicLlm::claude_3_haiku();
-        self.model.with_tokenizer();
-        self
+impl AnthropicBackendBuilder {
+    pub fn new() -> Self {
+        AnthropicBackendBuilder::default()
     }
 
     /// If set to false, will disable logging. By defaults logs to the logs dir.
@@ -140,90 +174,51 @@ impl AnthropicBackend {
         self
     }
 
-    /// A function to create text completions from a given prompt. Called by various agents, and not meant to be called directly.
-    pub async fn text_generation_request(&self, req_config: &RequestConfig) -> Result<String> {
-        // Maybe will help with rate limiting
-        sleep(Duration::from_millis(222)).await;
-        let prompt = req_config.default_formatted_prompt.as_ref().unwrap();
+    pub fn init(self) -> Result<LlmClient> {
+        let _tracing_guard = if self.logging_enabled {
+            Some(logging::create_logger("openai"))
+        } else {
+            None
+        };
+        let api_key = self.load_api_key(ENV_VAR_NAME)?;
+        let model = if let Some(model) = self.model {
+            model
+        } else {
+            panic!("Model not set");
+        };
 
-        let request = MessagesRequestBuilder::new(model_id_to_enum(&self.model.model_id))
-            .stream(StreamOption::ReturnOnce)
-            .messages(vec![Message::user(prompt["user"]["content"].clone())])
-            .system(SystemPrompt::new(prompt["system"]["content"].clone()))
-            .max_tokens(
-                MaxTokens::new(
-                    req_config.actual_request_tokens.unwrap(),
-                    model_id_to_enum(&self.model.model_id),
-                )
-                .map_err(|e| anyhow!(e))?,
+        let client = AnthropicClientBuilder::new(ApiKey::new(api_key))
+            .client(
+                ReqwestClientBuilder::new()
+                    .timeout(std::time::Duration::from_secs(10))
+                    .build()
+                    .unwrap(),
             )
-            .temperature(
-                Temperature::new(convert_temperature(req_config.temperature))
-                    .map_err(|e| anyhow!(e))?,
-            )
-            .top_p(TopP::new(req_config.top_p).map_err(|e| anyhow!(e))?)
             .build();
+        let backend = AnthropicBackend {
+            client,
+            model,
+            _tracing_guard,
+        };
+        Ok(LlmClient {
+            backend: Rc::new(LlmBackend::Anthropic(backend)),
+        })
+    }
+}
 
-        if self.logging_enabled {
-            tracing::info!(?request);
-        }
-        let max_retries = 3;
-        let mut retry_count = 0;
-        loop {
-            match self.client().create_a_message(request.clone()).await {
-                Ok(response) => match &response.content {
-                    Content::SingleText(content) => {
-                        if self.logging_enabled {
-                            tracing::info!(?response);
-                        }
-                        return Ok(content.to_owned());
-                    }
-                    Content::MultipleBlocks(blocks) => {
-                        if self.logging_enabled {
-                            tracing::info!(?response);
-                        }
-                        if blocks.len() == 1 {
-                            match &blocks[0] {
-                                ContentBlock::Text(content) => {
-                                    return Ok(content.text.to_owned());
-                                }
-                                _ => panic!("Images not supported"),
-                            }
-                        } else {
-                            panic!("MultipleBlocks not supported")
-                        }
-                    }
-                },
-                Err(e) => {
-                    retry_count += 1;
+impl AnthropicModelTrait for AnthropicBackendBuilder {
+    fn model(&mut self) -> &mut Option<ApiLlm> {
+        &mut self.model
+    }
+}
 
-                    if retry_count <= max_retries {
-                        let backoff_duration = 2u64.pow(retry_count as u32) * 1000;
-                        let error = anyhow::format_err!(
-                            "AnthropicBackend text_generation_request error (attempt {}/{}): {}",
-                            retry_count,
-                            max_retries,
-                            e
-                        );
+impl LlmClientApiBuilderTrait for AnthropicBackendBuilder {
+    fn set_api_key(&mut self) -> &mut Option<String> {
+        &mut self.api_key
+    }
 
-                        if self.logging_enabled {
-                            tracing::warn!(?error, "Retrying after {} ms", backoff_duration);
-                        }
-
-                        sleep(Duration::from_millis(backoff_duration)).await;
-                        continue;
-                    } else {
-                        let error = anyhow::format_err!("AnthropicBackend text_generation_request error (max retries exceeded): {}", e);
-
-                        if self.logging_enabled {
-                            tracing::error!(?error);
-                        }
-
-                        return Err(error);
-                    }
-                }
-            }
-        }
+    fn get_api_key(&self) -> &Option<String> {
+        &self.api_key
     }
 }
 
@@ -234,6 +229,8 @@ fn model_id_to_enum(model_id: &str) -> ClaudeModel {
         ClaudeModel::Claude3Sonnet20240229
     } else if model_id.starts_with("claude-3-haiku") {
         ClaudeModel::Claude3Haiku20240307
+    } else if model_id.starts_with("claude-3.5-sonnet") {
+        ClaudeModel::Claude35Sonnet20240620
     } else {
         panic!("{model_id} not found");
     }

@@ -1,0 +1,23 @@
+[
+    {
+        "question": "Paris is the capital of what country?",
+        "options": [
+            "America",
+            "Japan",
+            "France",
+            "Africa"
+        ],
+        "correct_answer": "France",
+        "test_level": 0
+    },
+    {
+        "question": "Mixing red and blue makes which color from the options, 'beige, green, yellow'?",
+        "options": [
+            "Beige",
+            "Green",
+            "Yellow"
+        ],
+        "correct_answer": null,
+        "test_level": 0
+    }
+]
