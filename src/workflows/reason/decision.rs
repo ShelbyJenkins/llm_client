@@ -52,6 +52,19 @@ impl<D: DecisionTrait> Decision<D> {
         self.run_decision().await
     }
 
+    pub fn parse_decision_result(
+        &self,
+        decision_result: &DecisionResult,
+    ) -> Result<Option<<D::ReasonPrimitive as PrimitiveTrait>::PrimitiveResult>> {
+        if let Some(winner_index) = decision_result.winner_index {
+            self.reason
+                .primitive()
+                .result_index_to_primitive(Some(winner_index))
+        } else {
+            Ok(None)
+        }
+    }
+
     async fn run_decision(&mut self) -> Result<DecisionResult> {
         let start = std::time::Instant::now();
         let mut decision_result = DecisionResult::new();

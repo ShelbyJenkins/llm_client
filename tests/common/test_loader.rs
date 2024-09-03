@@ -8,6 +8,7 @@ pub enum TestLevel {
     Zero,
     One,
     Two,
+    Three,
     All,
 }
 
@@ -36,6 +37,11 @@ impl TestSetsLoader {
 
     pub fn test_level_two(mut self) -> Self {
         self.test_level = TestLevel::Two;
+        self
+    }
+
+    pub fn test_level_three(mut self) -> Self {
+        self.test_level = TestLevel::Three;
         self
     }
 
@@ -99,8 +105,9 @@ impl TestSetsLoader {
     fn should_include_test(&self, test_level: u8) -> bool {
         match self.test_level {
             TestLevel::Zero => test_level == 0,
-            TestLevel::One => test_level <= 1,
-            TestLevel::Two => test_level <= 2,
+            TestLevel::One => test_level == 1,
+            TestLevel::Two => test_level == 2,
+            TestLevel::Three => test_level == 3,
             TestLevel::All => true,
         }
     }

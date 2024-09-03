@@ -8,9 +8,11 @@ mod boolean_reason_tests {
     #[serial]
     pub async fn reason_one_round() {
         let mut gen = get_tiny_llm().await.unwrap().reason().boolean();
+        gen.reasoning_sentences(5).conclusion_sentences(4);
         let mut tests = primitive_tests(false).boolean().unwrap();
         for case in &mut tests.cases {
             gen.instructions().set_content(&case.question);
+
             let result = gen.return_result().await.unwrap();
             let res = gen.primitive.parse_reason_result(&result).unwrap();
             print_results(
@@ -19,6 +21,7 @@ mod boolean_reason_tests {
                 &Some(res),
             );
             case.result = res;
+            gen.clear_request();
         }
         tests.check_results();
     }
@@ -34,12 +37,13 @@ mod boolean_reason_tests {
             let res = gen.return_optional_primitive().await.unwrap();
             print_results(&gen.base_req.instruct_prompt.prompt, &None::<String>, &res);
             case.result = res;
+            gen.clear_request();
         }
         tests.check_results();
     }
 }
 
-mod intenger_reason_tests {
+mod integer_reason_tests {
     use super::*;
 
     #[tokio::test]

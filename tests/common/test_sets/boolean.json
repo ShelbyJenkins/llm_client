@@ -168,5 +168,10 @@
         "question": "You're in a desert walking along in the sand when all of a sudden you look down, and you see a tortoise, it's crawling toward you. You reach down, you flip the tortoise over on its back. The tortoise lays on its back, its belly baking in the hot sun, beating its legs trying to turn itself over, but it can't, not without your help. Do you help it?",
         "correct_answer": true,
         "test_level": 2
+    },
+    {
+        "question": "Imagine a runaway trolley is hurtling down a track towards five dead people. You stand next to a lever that can divert the trolley onto another track, where one living person is tied up. Do you pull the lever?",
+        "correct_answer": false,
+        "test_level": 3
     }
 ]

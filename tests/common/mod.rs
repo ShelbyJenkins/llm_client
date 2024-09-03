@@ -10,9 +10,9 @@ pub use serde::{Deserialize, Serialize};
 pub use test_types::*;
 pub use url::Url;
 
-pub const PRINT_PRIMITIVE_RESULT: bool = false;
+pub const PRINT_PRIMITIVE_RESULT: bool = true;
 pub const PRINT_WORKFLOW_RESULT: bool = true;
-pub const PRINT_PROMPT: bool = false;
+pub const PRINT_PROMPT: bool = true;
 
 pub fn print_results<T: std::fmt::Debug>(
     prompt: &LlmPrompt,
@@ -36,12 +36,12 @@ pub fn print_results<T: std::fmt::Debug>(
 pub fn primitive_tests(optional: bool) -> TestSetsLoader {
     TestSetsLoader::default()
         .optional(optional)
-        .test_level_zero()
+        .test_level_three()
 }
 
 pub async fn get_tiny_llm() -> Result<LlmClient> {
     LlmClient::llama_cpp()
-        .phi3_5_mini_instruct()
+        .llama3_1_8b_instruct()
         .available_vram(44)
         .init()
         .await

@@ -133,5 +133,10 @@
         "question": "Dalhart, TX is closer to how many other state's capital cities than its own?",
         "correct_answer": 6,
         "test_level": 2
+    },
+    {
+        "question": "A farmer is on one side of a river with a wolf, a goat, and a cabbage. When he is crossing the river in a boat, he can only take one item with him at a time. The wolf will eat the goat if left alone together, and the goat will eat the cabbage if left alone together. How many trips across the river must the farmer make to transport the goat across the river without it being eaten?",
+        "correct_answer": 1,
+        "test_level": 3
     }
 ]
