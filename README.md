@@ -33,9 +33,13 @@ This runs the reason one round cascading prompt workflow with an integer output.
 
 <img src="./media/reason_one_round_example_annotated.png" width="70%" alt="An example run of this workflow with these instructions.">
 
+The code for this workflow is [here](./src/workflows/reason/one_round.rs).
+
+I have a full breakdown of this workflow in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."
+
 ### From AI Vibes to the Deterministic Real World
 
-Large Language Models (LLMs) are somewhere between conventional programming and databases: they process information like rule-based systems while storing and retrieving vast amounts of data like databases. But unlike the deterministic outputs of if statements and database queries, raw LLMs produce outputs that can be described as 'vibes' — probabilistic, context-dependent results that may vary between runs. Building on vibes may work for creative applications, but in real-world applications, a vibey output is a step back from the reliability and consistency of traditional programming paradigms.
+Large Language Models (LLMs) are somewhere between conventional programming and databases: they process information like rule-based systems while storing and retrieving vast amounts of data like databases. But unlike the deterministic outputs of if statements and database queries, raw LLMs produce outputs that can be described as “vibes” — probabilistic, context-dependent results that may vary between runs. Building on vibes may work for creative applications, but in real-world applications, a lossy, vibey output is a step back from the reliability and consistency of traditional programming paradigms.
 
 llm_client is an interface for building cascading prompt workflows from dynamic and novel inputs, running the steps of the workflows in a linear or reactive manner, and constraining and interpreting LLM inference as actionable signals. This allows the integration of LLMs into traditional software systems with the level of consistency and reliability that users expect.
 
@@ -64,20 +68,14 @@ This method significantly improves the reliability of LLM use cases. For example
 ### Cascade Prompt Elements
 
 * **Workflow**: A workflow, or '**flow**', is a high level object that runs the individual elements.
-* **Rounds**: Each round is a pair of a user turn and an assistant turn. Turns are sometimes referred to as 'messages'.
+* **Rounds**: A workflow is made up of multiple rounds. Each round is a pair of a user turn and an assistant turn. Turns are also known as ‘messages’. 
     * Both the user turn and the assistant turn can be pre-generated, or dynamically generated.
-* **Tasks**: The 'user message' in the user turn of a round. Generically refered to 'task' for the sake of brevity.
-* **Steps**: Each assistant turn consists of multiple steps.
+* **Tasks**: The ‘user message’ in the user turn of a round. Generically referred to ‘task’ for the sake of brevity.
+* **Steps**: Each assistant turn consists of one or more steps.
     * **Inference steps** generate text via LLM inference.
-    * **Guidance steps** generate text from pre-defined static inputs or dynamic inputs from the program.
-* **Generation prefixes**: Assistant steps can be prefixed with content.
+    * **Guidance steps** generate text from pre-defined static inputs or dynamic inputs from your program.
+* **Generation prefixes**: Assistant steps can be prefixed with content prior to generation.
 * **Dynamic sufixes**: Assistant steps can also be suffixed with additional content after generation.
-
-### An Example Cascade: CoT Reasoning
-
-An example of a cascade workflow is the [one round reasoning workflow](./src/workflows/reason/one_round.rs).
-
-In this example the work flow is run linearly as built, but it's also possible to run dynamic workflows where each step is ran one at a time and the behavior of the workflow can be dynamic based on the outcome of that step. See [extract_urls](./examples/extract_urls.rs) for an example of this.
 
 
 ## Reasoning with Primitive Outcomes
@@ -156,8 +154,6 @@ See [the decision example for more](./examples/decision.rs)
 ## Structured Outputs and NLP
 
 - Data extraction, summarization, and semantic splitting on text.
-
-- 'Some people, when confronted with a problem, think "I know, I'll use regular expressions." Now they have two problems.' Using Regex to parse and structure the output of LLMs puts an exponent over this old joke. llm_client uses constraints to conform the outputs of LLMs rather than trying to extract information from a non-constrainted LLM generation.  
 
 - Currently implemented NLP workflows are url extraction. 
 
