@@ -21,9 +21,10 @@ clap="4.5.4"
 clust="0.9.0"
 derive_builder="0.20.0"
 dotenv="0.15.0"
-llm_utils="0.0.8"
-# llm_utils={path="../llm_utils"}
-# mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", features=["cuda", "cudnn"], optional=true}
+# llm_utils="0.0.8"
+llm_utils={path="../llm_utils"}
+mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", features=["cuda", "cudnn"], optional=true, rev="2e590b1c8795b51d12711d56fe286c5d80d23c0e"}
+nvml-wrapper="0.10.0"
 reqwest="0.12.4"
 serde={version="1.0.202", features=["derive"]}
 serde_json="1.0.117"
@@ -35,8 +36,8 @@ tracing-appender="0.2.3"
 tracing-subscriber={version="0.3.18", features=["json"]}
 url="2.5.2"
 
-# [features]
-# mistralrs_backend=["mistralrs/cuda", "mistralrs/cudnn"]
+[features]
+mistralrs_backend=["mistralrs/cuda", "mistralrs/cudnn"]
 
 [dev-dependencies]
 serial_test="3.1.1"

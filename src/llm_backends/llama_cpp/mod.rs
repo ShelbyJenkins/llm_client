@@ -8,17 +8,19 @@ use crate::{
     LlmClient,
     LlmClientResponseError,
 };
-use anyhow::Result;
 use api::{
     client::LlamaClient,
     config::LlamaConfig,
     types::{LlamaCompletionsRequest, LlamaCompletionsRequestArgs},
 };
-use hf_loader::HfTokenTrait;
-use llm_utils::models::open_source_model::*;
-use preset::LlmPresetTrait;
+use llm_utils::models::open_source_model::{
+    gguf::{GgufLoader, GgufLoaderTrait},
+    HfTokenTrait,
+    LlmPresetLoader,
+    LlmPresetTrait,
+    OsLlm,
+};
 use server::LlamaServerConfig;
-use std::rc::Rc;
 
 pub struct LlamaBackend {
     pub model: OsLlm,
@@ -31,7 +33,7 @@ impl LlamaBackend {
     pub async fn llm_request(
         &self,
         base_req: &BaseLlmRequest,
-    ) -> Result<LlmClientResponse, LlmClientResponseError> {
+    ) -> crate::Result<LlmClientResponse, LlmClientResponseError> {
         let mut request_builder = LlamaCompletionsRequestArgs::default();
         request_builder
             .prompt(
@@ -98,7 +100,7 @@ impl LlamaBackend {
         &self,
         clear: bool,
         base_req: &BaseLlmRequest,
-    ) -> Result<(), LlmClientResponseError> {
+    ) -> crate::Result<(), LlmClientResponseError> {
         let mut request_builder = LlamaCompletionsRequestArgs::default();
         request_builder.n_predict(0_u32);
         if clear {
@@ -164,7 +166,7 @@ impl LlamaBackendBuilder {
         self
     }
 
-    pub async fn init(mut self) -> Result<LlmClient> {
+    pub async fn init(mut self) -> crate::Result<LlmClient> {
         let _tracing_guard = if self.logging_enabled {
             Some(logging::create_logger("llama_cpp"))
         } else {
@@ -179,7 +181,7 @@ impl LlamaBackendBuilder {
         let client = LlamaClient::new(&self.server_config.host, &self.server_config.port);
 
         Ok(LlmClient {
-            backend: Rc::new(LlmBackend::Llama(LlamaBackend {
+            backend: std::rc::Rc::new(LlmBackend::Llama(LlamaBackend {
                 model,
                 server_config: self.server_config,
                 client,
@@ -191,23 +193,13 @@ impl LlamaBackendBuilder {
 
 impl LlmPresetTrait for LlamaBackendBuilder {
     fn preset_loader(&mut self) -> &mut LlmPresetLoader {
-        if self.server_config.llm_loader.preset_loader.is_none() {
-            self.server_config.llm_loader.preset_loader = Some(LlmPresetLoader::new());
-        }
-        self.server_config
-            .llm_loader
-            .preset_loader
-            .as_mut()
-            .unwrap()
+        &mut self.server_config.llm_loader.preset_loader
     }
 }
 
-impl LlmGgufTrait for LlamaBackendBuilder {
-    fn gguf_loader(&mut self) -> &mut LlmGgufLoader {
-        if self.server_config.llm_loader.gguf_loader.is_none() {
-            self.server_config.llm_loader.gguf_loader = Some(LlmGgufLoader::new());
-        }
-        self.server_config.llm_loader.gguf_loader.as_mut().unwrap()
+impl GgufLoaderTrait for LlamaBackendBuilder {
+    fn gguf_loader(&mut self) -> &mut GgufLoader {
+        &mut self.server_config.llm_loader
     }
 }
 
@@ -228,7 +220,7 @@ mod tests {
     use serial_test::serial;
     #[tokio::test]
     #[serial]
-    async fn test_builder() -> Result<()> {
+    async fn test_builder() -> crate::Result<()> {
         let llm_client = LlamaBackendBuilder::new()
             .available_vram(40)
             .use_ctx_size(2048)

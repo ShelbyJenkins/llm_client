@@ -28,6 +28,7 @@ impl Default for Client<LlamaConfig> {
         Self::new()
     }
 }
+
 impl Client<LlamaConfig> {
     /// Client with default [LlamaConfig]
     pub fn new() -> Self {

@@ -7,12 +7,13 @@ pub mod prelude;
 pub mod primitives;
 pub mod workflows;
 
+pub(crate) use anyhow::{anyhow, bail, Result};
 use llm_backends::LlmBackend;
 pub use prelude::*;
-use std::rc::Rc;
+pub(crate) use tracing::info;
 
 pub struct LlmClient {
-    pub backend: Rc<LlmBackend>,
+    pub backend: std::rc::Rc<LlmBackend>,
 }
 
 impl LlmClient {

@@ -40,26 +40,18 @@ impl LlmBackend {
     }
 
     pub fn get_bos_eos(&self) -> (String, String) {
-        let mut eos: Option<String> = None;
-        let mut bos: Option<String> = None;
         match self {
-            LlmBackend::Llama(b) => {
-                bos.clone_from(&b.model.chat_template.bos_token);
-                eos.clone_from(&b.model.chat_template.eos_token);
-            }
+            LlmBackend::Llama(b) => (
+                b.model.chat_template.bos_token.clone(),
+                b.model.chat_template.eos_token.clone(),
+            ),
             #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(b) => {
-                bos.clone_from(&b.model.chat_template.bos_token);
-                eos.clone_from(&b.model.chat_template.eos_token);
-            }
-            LlmBackend::OpenAi(_) => {}
-            LlmBackend::Anthropic(_) => {}
-            LlmBackend::Perplexity(_) => {}
-        };
-        (
-            bos.unwrap_or_else(|| "assistant".to_string()),
-            eos.unwrap_or_default(),
-        )
+            LlmBackend::MistralRs(b) => (
+                b.model.chat_template.bos_token.clone(),
+                b.model.chat_template.eos_token.clone(),
+            ),
+            _ => unimplemented!("Chat template not supported for this backend"),
+        }
     }
 
     pub fn get_chat_template(&self) -> OsLlmChatTemplate {
@@ -73,9 +65,9 @@ impl LlmBackend {
 
     pub fn get_tokenizer(&self) -> Arc<LlmTokenizer> {
         match self {
-            LlmBackend::Llama(backend) => Arc::clone(backend.model.tokenizer.as_ref().unwrap()),
+            LlmBackend::Llama(backend) => Arc::clone(&backend.model.tokenizer),
             #[cfg(feature = "mistralrs_backend")]
-            LlmBackend::MistralRs(backend) => Arc::clone(backend.model.tokenizer.as_ref().unwrap()),
+            LlmBackend::MistralRs(backend) => Arc::clone(&backend.model.tokenizer),
             LlmBackend::OpenAi(backend) => Arc::clone(&backend.model.tokenizer),
             LlmBackend::Anthropic(backend) => Arc::clone(&backend.model.tokenizer),
             LlmBackend::Perplexity(backend) => Arc::clone(&backend.model.tokenizer),

@@ -1,4 +1,11 @@
-use super::*;
+use super::api::{client::LlamaClient, types::LlamaCompletionsRequestArgs};
+use llm_utils::models::open_source_model::{
+    gguf::{GgufLoader, GgufLoaderTrait},
+    HfTokenTrait,
+    LlmPresetLoader,
+    LlmPresetTrait,
+    OsLlm,
+};
 use std::{
     net::TcpStream,
     path::Path,
@@ -26,7 +33,7 @@ pub struct LlamaServerConfig {
     pub n_gpu_layers: u16,
     pub host: String,
     pub port: String,
-    pub llm_loader: OsLlmLoader,
+    pub llm_loader: GgufLoader,
     pub server_process: Option<std::process::Child>,
 }
 
@@ -38,7 +45,7 @@ impl Default for LlamaServerConfig {
             n_gpu_layers: 12,
             host: "localhost".to_string(),
             port: "8080".to_string(),
-            llm_loader: OsLlmLoader::new(),
+            llm_loader: GgufLoader::new(),
             server_process: None,
         }
     }
@@ -72,22 +79,23 @@ impl LlamaServerConfig {
         self
     }
 
-    pub fn load_model(&mut self) -> Result<OsLlm> {
-        if let Some(preset_loader) = &mut self.llm_loader.preset_loader {
-            if let Some(ctx_size) = preset_loader.use_ctx_size {
-                self.ctx_size = ctx_size; // If the preset loader has a ctx_size set, we use that.
+    pub fn load_model(&mut self) -> crate::Result<OsLlm> {
+        if self.llm_loader.local_quant_file_path.is_none()
+            || self.llm_loader.hf_quant_file_url.is_none()
+        {
+            if let Some(use_ctx_size) = self.llm_loader.preset_loader.use_ctx_size {
+                self.ctx_size = use_ctx_size; // If the preset loader has a ctx_size set, we use that.
             } else {
-                preset_loader.use_ctx_size = Some(self.ctx_size); // Otherwise we set the preset loader to use the ctx_size from server_config.
+                self.llm_loader.preset_loader.use_ctx_size = Some(self.ctx_size);
+                // Otherwise we set the preset loader to use the ctx_size from server_config.
             }
             self.n_gpu_layers = 9999; // Since the model is guaranteed to be constrained to the vram size, we max n_gpu_layers.
-        }
-        if self.llm_loader.preset_loader.is_none() && self.llm_loader.gguf_loader.is_none() {
-            self.llm_loader.preset_loader();
-        }
+        };
+
         let model = self.llm_loader.load()?;
-        if self.ctx_size > model.model_config_json.max_position_embeddings as u32 {
-            eprintln!("Given value for ctx_size {} is greater than the model's max {}. Using the models max.", self.ctx_size, model.model_config_json.max_position_embeddings);
-            self.ctx_size = model.model_config_json.max_position_embeddings as u32;
+        if self.ctx_size > model.model_metadata.max_position_embeddings as u32 {
+            eprintln!("Given value for ctx_size {} is greater than the model's max {}. Using the models max.", self.ctx_size, model.model_metadata.max_position_embeddings);
+            self.ctx_size = model.model_metadata.max_position_embeddings as u32;
         };
         Ok(model)
     }
@@ -95,7 +103,7 @@ impl LlamaServerConfig {
     pub async fn start_server<P: AsRef<Path>>(
         &mut self,
         local_model_path: P,
-    ) -> Result<ServerStatus> {
+    ) -> crate::Result<ServerStatus> {
         match self
             .connect_with_timeouts(
                 &local_model_path,
@@ -166,7 +174,10 @@ impl LlamaServerConfig {
         process
     }
 
-    pub async fn connect<P: AsRef<Path>>(&self, local_model_path: P) -> Result<ServerStatus> {
+    pub async fn connect<P: AsRef<Path>>(
+        &self,
+        local_model_path: P,
+    ) -> crate::Result<ServerStatus> {
         self.connect_with_timeouts(
             local_model_path,
             Duration::from_millis(STATUS_CHECK_TIME_MS),
@@ -180,7 +191,7 @@ impl LlamaServerConfig {
         local_model_path: P,
         test_duration: Duration,
         retry_timeout: Duration,
-    ) -> Result<ServerStatus> {
+    ) -> crate::Result<ServerStatus> {
         let requested_model = local_model_path.as_ref().to_string_lossy();
         if self.test_connection(test_duration, retry_timeout) == ServerStatus::Running {
             println!("Server is running.");
@@ -228,7 +239,7 @@ impl LlamaServerConfig {
         requested_model: &str,
         conn_attempts: u8,
         retry_time: Duration,
-    ) -> Result<ServerStatus> {
+    ) -> crate::Result<ServerStatus> {
         let mut attempts: u8 = 0;
         while attempts < conn_attempts {
             let request = LlamaCompletionsRequestArgs::default()
@@ -300,19 +311,13 @@ pub fn kill_all_servers() {
 
 impl LlmPresetTrait for LlamaServerConfig {
     fn preset_loader(&mut self) -> &mut LlmPresetLoader {
-        if self.llm_loader.preset_loader.is_none() {
-            self.llm_loader.preset_loader = Some(LlmPresetLoader::new());
-        }
-        self.llm_loader.preset_loader.as_mut().unwrap()
+        &mut self.llm_loader.preset_loader
     }
 }
 
-impl LlmGgufTrait for LlamaServerConfig {
-    fn gguf_loader(&mut self) -> &mut LlmGgufLoader {
-        if self.llm_loader.gguf_loader.is_none() {
-            self.llm_loader.gguf_loader = Some(LlmGgufLoader::new());
-        }
-        self.llm_loader.gguf_loader.as_mut().unwrap()
+impl GgufLoaderTrait for LlamaServerConfig {
+    fn gguf_loader(&mut self) -> &mut GgufLoader {
+        &mut self.llm_loader
     }
 }
 
@@ -334,7 +339,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn test_server() -> Result<()> {
+    async fn test_server() -> crate::Result<()> {
         let mut config = LlamaServerConfig::default();
         let model = config.load_model()?;
         config.start_server(&model.local_model_path).await?;
@@ -366,12 +371,12 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn test_builder() -> Result<()> {
+    async fn test_builder() -> crate::Result<()> {
         let mut config = LlamaServerConfig::default()
             .ctx_size(2048)
             .threads(2)
             .n_gpu_layers(6)
-            .llama3_8b_instruct();
+            .llama3_1_8b_instruct();
         let model = config.load_model()?;
         config.start_server(model.local_model_path).await?;
         Ok(())

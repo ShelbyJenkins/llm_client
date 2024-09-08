@@ -43,12 +43,32 @@ impl LlmClientResponse {
     }
 
     #[cfg(feature = "mistralrs_backend")]
-    pub fn new_from_mistral(res: MistralCompletionResponse) -> Self {
-        Self {
-            content: res.choices[0].text.to_owned(),
-            stop_reason: LlmClientResponseStopReason::Unknown,
+    pub fn new_from_mistral(
+        res: MistralCompletionResponse,
+    ) -> Result<Self, LlmClientResponseError> {
+        let choice = if res.choices.is_empty() {
+            return Err(LlmClientResponseError::InferenceError {
+                error: "MistralRsBackend completion_request error: res.choices.is_empty()"
+                    .to_owned(),
+            });
+        } else if res.choices[0].text.is_empty() {
+            return Err(LlmClientResponseError::InferenceError {
+                error: "MistralRsBackend completion_request error: res.choices[0].text.is_empty()"
+                    .to_owned(),
+            });
+        } else {
+            &res.choices[0]
+        };
+        let stop_reason = match choice.finish_reason.as_str() {
+            "eos" => LlmClientResponseStopReason::Eos,
+            "length" => LlmClientResponseStopReason::StopLimit,
+            _ => LlmClientResponseStopReason::Unknown,
+        };
+        Ok(Self {
+            content: choice.text.to_owned(),
+            stop_reason,
             error: None,
-        }
+        })
     }
 
     pub fn new_from_openai(
@@ -56,12 +76,11 @@ impl LlmClientResponse {
     ) -> Result<Self, LlmClientResponseError> {
         let choice = if res.choices.is_empty() {
             return Err(LlmClientResponseError::InferenceError {
-                error: "OpenAiBackend completion_request error: completion.content.is_empty()"
-                    .to_owned(),
+                error: "OpenAiBackend completion_request error: res.choices.is_empty()".to_owned(),
             });
         } else if res.choices[0].message.content.is_none() {
             return Err(LlmClientResponseError::InferenceError {
-                error: "OpenAiBackend completion_request error: completion.choices[0].message.content.is_none()"
+                error: "OpenAiBackend completion_request error: res.choices[0].message.content.is_none()"
                     .to_owned(),
             });
         } else {
