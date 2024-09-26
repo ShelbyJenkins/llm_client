@@ -1,47 +1,20 @@
-[package]
+[workspace]
+members=["llm_client", "llm_client_testing", "llm_interface"]
+resolver="2"
+[workspace.package]
 authors=["Shelby Jenkins"]
-description="llm_client: An Interface for Deterministic Signals from Probabilistic LLM Vibes"
 edition="2021"
+exclude=["Cargo.lock", "target/**/*"]
 homepage="https://github.com/shelbyJenkins/llm_client"
-name="llm_client"
-readme="README.md"
-version="0.0.4"
-
-categories=["api-bindings", "asynchronous"]
-exclude=["src/llm_backends/llama_cpp/llama_cpp/**/*"]
-keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
 license="MIT"
 repository="https://github.com/shelbyJenkins/llm_client"
-[dependencies]
-anyhow="1.0.86"
-async-openai="0.23.4"
-backoff={version="0.4.0", features=["tokio"]}
-bytes="1.5.0"
-clap="4.5.4"
-clust="0.9.0"
-derive_builder="0.20.0"
-dotenv="0.15.0"
-# llm_utils="0.0.8"
-llm_utils={path="../llm_utils"}
-mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", features=["cuda", "cudnn"], optional=true, rev="2e590b1c8795b51d12711d56fe286c5d80d23c0e"}
-nvml-wrapper="0.10.0"
-reqwest="0.12.4"
-serde={version="1.0.202", features=["derive"]}
-serde_json="1.0.117"
-thiserror="1.0.60"
-tokio="1.37.0"
-tokio-test="0.4.4"
-tracing="0.1.40"
-tracing-appender="0.2.3"
-tracing-subscriber={version="0.3.18", features=["json"]}
-url="2.5.2"
-
-[features]
-mistralrs_backend=["mistralrs/cuda", "mistralrs/cudnn"]
-
-[dev-dependencies]
+[workspace.dependencies]
+anyhow="1.0.89"
+llm_utils={path="../llm_utils", version="0.0.9"}
+serde="1.0.210"
+serde_json="1.0.128"
 serial_test="3.1.1"
-
-[[bin]]
-name="server_runner"
-path="src/llm_backends/llama_cpp/bin/server_runner.rs"
+thiserror="1.0.64"
+tokio="1.40.0"
+tracing="0.1.40"
+url="2.5.2"

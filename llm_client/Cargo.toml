@@ -1,0 +1,35 @@
+[package]
+categories=["api-bindings", "asynchronous"]
+description="llm_client: An Interface for Deterministic Signals from Probabilistic LLM Vibes"
+edition.workspace=true
+homepage.workspace=true
+keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
+license.workspace=true
+name="llm_client"
+readme="README.md"
+repository.workspace=true
+version="0.0.4"
+[dependencies]
+# llm_interface={path="../llm_interface", version="0.0.1"}
+anyhow.workspace=true
+llm_interface={path="../llm_interface"}
+llm_utils.workspace=true
+thiserror.workspace=true
+tokio.workspace=true
+tracing.workspace=true
+url.workspace=true
+
+[features]
+cuda=["llm_interface/cuda"]
+cudnn=["llm_interface/cudnn"]
+default=["llama_cpp_backend"]
+llama_cpp_backend=["llm_interface/llama_cpp_backend"]
+# metal=["llm_interface/metal"]
+mistral_rs_backend=["llm_interface/mistral_rs_backend"]
+
+[dev-dependencies]
+llm_client_testing={path="../llm_client_testing", features=["all"]}
+serde.workspace=true
+serde_json.workspace=true
+serial_test.workspace=true
+tokio={workspace=true, features=["macros", "test-util"]}

@@ -1,0 +1,68 @@
+[package]
+categories=["api-bindings", "asynchronous"]
+description="llm_interface: An Interface for Deterministic Signals from Probabilistic LLM Vibes"
+edition.workspace=true
+exclude=["src/llms/local/llama_cpp/llama_cpp/**/*"]
+homepage.workspace=true
+keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
+license.workspace=true
+name="llm_interface"
+readme="README.md"
+repository.workspace=true
+version="0.0.4"
+
+[dependencies]
+anyhow.workspace=true
+backoff={version="0.4.0", features=["tokio"]}
+byteorder={version="1.5.0", optional=true}
+bytes="1.7.2"
+clap={version="4.5.17", optional=true}
+dotenv="0.15.0"
+hf-hub={version="0.3.2", optional=true}
+llm_utils.workspace=true
+mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", optional=true, rev="b6b722e34ecff2d5cf4fccb57220384db386a932"}
+nvml-wrapper={version="0.10.0", optional=true}
+# objc2-metal={version="0.2.2", optional=true}
+paste={version="1.0.15", optional=true}
+reqwest="0.12.7"
+secrecy="0.8.0"
+serde.workspace=true
+serde_json.workspace=true
+sysinfo={version="0.31.4", optional=true, default-features=false, features=["system"]}
+thiserror.workspace=true
+tokenizers={version="0.20.0", optional=true}
+tokio.workspace=true
+tracing-appender="0.2.3"
+tracing-subscriber={version="0.3.18", features=["env-filter", "std"]}
+tracing.workspace=true
+
+[features]
+cuda=["mistralrs?/cuda"]
+cudnn=["mistralrs?/cudnn"]
+llama_cpp_backend=["byteorder", "clap", "hf-hub", "nvml-wrapper", "paste", "sysinfo", "tokenizers"]
+# metal=["mistralrs?/metal"]
+mistral_rs_backend=[
+    "byteorder",
+    "hf-hub",
+    "mistralrs",
+    "nvml-wrapper",
+    "paste",
+    "sysinfo",
+    "tokenizers",
+]
+
+[dev-dependencies]
+serial_test.workspace=true
+tokio={workspace=true, features=["macros", "test-util"]}
+
+[build-dependencies]
+cargo_metadata="0.18.1"
+
+[[bin]]
+name="server_runner"
+path="src/llms/local/llama_cpp/bin/server_runner.rs"
+required-features=["llama_cpp_backend"]
+
+[package.metadata.llama_cpp_backend]
+repo="https://github.com/ggerganov/llama.cpp"
+tag="b3779"

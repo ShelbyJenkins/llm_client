@@ -13,13 +13,40 @@
 [![MIT License][license-shield]][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-# llm_client: An Interface for Deterministic Signals from Probabilistic LLM Vibes
+# llm_client project: The Easiest Rust Interface for Local LLMs
+
+```toml
+// For Mac (CPU and GPU), windows (CPU), or linux (CPU)
+llm_client="*"
+// CUDA for windows or linux
+llm_client={version="*", features=["cuda"]}
+```
+
+This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
 
 ```rust
-// Load Local LLMs
-let llm_client = LlmClient::llama_cpp().available_vram(48).mistral7b_instruct_v0_3().init().await?;
+use Llmclient::prelude::*;
+// Loads the largest quant available based on your VRAM or system memory
+let llm_client = LlmClient::llama_cpp()
+    .mistral7b_instruct_v0_3() // Uses a preset model
+    .init() // Downloads model from hugging face and starts the inference interface
+    .await?;
+```
 
-// Build requests
+Several of the most common models are available as presets. Loading from local models is also fully supported. See [models.md](./docs/models.md) for more information.
+
+# Features 
+
+* Novel cascading prompt workflow for CoT and NLP workflows. DIY workflow creation supported!
+* Breadth of configuration options (sampler params, retry logic, prompt caching)
+* Logit bias and grammar constraints
+* API support for OpenAI, Anthropic, Perplexity, and more
+
+# llm_client crate: An Interface for Deterministic Signals from Probabilistic LLM Vibes
+
+In addition to basic LLM inference, llm_client is primarily designed for controlled generation using step based cascade workflows. This prompting system runs pre-defined workflows that control and constrain both the overall structure of generation and individual tokens during inference. This allows the implementation of specialized workflows for specific tasks, shaping LLM outputs towards intended, reproducible outcomes. 
+
+```rust
 let response: u32 = llm_client.reason().integer()
     .instructions()
     .set_content("Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?")
@@ -28,250 +55,61 @@ let response: u32 = llm_client.reason().integer()
 // Recieve 'primitive' outputs
 assert_eq!(response, 1)
 ```
-
 This runs the reason one round cascading prompt workflow with an integer output.
 
-<img src="./media/reason_one_round_example_annotated.png" width="70%" alt="An example run of this workflow with these instructions.">
+<img src="./docs/media/reason_one_round_example_annotated.png" width="60%" alt="An example run of this workflow with these instructions.">
 
-The code for this workflow is [here](./src/workflows/reason/one_round.rs).
+This method significantly improves the reliability of LLM use cases. For example, [there are test cases this repo](./tests/common/test_sets) that can be used to benchmark an LLM. There is a large increase in accuracy when comparing [basic inference with a constrained outcome](./tests/src/llm_client_tests/basic_primitive_tests.rs) and [a CoT style cascading prompt workflow](./llm_client/src/workflows/reason/one_round.rs). The [decision workflow](./llm_client/examples/decision.rs) that runs N count of CoT workflows across a tempature gradient approaches 100% accuracy for the test cases.
 
-I have a full breakdown of this workflow in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."
+I have a full breakdown of this in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."  
 
-### From AI Vibes to the Deterministic Real World
-
-Large Language Models (LLMs) are somewhere between conventional programming and databases: they process information like rule-based systems while storing and retrieving vast amounts of data like databases. But unlike the deterministic outputs of if statements and database queries, raw LLMs produce outputs that can be described as “vibes” — probabilistic, context-dependent results that may vary between runs. Building on vibes may work for creative applications, but in real-world applications, a lossy, vibey output is a step back from the reliability and consistency of traditional programming paradigms.
-
-llm_client is an interface for building cascading prompt workflows from dynamic and novel inputs, running the steps of the workflows in a linear or reactive manner, and constraining and interpreting LLM inference as actionable signals. This allows the integration of LLMs into traditional software systems with the level of consistency and reliability that users expect.
-
-### llm_client Implementation Goals
-
-* **As Friendly as Possible**: the most intuitive and ergonomic Rust interface possible 
-* **Local and Embedded**: 
-    * Designed for native, in-process integration—just like a standard Rust crate
-    * No stand-alone servers, containers, or services
-    * Minimal cloud dependencies, and fully local, fully supported
-* **Works**: Accurate, reliable, and observable results from available workflows
+Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find out how to use them.
 
 
-### Traditional LLM Constraints Impact LLM Performance
+## Examples
 
-Using an LLM as part of your business logic requires extracting usable signals from LLM responses. This means interpreting the text generated by an LLM using something like Regex or LLM constraints. Controlling the output of an LLM is commonly achieved with constraints like logit bias, stop words, or grammars.
+* [device config](./llm_client/examples/device_config.rs) - customizing your inference config
+* [basic completion](./llm_client/examples/basic_completion.rs) - the most basic request available
+* [basic primitive](./llm_client/examples/basic_primitive.rs) - returns the request primitive
+* [reason](./llm_client/examples/reason.rs) - a cascade workflow that performs CoT reasoning before returning a primitive
+* [decision](./llm_client/examples/decision.rs) - uses the reason workflow N times across a temperature gradient
+* [extract urls](./llm_client/examples/extract_urls.rs) - a cascade workflow that extracts all URLs from text that meet a predict
 
-However, from practical experience, as well [as studies](https://arxiv.org/abs/2408.02442), constraints such as logit bias and grammars negatively impact the quality of LLMs. Furthermore, these merely constrain the inference at the token level, when we may wish to shape the structure of the entire generation.
+## Docs
 
-### Controlled Generation with Step Based Cascade Workflows
-
-llm_client's cascade prompting system runs pre-defined workflows that control and constrain both the overall structure of generation and individual tokens during inference. This allows the implementation of specialized workflows for specific tasks, shaping LLM outputs towards intended, reproducible outcomes. 
-
-This method significantly improves the reliability of LLM use cases. For example, [there are test cases this repo](./tests/common/test_sets) that can be used to benchmark an LLM. There is a large increase in accuracy when comparing [basic inference with a constrained outcome](./tests/basic_primitive_tests.rs) and [a CoT style cascading prompt workflow](./src/workflows/reason/one_round.rs). The [decision workflow](./examples/decision.rs) that runs N count of CoT workflows across a tempature gradient approaches 100% accuracy for the test cases.
-
-### Cascade Prompt Elements
-
-* **Workflow**: A workflow, or '**flow**', is a high level object that runs the individual elements.
-* **Rounds**: A workflow is made up of multiple rounds. Each round is a pair of a user turn and an assistant turn. Turns are also known as ‘messages’. 
-    * Both the user turn and the assistant turn can be pre-generated, or dynamically generated.
-* **Tasks**: The ‘user message’ in the user turn of a round. Generically referred to ‘task’ for the sake of brevity.
-* **Steps**: Each assistant turn consists of one or more steps.
-    * **Inference steps** generate text via LLM inference.
-    * **Guidance steps** generate text from pre-defined static inputs or dynamic inputs from your program.
-* **Generation prefixes**: Assistant steps can be prefixed with content prior to generation.
-* **Dynamic sufixes**: Assistant steps can also be suffixed with additional content after generation.
-
-
-## Reasoning with Primitive Outcomes
-
-A constraint enforced CoT process for reasoning. First, we get the LLM to 'justify' an answer in plain english. This allows the LLM to 'think' by outputting the stream of tokens required to come to an answer. Then we take that 'justification', and prompt the LLM to parse it for the answer. See [the workflow for implementation details](./src/workflows/reason/one_round.rs).
-
-- Currently supporting returning booleans, u32s, and strings from a list of options
-
-- Can be 'None' when ran with `return_optional_primitive()`
-
-```rust
-    // boolean outcome
-    let reason_request = llm_client.reason().boolean();
-    reason_request
-        .instructions()
-        .set_content("Does this email subject indicate that the email is spam?");
-    reason_request
-        .supporting_material()
-        .set_content("You'll never believe these low, low prices 💲💲💲!!!");
-    let res: bool = reason_request.return_primitive().await.unwrap();
-    assert_eq!(res, true);
-
-    // u32 outcome
-    let reason_request = llm_client.reason().integer();
-    reason_request.primitive.lower_bound(0).upper_bound(10000);
-    reason_request
-        .instructions()
-        .set_content("How many times is the word 'llm' mentioned in these comments?");
-    reason_request
-        .supporting_material()
-        .set_content(hacker_news_comment_section);
-    // Can be None
-    let response: Option<u32> = reason_request.return_optional_primitive().await.unwrap();
-    assert!(res > Some(9000));
-
-    // string from a list of options outcome
-    let mut reason_request = llm_client.reason().exact_string();
-    reason_request
-        .instructions()
-        .set_content("Based on this readme, what is the name of the creator of this project?");
-    reason_request
-        .supporting_material()
-        .set_content(llm_client_readme);
-    reason_request
-        .primitive
-        .add_strings_to_allowed(&["shelby", "jack", "camacho", "john"]);
-    let response: String = reason_request.return_primitive().await.unwrap();
-    assert_eq!(res, "shelby");
-```
-
-See [the reason example for more](./examples/reason.rs)
-
-## Decisions with N number of Votes Across a Temperature Gradient 
-
-Uses the same process as above N number of times where N is the number of times the process must be repeated to reach a consensus. We dynamically alter the temperature to ensure an accurate consensus. See [the workflow for implementation details](./src/workflows/reason/decision.rs).
-
-- Supports primitives that implement the reasoning trait
-
-- The consensus vote count can be set with `best_of_n_votes()`
-
-- By default `dynamic_temperture` is enabled, and each 'vote' increases across a gradient
-
-```rust
-    // An integer decision request
-    let decision_request = llm_client.reason().integer().decision();
-    decision_request.best_of_n_votes(5); 
-    decision_request
-        .instructions()
-        .set_content("How many fingers do you have?");
-    let response = decision_request.return_primitive().await.unwrap();
-    assert_eq!(response, 5);
-```
-
-See [the decision example for more](./examples/decision.rs)
-
-## Structured Outputs and NLP
-
-- Data extraction, summarization, and semantic splitting on text.
-
-- Currently implemented NLP workflows are url extraction. 
-
-See [the extract_urls example](./examples/extract_urls.rs)
-
-## Basic Primitives
-
-A generation where the output is constrained to one of the defined primitive types. See [the currently implemented primitive types](./src/primitives/mod.rs). These are used in other workflows, but only some are used as the output for specific workflows like reason and decision.
-
-- These are fairly easy to add, so feel free to open an issue if you'd like one added.
-
-See [the basic_primitive example](./examples/basic_primitive.rs)
-
-## LLM -> LLMs
-
-- Basic support for API based LLMs. Currently, anthropic, openai, perplexity
-
-- Perplexity does not *currently* return documents, but it does create it's responses from live data
-
-```rust
-    let llm_client = LlmClient::perplexity().sonar_large().init();
-    let mut basic_completion = llm_client.basic_completion();
-    basic_completion
-        .prompt()
-        .add_user_message()
-        .set_content("Can you help me use the llm_client rust crate? I'm having trouble getting cuda to work.");
-    let response = basic_completion.run().await?;
-```
-
-See [the basic_completion example](./examples/basic_completion.rs)
-
-## Loading Custom Models from Local Storage
-
-- llm_client uses the [llm_utils crate](https://crates.io/crates/llm_utils) on the backend. To load custom models, checkout the [llm_utils documentation](https://github.com/shelbyJenkins/llm_utils?tab=readme-ov-file#model-loading-%EF%B8%8F). 
-
-```rust
-    // From a local storage
-    let llm_client = LlmClient::llama_cpp().local_quant_file_path(local_llm_path).init().await?;
-
-    // From hugging face
-    let llm_client = LlmClient::llama_cpp().hf_quant_file_url("https://huggingface.co/MaziyarPanahi/Meta-Llama-3-8B-Instruct-GGUF/blob/main/Meta-Llama-3-8B-Instruct.Q6_K.gguf").init().await?;
-```
-## Configuring Requests
-
-- All requests and workflows implement the `BaseRequestConfigTrait` which gives access to the parameters sent to the LLM
-
-- These settings are normalized across both local and API requests
-
-```rust
-    let llm_client = LlmClient::llama_cpp()
-        .available_vram(48)
-        .mistral7b_instruct_v0_3()
-        .init()
-        .await?;
-
-    let basic_completion = llm_client.basic_completion();
-
-    basic_completion
-        .temperature(1.5)
-        .frequency_penalty(0.9)
-        .max_tokens(200);
-```
-See [See all the settings here](./src/components/base_request.rs)
-
+* llm_client [readme.md](./llm_client/README.md)
+* docs [directory](./docs)
 
 ## Guides
 
 * [Limiting power in Nvidia GPUs](./media/nv-power-limit.md)
 
+## Blog Posts
 
-## Installation
-
-llm_client currently relies on llama.cpp. As it's a c++ project, it's not bundled in the crate. In the near future, llm_client will support mistral-rs, an inference backend built in Candle and supporting great features like ISQ. Once integration is complete, llm_client will be pure Rust and can be installed as just a crate.
-
-
-- Clone repo:
-```cmd
-git clone --recursive https://github.com/ShelbyJenkins/llm_client.git
-cd llm_client
-```
-- Add to cargo.toml:
-```toml
-[dependencies]
-llm_client = {path="../llm_client"}
-```
-- Optional: Build devcontainer from `llm_client/.devcontainer/devcontainer.json` This will build out a dev container with nvidia dependencies installed. 
-
-- Build llama.cpp (<a href="https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md">This is dependent on your hardware. Please see full instructions here</a>):
-  ```cmd
-    // Example nvidia gpu build
-    cd llm_client/src/llm_backends/llama_cpp/llama_cpp
-    make GGML_CUDA=1
-  ```
+* [Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)
 
 ## Roadmap
 
-* Migrate from llama.cpp to <a href="https://github.com/EricLBuehler/mistral.rs">mistral-rs</a>. This would greatly simplify consuming as an embedded crate. It's currently a WIP. It may also end up that llama.cpp is behind a feature flag as a fallback. 
-    * Current blockers are grammar migration 
-    * and multi-gpu support
+* Migrate from llama.cpp to [mistral.rs](https://github.com/EricLBuehler/mistral.rs). This would greatly simplify consuming as an embedded crate. It's currently a WIP. Blockers:
+    * Build script for crates.io installation
+    * Grammar migration 
+    * Stop word extraction
+    * Dual GPU support (Supported but crashes when I test) and token generation speed (Benchmarks matches Llama.cpp but I haven't been able to reproduce with my setup)
 * Reasoning where the output can be multiple answers
 * Expanding the NLP functionality to include semantic splitting and data further extraction.
 * Refactor the benchmarks module
+* Server mode for "LLM-in-a-box" deployments
 
 ### Dependencies 
-<a href="https://github.com/64bit/async-openai">async-openai</a> is used to interact with the OpenAI API. A modifed version of the async-openai crate is used for the Llama.cpp server. If you just need an OpenAI API interface, I suggest using the async-openai crate.
 
-<a href="https://github.com/mochi-neko/clust">clust</a> is used to interact with the Anthropic API. If you just need an Anthropic API interface, I suggest using the clust crate.
-
-<a href="https://github.com/shelbyJenkins/llm_utils">llm_utils</a> is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
-
+* [llm_utils](https://github.com/shelbyJenkins/llm_utils) is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
+* [llm_interface](./llm_interface) is a sub-crate of llm_client. It is the backend for LLM inference.
+* [llama.cpp](https://github.com/ggerganov/llama.cpp) is used in server mode for LLM inference as the current default.
+* [mistral.rs](https://github.com/EricLBuehler/mistral.rs) is available for basic use, but is a WIP. Once integration is complete it will the default for a fully Rust backend.
 
 ## Contributing
 
 Yes.
-
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 

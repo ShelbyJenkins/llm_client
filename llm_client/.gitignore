@@ -2,5 +2,4 @@
 .env
 /logs/
 /llm_client_logs/
-Cargo.lock
 /llm_interface/src/llms/local/llama_cpp/llama_cpp/*

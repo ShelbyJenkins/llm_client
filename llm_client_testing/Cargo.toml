@@ -1,0 +1,26 @@
+[package]
+edition.workspace=true
+homepage.workspace=true
+license.workspace=true
+name="llm_client_testing"
+repository.workspace=true
+version="0.0.1"
+
+[dependencies]
+anyhow.workspace=true
+llm_client={path="../llm_client"}
+llm_utils.workspace=true
+serde.workspace=true
+serde_json.workspace=true
+tokio={workspace=true, features=["macros", "test-util"]}
+tracing.workspace=true
+url.workspace=true
+
+[features]
+all=["cuda", "cudnn", "llama_cpp_backend", "mistral_rs_backend"]
+cuda=["llm_client/cuda"]
+cudnn=["llm_client/cudnn"]
+default=["llama_cpp_backend"]
+llama_cpp_backend=["llm_client/llama_cpp_backend"]
+# metal=["llm_interface/metal"]
+mistral_rs_backend=["llm_client/mistral_rs_backend"]
