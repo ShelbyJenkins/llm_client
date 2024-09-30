@@ -77,7 +77,7 @@ impl LlamaCppServer {
         {
             ServerStatus::RunningRequested => return Ok(ServerStatus::RunningRequested),
             ServerStatus::Stopped => (),
-            ServerStatus::Running => self.kill_server_process(),
+            ServerStatus::Running => self.shutdown(),
         };
 
         let original = if !self.local_config.device_config.use_gpu {
@@ -115,12 +115,12 @@ impl LlamaCppServer {
                 Ok(ServerStatus::RunningRequested)
             }
             ServerStatus::Stopped => {
-                self.kill_server_process();
+                self.shutdown();
                 tracing::error!("Failed to start server");
                 panic!("Failed to start server")
             }
             ServerStatus::Running => {
-                self.kill_server_process();
+                self.shutdown();
                 tracing::error!("Failed to start server with correct model.");
                 panic!("Failed to start server with correct model.")
             }
@@ -162,17 +162,18 @@ impl LlamaCppServer {
         if self.test_connection(test_duration, retry_timeout) == ServerStatus::Running {
             tracing::info!("Server is running.");
 
-            {
-                if self.check_server_config(3, retry_timeout, client).await?
-                    == ServerStatus::RunningRequested
-                {
-                    tracing::info!(
-                        "Server is running with the correct model: {}",
-                        &self.local_config.device_config.local_model_path
-                    );
-                    Ok(ServerStatus::RunningRequested)
-                } else {
-                    Ok(ServerStatus::Stopped)
+            match self.check_server_config(3, retry_timeout, client).await {
+                Ok(ServerStatus::RunningRequested) => {
+                    return Ok(ServerStatus::RunningRequested);
+                }
+                Ok(ServerStatus::Running) => {
+                    return Ok(ServerStatus::Running);
+                }
+                Ok(ServerStatus::Stopped) => {
+                    return Ok(ServerStatus::Stopped);
+                }
+                Err(_) => {
+                    return Ok(ServerStatus::Stopped);
                 }
             }
         } else {
@@ -234,97 +235,158 @@ impl LlamaCppServer {
         Ok(ServerStatus::Stopped)
     }
 
-    pub fn kill_server_process(&mut self) {
-        if let Some(server_process) = &mut self.server_process {
-            kill_server(server_process.id());
+    pub fn shutdown(&self) {
+        let process = if let Some(server_process) = &self.server_process {
             server_process
-                .kill()
-                .expect("Failed to kill server. This shouldn't ever panic.");
+        } else {
+            kill_all_servers();
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            return;
+        };
+
+        let pid = process.id();
+        match kill_server_process_command(pid) {
+            Ok(_) => {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Err(e) => {
+                crate::warn!("Failed to kill server process: {}", e);
+            }
+        };
+
+        match server_pid_exists(pid) {
+            Ok(true) => {
+                crate::error!("Failed to kill server process");
+                kill_all_servers();
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Ok(false) => (),
+            Err(e) => {
+                crate::warn!("Failed to check if server process exists: {e}");
+            }
         }
-
-        kill_all_servers();
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 }
 
-impl Drop for LlamaCppServer {
-    fn drop(&mut self) {
-        self.kill_server_process();
-    }
-}
-
-pub fn kill_server(pid: u32) {
-    std::process::Command::new("kill")
+pub fn kill_server_process_command(pid: u32) -> crate::Result<()> {
+    match std::process::Command::new("kill")
         .arg(pid.to_string())
         .status()
-        .expect("Failed to kill process");
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            crate::bail!(
+                "std::process::Command::new(\"kill\") failed to kill server process: {}",
+                e
+            )
+        }
+    }
 }
 
-pub fn kill_all_servers() {
+pub fn server_pid_exists(pid: u32) -> crate::Result<bool> {
+    let pid: String = pid.to_string();
+    match get_all_server_pids() {
+        Ok(pids) => {
+            for p in pids {
+                if p.contains(&pid) {
+                    return Ok(true);
+                }
+            }
+        }
+        Err(e) => {
+            crate::warn!("Failed to check if server process exists: {e}");
+        }
+    };
+    match get_all_server_pids() {
+        Ok(pids) => {
+            for p in pids {
+                if p.contains(&pid) {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
+        }
+        Err(e) => {
+            crate::bail!("Failed to check if server process exists: {}", e)
+        }
+    }
+}
+
+pub fn get_all_server_pids() -> crate::Result<Vec<String>> {
     // pgrep -f '^./llama-server'
     let output = std::process::Command::new("pgrep")
         .arg("-f")
         .arg("^./llama-server")
-        .output()
-        .expect("Failed to execute pgrep");
+        .output()?;
     let pids = String::from_utf8_lossy(&output.stdout);
+    let mut pid_vec = Vec::new();
     for pid in pids.lines() {
+        pid_vec.push(pid.to_owned());
+    }
+    Ok(pid_vec)
+}
+
+pub fn kill_all_servers() {
+    let pids = match get_all_server_pids() {
+        Ok(pids) => pids,
+        Err(e) => {
+            crate::error!("Failed to get all server pids: {e}");
+            return;
+        }
+    };
+    for pid in pids {
         std::process::Command::new("kill")
             .arg(pid)
             .status()
             .expect("Failed to kill process");
     }
-    std::thread::sleep(std::time::Duration::from_secs(1));
 }
 
-// #[cfg(test)]
-// mod tests {
+impl Drop for LlamaCppServer {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}
 
-//     use super::*;
-//     use crate::LlmInterface;
-//     use serial_test::serial;
+#[cfg(test)]
+mod tests {
 
-//     #[tokio::test]
-//     #[serial]
-//     async fn test_builder() {
-//         let builder = LlmInterface::llama_cpp();
-//         let _loaded = builder.build().await.unwrap();
-//     }
+    use super::*;
+    use crate::LlmInterface;
+    use serial_test::serial;
 
-//     #[tokio::test]
-//     #[serial]
-//     async fn test_server() {
-//         let builder = LlmInterface::llama_cpp();
-//         let loaded = builder.build().await.unwrap();
-//         std::mem::drop(loaded);
+    #[tokio::test]
+    #[serial]
+    async fn test_server() {
+        let builder = LlmInterface::llama_cpp();
+        let loaded = builder.init().await.unwrap();
+        std::mem::drop(loaded);
 
-//         let mut new_builder = LlmInterface::llama_cpp();
-//         let path = new_builder
-//             .llm_loader
-//             .load()
-//             .unwrap()
-//             .local_model_path
-//             .clone();
-//         let mut new_server = LlamaCppServer::new(new_builder.config.clone(), path);
-//         if new_server.test_connection(
-//             std::time::Duration::from_millis(STATUS_CHECK_TIME_MS),
-//             std::time::Duration::from_millis(STATUS_RETRY_TIMEOUT_MS),
-//         ) == ServerStatus::Running
-//         {
-//             panic!("Server should be stopped after dropping");
-//         }
+        let new_builder = LlmInterface::llama_cpp();
 
-//         let _loaded = new_builder.build().await.unwrap();
+        let new_server = LlamaCppServer::new(
+            &new_builder.config.clone(),
+            new_builder.local_config.clone(),
+        )
+        .unwrap();
+        if new_server.test_connection(
+            std::time::Duration::from_millis(STATUS_CHECK_TIME_MS),
+            std::time::Duration::from_millis(STATUS_RETRY_TIMEOUT_MS),
+        ) == ServerStatus::Running
+        {
+            panic!("Server should be stopped after dropping");
+        }
 
-//         new_server.kill_server_process();
+        let _loaded = new_builder.init().await.unwrap();
 
-//         if new_server.test_connection(
-//             std::time::Duration::from_millis(STATUS_CHECK_TIME_MS),
-//             std::time::Duration::from_millis(STATUS_RETRY_TIMEOUT_MS),
-//         ) == ServerStatus::Running
-//         {
-//             panic!("Server should be stopped after killing");
-//         }
-//     }
-// }
+        new_server.shutdown();
+
+        if new_server.test_connection(
+            std::time::Duration::from_millis(STATUS_CHECK_TIME_MS),
+            std::time::Duration::from_millis(STATUS_RETRY_TIMEOUT_MS),
+        ) == ServerStatus::Running
+        {
+            panic!("Server should be stopped after killing");
+        }
+    }
+}

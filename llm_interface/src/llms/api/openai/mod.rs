@@ -8,14 +8,12 @@ use super::{
 use crate::{
     logging::LoggingConfig,
     requests::completion::{
-        error::CompletionError,
-        request::CompletionRequest,
-        response::CompletionResponse,
+        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
 };
 use completion::OpenAiCompletionRequest;
 use llm_utils::models::api_model::ApiLlmModel;
-use reqwest::header::{HeaderMap, AUTHORIZATION};
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 
 /// Default v1 API base url
@@ -103,27 +101,29 @@ impl OpenAiConfig {
 impl ApiConfigTrait for OpenAiConfig {
     fn headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
-        if !self.org_id.is_empty() {
-            headers.insert(
-                OPENAI_ORGANIZATION_HEADER,
-                self.org_id.as_str().parse().unwrap(),
-            );
-        }
 
+        if !self.org_id.is_empty() {
+            if let Ok(header_value) = HeaderValue::from_str(self.org_id.as_str()) {
+                headers.insert(OPENAI_ORGANIZATION_HEADER, header_value);
+            } else {
+                crate::error!("Failed to create header value from org_id value");
+            }
+        }
         if !self.project_id.is_empty() {
-            headers.insert(
-                OPENAI_PROJECT_HEADER,
-                self.project_id.as_str().parse().unwrap(),
-            );
+            if let Ok(header_value) = HeaderValue::from_str(self.project_id.as_str()) {
+                headers.insert(OPENAI_PROJECT_HEADER, header_value);
+            } else {
+                crate::error!("Failed to create header value from project_id value");
+            }
         }
         if let Some(api_key) = self.api_key() {
-            headers.insert(
-                AUTHORIZATION,
-                format!("Bearer {}", api_key.expose_secret())
-                    .as_str()
-                    .parse()
-                    .unwrap(),
-            );
+            if let Ok(header_value) =
+                HeaderValue::from_str(&format!("Bearer {}", api_key.expose_secret()))
+            {
+                headers.insert(AUTHORIZATION, header_value);
+            } else {
+                crate::error!("Failed to create header value from authorization value");
+            }
         }
 
         headers

@@ -42,9 +42,9 @@ impl<C: ApiConfigTrait> ApiClient<C> {
                 .headers(self.config.headers())
                 .header(reqwest::header::CONTENT_TYPE, "application/json")
                 .body(serialized_request);
+            crate::trace!("Serialized request: {:?}", request_builder);
             Ok(request_builder.build()?)
         };
-
         self.execute(request_maker).await
     }
 

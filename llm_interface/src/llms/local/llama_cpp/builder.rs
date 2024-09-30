@@ -9,9 +9,7 @@ use crate::{
 };
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
-    GgufLoaderTrait,
-    GgufPresetTrait,
-    HfTokenTrait,
+    GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };
 
 // Everything here can be implemented for any struct.
@@ -76,10 +74,13 @@ impl HfTokenTrait for LlamaCppBackendBuilder {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(not(target_os = "macos"))]
+    use crate::llms::local::devices::CudaConfig;
+    #[cfg(target_os = "macos")]
+    use crate::llms::local::devices::MetalConfig;
+
     use crate::{
-        llms::local::{devices::CudaDeviceMap, LlmLocalTrait},
-        requests::completion::request::CompletionRequest,
-        LlmInterface,
+        llms::local::LlmLocalTrait, requests::completion::request::CompletionRequest, LlmInterface,
     };
     use serial_test::serial;
 
@@ -107,16 +108,17 @@ mod tests {
         println!("{res}");
     }
 
+    #[cfg(not(target_os = "macos"))]
     #[tokio::test]
     #[serial]
     async fn test_single_gpu_map() {
-        let cuda_map = CudaDeviceMap {
+        let cuda_config = CudaConfig {
             use_cuda_devices: vec![1],
             ..Default::default()
         };
 
         let backend = LlmInterface::llama_cpp()
-            .cuda_device_map(cuda_map)
+            .cuda_config(cuda_config)
             .init()
             .await
             .unwrap();
@@ -140,16 +142,17 @@ mod tests {
         println!("{res}");
     }
 
+    #[cfg(not(target_os = "macos"))]
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
-        let cuda_map = CudaDeviceMap {
+        let cuda_config = CudaConfig {
             use_cuda_devices: vec![0, 1],
             ..Default::default()
         };
 
         let backend = LlmInterface::llama_cpp()
-            .cuda_device_map(cuda_map)
+            .cuda_config(cuda_config)
             .init()
             .await
             .unwrap();
@@ -186,6 +189,36 @@ mod tests {
                 .device_config
                 .gpu_count()
                 == 0
+        );
+        let mut req = CompletionRequest::new(backend);
+        req.prompt
+            .add_user_message()
+            .unwrap()
+            .set_content("Hello, world!");
+
+        let res = req.request().await.unwrap();
+        println!("{res}");
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    #[serial]
+    async fn test_metal() {
+        let metal_config = MetalConfig::new_from_ram_gb(5.0);
+        let backend = LlmInterface::llama_cpp()
+            .metal_config(metal_config)
+            .init()
+            .await
+            .unwrap();
+        assert!(
+            backend
+                .llama_cpp()
+                .unwrap()
+                .server
+                .local_config
+                .device_config
+                .gpu_count()
+                == 1
         );
         let mut req = CompletionRequest::new(backend);
         req.prompt

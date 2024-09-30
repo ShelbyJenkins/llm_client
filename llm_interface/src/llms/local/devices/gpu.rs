@@ -21,13 +21,22 @@ impl GpuDevice {
 pub struct GpuLayerAllocator {
     layer_size: u64,
     total_layers: u64,
+    buffer_layer_per_gpu: u64,
+    buffer_layer_main_gpu: u64,
 }
 
 impl GpuLayerAllocator {
-    pub fn new(layer_size: u64, total_layers: u64) -> Self {
+    pub fn new(
+        layer_size: u64,
+        total_layers: u64,
+        buffer_layer_per_gpu: u64,
+        buffer_layer_main_gpu: u64,
+    ) -> Self {
         GpuLayerAllocator {
             layer_size,
             total_layers,
+            buffer_layer_per_gpu,
+            buffer_layer_main_gpu,
         }
     }
 
@@ -38,8 +47,23 @@ impl GpuLayerAllocator {
         // Calculate total available VRAM
         let total_available_vram: u64 = gpus.iter().map(|gpu| gpu.available_vram_bytes).sum();
 
-        // Calculate total required VRAM
-        let buffer_layers = gpus.len() as u64 + 1; // One for each GPU plus an extra for the main GPU
+        let mut buffer_layers = 0;
+        // Allocate buffer layers
+        for gpu in gpus.iter_mut() {
+            for _ in 1..=self.buffer_layer_per_gpu {
+                buffer_layers += 1;
+                gpu.allocate_layer(self.layer_size);
+                gpu.allocated_buffer_bytes += self.layer_size;
+            }
+            if gpu.is_main_gpu {
+                for _ in 1..=self.buffer_layer_main_gpu {
+                    buffer_layers += 1;
+                    gpu.allocate_layer(self.layer_size);
+                    gpu.allocated_buffer_bytes += self.layer_size;
+                }
+            }
+        }
+
         let total_required_vram = (self.total_layers + buffer_layers) * self.layer_size;
 
         // Check if there's enough total VRAM
@@ -49,16 +73,6 @@ impl GpuLayerAllocator {
                 total_required_vram / 1_073_741_824,
                 total_available_vram / 1_073_741_824
             ));
-        }
-
-        // Allocate buffer layers
-        for gpu in gpus.iter_mut() {
-            gpu.allocate_layer(self.layer_size);
-            gpu.allocated_buffer_bytes = self.layer_size;
-            if gpu.is_main_gpu {
-                gpu.allocate_layer(self.layer_size); // Extra buffer for main GPU
-                gpu.allocated_buffer_bytes += self.layer_size;
-            }
         }
 
         let mut allocation = vec![0; gpus.len()];

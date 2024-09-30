@@ -1,17 +1,13 @@
 use llm_interface::requests::completion::CompletionRequest;
 
-pub mod urls;
+pub mod hierarchy;
 
-pub struct Extract {
+pub struct Classify {
     pub base_req: CompletionRequest,
 }
 
-impl Extract {
+impl Classify {
     pub fn new(base_req: CompletionRequest) -> Self {
         Self { base_req }
-    }
-
-    pub fn urls(self) -> urls::ExtractUrls {
-        urls::ExtractUrls::new(self.base_req)
     }
 }

@@ -1,4 +1,5 @@
 use cargo_metadata::MetadataCommand;
+
 use std::{env, path::PathBuf, process::Command};
 
 macro_rules! p {
@@ -9,9 +10,9 @@ macro_rules! p {
 
 fn main() {
     let start_time = std::time::Instant::now();
+    println!("cargo:rerun-if-changed=build.rs");
     if cfg!(feature = "llama_cpp_backend") {
         let llama_cpp_dir = get_target_dir().join("llama_cpp");
-        println!("cargo:rerun-if-changed=build.rs");
         // println!("cargo::rerun-if-changed={}", llama_cpp_dir.display());
 
         p!("Starting build process...");
@@ -146,12 +147,17 @@ fn build(llama_cpp_dir: &PathBuf) {
         .args(["llama-server", "BUILD_TYPE=Release", "-j"])
         .current_dir(llama_cpp_dir);
 
-    if cfg!(target_os = "linux") || cfg!(target_os = "windows") {
-        // Should use nvml-wrapper to check for cuda availability and if it's not enabled, don't build with cuda
-        if cfg!(feature = "cuda") {
-            builder.arg("GGML_CUDA=1");
+    if cfg!(not(target_os = "macos")) {
+        match init_nvml_wrapper() {
+            Ok(_) => {
+                builder.arg("GGML_CUDA=1");
+            }
+            Err(_) => {
+                p!("No CUDA detected - building without CUDA support");
+            }
         }
     }
+
     p!("Running make command: {:?}", builder);
     let status = builder.status().unwrap();
     if status.success() {
@@ -162,4 +168,25 @@ fn build(llama_cpp_dir: &PathBuf) {
         p!("Removed {}", llama_cpp_dir.display());
         panic!("Make command failed with exit code: {}", status);
     }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn init_nvml_wrapper() -> anyhow::Result<nvml_wrapper::Nvml> {
+    let library_names = vec![
+        "libnvidia-ml.so",   // For Linux
+        "libnvidia-ml.so.1", // For WSL
+        "nvml.dll",          // For Windows
+    ];
+    for library_name in library_names {
+        match nvml_wrapper::Nvml::builder()
+            .lib_path(library_name.as_ref())
+            .init()
+        {
+            Ok(nvml) => return Ok(nvml),
+            Err(_) => {
+                continue;
+            }
+        }
+    }
+    anyhow::bail!("Failed to initialize nvml_wrapper::Nvml")
 }

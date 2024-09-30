@@ -4,8 +4,7 @@ use llm_interface::{
         api::config::{ApiConfig, LlmApiConfigTrait},
         local::{
             llama_cpp::{LlamaCppBackend, LlamaCppConfig},
-            LlmLocalTrait,
-            LocalLlmConfig,
+            LlmLocalTrait, LocalLlmConfig,
         },
         LlmBackend,
     },
@@ -13,13 +12,11 @@ use llm_interface::{
 };
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
-    GgufLoaderTrait,
-    GgufPresetTrait,
-    HfTokenTrait,
+    GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };
 
 // Everything here can be implemented for any struct.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct LlamaCppBackendBuilder {
     pub config: LlamaCppConfig,
     pub local_config: LocalLlmConfig,

@@ -26,26 +26,30 @@ fn new_only_cpu(
 fn new_single_gpu(
     generic_device_map: &crate::llms::local::devices::DeviceConfig,
 ) -> crate::Result<(Device, DeviceMapMetadata)> {
-    let gpu_devices = generic_device_map.allocate_layers_to_gpus()?;
+    let _gpu_devices = generic_device_map.allocate_layers_to_gpus(0, 0)?;
     let main_gpu = generic_device_map.main_gpu()?;
-    let layer_count = gpu_devices
-        .iter()
-        .map(|d| d.allocated_layers as usize)
-        .sum();
+    // let layer_count = gpu_devices
+    //     .iter()
+    //     .map(|d| d.allocated_layers as usize)
+    //     .sum();
 
     Ok((
         Device::cuda_if_available(main_gpu as usize)?,
-        DeviceMapMetadata::from_num_device_layers(vec![DeviceLayerMapMetadata {
-            ordinal: main_gpu as usize,
-            layers: layer_count,
-        }]),
+        DeviceMapMetadata::dummy(),
     ))
+    // Ok((
+    //     Device::cuda_if_available(main_gpu as usize)?,
+    //     DeviceMapMetadata::from_num_device_layers(vec![DeviceLayerMapMetadata {
+    //         ordinal: main_gpu as usize,
+    //         layers: layer_count,
+    //     }]),
+    // ))
 }
 
 fn new_multiple_gpu(
     generic_device_map: &crate::llms::local::devices::DeviceConfig,
 ) -> crate::Result<(Device, DeviceMapMetadata)> {
-    let gpu_devices = generic_device_map.allocate_layers_to_gpus()?;
+    let gpu_devices = generic_device_map.allocate_layers_to_gpus(0, 0)?;
     let main_gpu = generic_device_map.main_gpu()?;
 
     let mut device_map_metadata: Vec<DeviceLayerMapMetadata> = Vec::new();

@@ -6,13 +6,11 @@ use super::{
 use crate::{
     logging::LoggingConfig,
     requests::completion::{
-        error::CompletionError,
-        request::CompletionRequest,
-        response::CompletionResponse,
+        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
 };
 use llm_utils::models::api_model::ApiLlmModel;
-use reqwest::header::{HeaderMap, AUTHORIZATION};
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 
 pub struct GenericApiBackend {
@@ -89,13 +87,13 @@ impl ApiConfigTrait for GenericApiConfig {
     fn headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         if let Some(api_key) = self.api_key() {
-            headers.insert(
-                AUTHORIZATION,
-                format!("Bearer {}", api_key.expose_secret())
-                    .as_str()
-                    .parse()
-                    .unwrap(),
-            );
+            if let Ok(header_value) =
+                HeaderValue::from_str(&format!("Bearer {}", api_key.expose_secret()))
+            {
+                headers.insert(AUTHORIZATION, header_value);
+            } else {
+                crate::error!("Failed to create header value from authorization value");
+            }
         }
 
         headers
@@ -103,9 +101,9 @@ impl ApiConfigTrait for GenericApiConfig {
 
     fn url(&self, path: &str) -> String {
         if let Some(port) = &self.api_config.port {
-            format!("http://{}:{}{}", self.api_config.host, port, path)
+            format!("https://{}:{}{}", self.api_config.host, port, path)
         } else {
-            format!("http://{}:{}", self.api_config.host, path)
+            format!("https://{}:{}", self.api_config.host, path)
         }
     }
 

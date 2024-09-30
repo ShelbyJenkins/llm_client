@@ -1,40 +1,51 @@
 use crate::requests::completion::*;
 use mistralrs::{
-    Constraint,
-    NormalRequest,
-    Request as MistralCompletionRequest,
-    RequestMessage,
-    Response,
-    SamplingParams,
+    Constraint, DrySamplingParams, NormalRequest, Request as MistralCompletionRequest,
+    RequestMessage, Response, SamplingParams,
 };
 
 pub fn new(
     request: &CompletionRequest,
     tx: tokio::sync::mpsc::Sender<Response>,
+    id: usize,
 ) -> crate::Result<MistralCompletionRequest, CompletionError> {
-    let mut sampling_params = SamplingParams::deterministic();
-
-    sampling_params.temperature = Some(request.config.temperature.into());
-    sampling_params.frequency_penalty = request.config.frequency_penalty;
-    sampling_params.presence_penalty = Some(request.config.presence_penalty);
-    sampling_params.max_len = request.config.actual_request_tokens.map(|val| val as usize);
-    // logits_bias = req.logit_bias.clone();
-    // stop_toks = Some(StopTokens::Seqs(vec!["5. ".to_string()]));
+    let sampling_params = SamplingParams {
+        temperature: Some(request.config.temperature.into()),
+        frequency_penalty: request.config.frequency_penalty,
+        presence_penalty: Some(request.config.presence_penalty),
+        max_len: request.config.actual_request_tokens.map(|val| val as usize),
+        top_k: None,
+        top_p: request.config.top_p.map(|val| val as f64),
+        min_p: None,
+        top_n_logprobs: 0,
+        stop_toks: None,
+        logits_bias: None,
+        n_choices: 1,
+        dry_params: Some(DrySamplingParams::default()),
+    };
 
     let constraint = Constraint::None;
 
-    let request = MistralCompletionRequest::Normal(NormalRequest {
-        messages: RequestMessage::CompletionTokens(
-            request
+    let mistral_request = MistralCompletionRequest::Normal(NormalRequest {
+        messages: RequestMessage::Completion {
+            text: request
                 .prompt
-                .get_built_prompt_as_tokens()
+                .get_built_prompt_string()
                 .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?,
-        ),
+            echo_prompt: false,
+            best_of: 1,
+        },
+        // messages: RequestMessage::CompletionTokens(
+        //     request
+        //         .prompt
+        //         .get_built_prompt_as_tokens()
+        //         .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?,
+        // ),
         sampling_params,
         response: tx,
         return_logprobs: false,
         is_streaming: false,
-        id: 0,
+        id,
         constraint,
         suffix: None,
         adapters: None,
@@ -42,5 +53,5 @@ pub fn new(
         tools: None,
         logits_processors: None,
     });
-    Ok(request)
+    Ok(mistral_request)
 }

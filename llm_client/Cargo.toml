@@ -8,11 +8,12 @@ license.workspace=true
 name="llm_client"
 readme="README.md"
 repository.workspace=true
+
 version="0.0.4"
+
 [dependencies]
-# llm_interface={path="../llm_interface", version="0.0.1"}
 anyhow.workspace=true
-llm_interface={path="../llm_interface"}
+llm_interface={path="../llm_interface", version="0.0.1"}
 llm_utils.workspace=true
 thiserror.workspace=true
 tokio.workspace=true
@@ -20,15 +21,15 @@ tracing.workspace=true
 url.workspace=true
 
 [features]
+all=["cuda", "cudnn", "llama_cpp_backend", "mistral_rs_backend"]
 cuda=["llm_interface/cuda"]
 cudnn=["llm_interface/cudnn"]
 default=["llama_cpp_backend"]
 llama_cpp_backend=["llm_interface/llama_cpp_backend"]
-# metal=["llm_interface/metal"]
 mistral_rs_backend=["llm_interface/mistral_rs_backend"]
 
 [dev-dependencies]
-llm_client_testing={path="../llm_client_testing", features=["all"]}
+llm_client_testing={path="../llm_client_testing"}
 serde.workspace=true
 serde_json.workspace=true
 serial_test.workspace=true

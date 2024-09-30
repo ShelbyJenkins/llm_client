@@ -79,7 +79,7 @@ impl LlamaCppDeviceMap {
     fn new_single_gpu(
         generic_device_map: &crate::llms::local::devices::DeviceConfig,
     ) -> crate::Result<Self> {
-        let gpu_devices = generic_device_map.allocate_layers_to_gpus()?;
+        let gpu_devices = generic_device_map.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
         Ok(Self {
             threads_batch: Some(ThreadsBatch::new_from_cpu_config(
@@ -95,7 +95,7 @@ impl LlamaCppDeviceMap {
     fn new_multiple_gpu(
         generic_device_map: &crate::llms::local::devices::DeviceConfig,
     ) -> crate::Result<Self> {
-        let gpu_devices = generic_device_map.allocate_layers_to_gpus()?;
+        let gpu_devices = generic_device_map.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
         Ok(Self {
             threads_batch: Some(ThreadsBatch::new_from_cpu_config(
@@ -138,7 +138,7 @@ impl LlamaCppDeviceMap {
 pub(crate) struct Threads(pub i16);
 impl Threads {
     fn new_from_cpu_config(cpu_config: &crate::llms::local::devices::cpu::CpuConfig) -> Self {
-        Self(cpu_config.set_default_thread_count(cpu_config.threads, 1.5))
+        Self(cpu_config.thread_count_or_default())
     }
     fn as_arg(&self) -> [String; 2] {
         ["--threads".to_string(), self.0.to_string()]
@@ -148,7 +148,7 @@ impl Threads {
 pub(crate) struct ThreadsBatch(pub i16);
 impl ThreadsBatch {
     fn new_from_cpu_config(cpu_config: &crate::llms::local::devices::cpu::CpuConfig) -> Self {
-        Self(cpu_config.set_default_thread_count(cpu_config.threads_batch, 1.5))
+        Self(cpu_config.thread_count_batch_or_default())
     }
     fn as_arg(&self) -> [String; 2] {
         ["--threads-batch".to_string(), self.0.to_string()]

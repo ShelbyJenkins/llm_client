@@ -11,9 +11,7 @@ use crate::{
     },
     logging::LoggingConfig,
     requests::completion::{
-        error::CompletionError,
-        request::CompletionRequest,
-        response::CompletionResponse,
+        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
 };
 use completion::LlamaCppCompletionRequest;
@@ -70,9 +68,7 @@ impl LlamaCppBackend {
     }
 
     pub(crate) fn shutdown(&self) {
-        if let Some(server_process) = &self.server.server_process {
-            server::kill_server(server_process.id());
-        }
+        self.server.shutdown();
     }
 }
 

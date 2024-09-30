@@ -50,6 +50,11 @@ pub struct LlamaCppCompletionRequest {
 
 impl LlamaCppCompletionRequest {
     pub fn new(req: &CompletionRequest) -> crate::Result<Self, CompletionError> {
+        let cache_prompt = if req.config.cache_prompt {
+            Some(true)
+        } else {
+            None
+        };
         Ok(Self {
             prompt: req
                 .prompt
@@ -61,7 +66,7 @@ impl LlamaCppCompletionRequest {
                     .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?,
             ),
             grammar: req.grammar_string.clone(),
-            cache_prompt: Some(req.config.cache_prompt),
+            cache_prompt,
             logit_bias: req
                 .logit_bias
                 .as_ref()

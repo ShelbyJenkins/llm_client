@@ -1,8 +1,6 @@
 use crate::requests::{
     completion::{
-        error::CompletionError,
-        request::CompletionRequest,
-        response::CompletionResponse,
+        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
     constraints::logit_bias::LogitBias,
 };

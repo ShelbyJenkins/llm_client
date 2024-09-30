@@ -8,9 +8,7 @@ use crate::{
 };
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
-    GgufLoaderTrait,
-    GgufPresetTrait,
-    HfTokenTrait,
+    GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };
 
 // Everything here can be implemented for any struct.
@@ -65,7 +63,7 @@ impl HfTokenTrait for MistralRsBackendBuilder {
 #[cfg(test)]
 mod tests {
     use crate::{
-        llms::local::{devices::CudaDeviceMap, LlmLocalTrait},
+        llms::local::{devices::CudaConfig, LlmLocalTrait},
         requests::completion::request::CompletionRequest,
         LlmInterface,
     };
@@ -98,13 +96,13 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_single_gpu_map() {
-        let cuda_map = CudaDeviceMap {
+        let cuda_config = CudaConfig {
             use_cuda_devices: vec![1],
             ..Default::default()
         };
 
         let backend = LlmInterface::mistral_rs()
-            .cuda_device_map(cuda_map)
+            .cuda_config(cuda_config)
             .init()
             .await
             .unwrap();
@@ -131,13 +129,13 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
-        let cuda_map = CudaDeviceMap {
+        let cuda_config = CudaConfig {
             use_cuda_devices: vec![0, 1],
             ..Default::default()
         };
 
         let backend = LlmInterface::mistral_rs()
-            .cuda_device_map(cuda_map)
+            .cuda_config(cuda_config)
             .init()
             .await
             .unwrap();

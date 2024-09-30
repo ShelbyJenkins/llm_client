@@ -8,7 +8,7 @@ use crate::{
     },
     logging::{LoggingConfig, LoggingConfigTrait},
 };
-use llm_utils::models::api_model::ApiLlmModel;
+use llm_utils::models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
 
 // Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
@@ -34,6 +34,12 @@ impl PerplexityBackendBuilder {
         Ok(std::sync::Arc::new(LlmBackend::GenericApi(
             GenericApiBackend::new(self.config, self.model)?,
         )))
+    }
+}
+
+impl PerplexityModelTrait for PerplexityBackendBuilder {
+    fn model(&mut self) -> &mut ApiLlmModel {
+        &mut self.model
     }
 }
 

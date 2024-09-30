@@ -21,7 +21,7 @@ impl LoggingConfig {
 impl Default for LoggingConfig {
     fn default() -> Self {
         Self {
-            level: tracing::Level::DEBUG,
+            level: tracing::Level::TRACE,
             logging_enabled: true,
             logger_name: "llm_interface".to_string(),
             _tracing_guard: None,

@@ -1,5 +1,6 @@
-use super::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use url::Url;
 
 pub trait TestItem {
     fn test_level(&self) -> u8;

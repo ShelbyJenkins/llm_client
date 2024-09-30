@@ -1,4 +1,8 @@
-use super::*;
+use std::{fs::File, io::Read, path::PathBuf};
+
+use serde::Deserialize;
+
+use crate::{BooleanTests, ExactStringTests, ExtractUrlsTest, IntegerTests, TestItem};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -63,33 +67,33 @@ impl TestSetsLoader {
         self
     }
 
-    pub fn boolean(&self) -> Result<BooleanTests> {
+    pub fn boolean(&self) -> crate::Result<BooleanTests> {
         Ok(BooleanTests {
             cases: self.load_tests(self.test_file_path("boolean.json"))?,
         })
     }
 
-    pub fn integer(&self) -> Result<IntegerTests> {
+    pub fn integer(&self) -> crate::Result<IntegerTests> {
         Ok(IntegerTests {
             cases: self.load_tests(self.test_file_path("integer.json"))?,
         })
     }
 
-    pub fn exact_string(&self) -> Result<ExactStringTests> {
+    pub fn exact_string(&self) -> crate::Result<ExactStringTests> {
         Ok(ExactStringTests {
             cases: self.load_tests(self.test_file_path("exact_string.json"))?,
         })
     }
 
-    // pub fn extract_entities(&self) -> Result<Vec<ExtractEntitiesTest>> {
+    // pub fn extract_entities(&self) -> crate::Result<Vec<ExtractEntitiesTest>> {
     //     self.load_tests(self.test_file_path("extract_entities.json"))
     // }
 
-    pub fn extract_urls(&self) -> Result<Vec<ExtractUrlsTest>> {
+    pub fn extract_urls(&self) -> crate::Result<Vec<ExtractUrlsTest>> {
         self.load_tests(self.test_file_path("extract_urls.json"))
     }
 
-    fn load_tests<T>(&self, file_path: PathBuf) -> Result<Vec<T>>
+    fn load_tests<T>(&self, file_path: PathBuf) -> crate::Result<Vec<T>>
     where
         T: for<'de> Deserialize<'de> + TestItem,
     {

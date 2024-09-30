@@ -5,29 +5,27 @@ use nvml_wrapper::Nvml;
 pub const CUDA_OVERHEAD: u64 = 500 * 1024 * 1024;
 
 #[derive(Debug, Clone)]
-pub struct CudaDeviceMap {
+pub struct CudaConfig {
     /// The main GPU device ordinal. Defaults to the largest VRAM device.
     pub main_gpu: Option<u32>,
     /// Ordinals of the devices to use.
     pub use_cuda_devices: Vec<u32>,
     pub(crate) cuda_devices: Vec<CudaDevice>,
     pub(crate) total_vram_bytes: u64,
-    pub(crate) error_on_gpu_error: bool,
 }
 
-impl Default for CudaDeviceMap {
+impl Default for CudaConfig {
     fn default() -> Self {
         Self {
             main_gpu: None,
             use_cuda_devices: Vec::new(),
             cuda_devices: Vec::new(),
             total_vram_bytes: 0,
-            error_on_gpu_error: true,
         }
     }
 }
 
-impl CudaDeviceMap {
+impl CudaConfig {
     pub fn new(use_cuda_devices: Vec<u32>, main_gpu: Option<u32>) -> Self {
         Self {
             main_gpu,
@@ -36,7 +34,7 @@ impl CudaDeviceMap {
         }
     }
 
-    pub(crate) fn initialize(&mut self) -> crate::Result<()> {
+    pub(crate) fn initialize(&mut self, error_on_config_issue: bool) -> crate::Result<()> {
         let nvml: Nvml = init_nvml_wrapper()?;
         if self.use_cuda_devices.is_empty() {
             self.cuda_devices = get_all_cuda_devices(Some(&nvml))?;
@@ -45,9 +43,18 @@ impl CudaDeviceMap {
                 match CudaDevice::new(*ordinal, Some(&nvml)) {
                     Ok(cuda_device) => self.cuda_devices.push(cuda_device),
                     Err(e) => {
-                        crate::warn!("Failed to get device {}: {}", ordinal, e);
-                        if self.error_on_gpu_error {
-                            crate::bail!("Failed to get device {}: {}", ordinal, e);
+                        if error_on_config_issue {
+                            crate::bail!(
+                                "Failed to get device {} specified in cuda_devices: {}",
+                                ordinal,
+                                e
+                            );
+                        } else {
+                            crate::warn!(
+                                "Failed to get device {} specified in cuda_devices: {}",
+                                ordinal,
+                                e
+                            );
                         }
                     }
                 }
@@ -57,7 +64,7 @@ impl CudaDeviceMap {
             crate::bail!("No CUDA devices found");
         }
 
-        self.main_gpu = Some(self.main_gpu()?);
+        self.main_gpu = Some(self.main_gpu(error_on_config_issue)?);
 
         self.total_vram_bytes = self
             .cuda_devices
@@ -71,16 +78,21 @@ impl CudaDeviceMap {
         self.cuda_devices.len()
     }
 
-    pub(crate) fn main_gpu(&self) -> crate::Result<u32> {
+    pub(crate) fn main_gpu(&self, error_on_config_issue: bool) -> crate::Result<u32> {
         if let Some(main_gpu) = self.main_gpu {
             for device in &self.cuda_devices {
                 if device.ordinal == main_gpu {
                     return Ok(main_gpu);
                 }
             }
-            if self.error_on_gpu_error {
+            if error_on_config_issue {
                 crate::bail!(
                     "Main GPU set by user {} not found in CUDA devices",
+                    main_gpu
+                );
+            } else {
+                crate::warn!(
+                    "Main GPU set by user {} not found in CUDA devices. Using largest VRAM device.",
                     main_gpu
                 );
             }
@@ -99,13 +111,16 @@ impl CudaDeviceMap {
         crate::bail!("Main GPU {} not found in CUDA devices", main_gpu);
     }
 
-    pub(crate) fn to_generic_gpu_devices(&self) -> crate::Result<Vec<GpuDevice>> {
+    pub(crate) fn to_generic_gpu_devices(
+        &self,
+        error_on_config_issue: bool,
+    ) -> crate::Result<Vec<GpuDevice>> {
         let mut gpu_devices: Vec<GpuDevice> = self
             .cuda_devices
             .iter()
             .map(|d| d.to_generic_gpu())
             .collect();
-        let main_gpu = self.main_gpu()?;
+        let main_gpu = self.main_gpu(error_on_config_issue)?;
         for gpu in &mut gpu_devices {
             if gpu.ordinal == main_gpu {
                 gpu.is_main_gpu = true;
@@ -134,13 +149,6 @@ pub fn get_all_cuda_devices(nvml: Option<&Nvml>) -> crate::Result<Vec<CudaDevice
             );
         }
         ordinal += 1;
-    }
-    for d in cuda_devices.iter() {
-        crate::info!(
-            "Device {}: {:.2} Gigabytes",
-            d.ordinal,
-            (d.available_vram_bytes as f64) / 1_073_741_824.0
-        );
     }
     if cuda_devices.len() == 0 {
         crate::bail!("No CUDA devices found");
@@ -236,4 +244,39 @@ pub(crate) fn init_nvml_wrapper() -> crate::Result<Nvml> {
         }
     }
     crate::bail!("Failed to initialize nvml_wrapper::Nvml")
+}
+
+impl std::fmt::Display for CudaConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "CudaConfig: 
+                main_gpu: {:?}, 
+                total_vram_bytes: {:.2},
+                cuda_devices: {:?}",
+            self.main_gpu,
+            (self.total_vram_bytes as f64) / 1_073_741_824.0,
+            self.cuda_devices,
+        )
+    }
+}
+
+impl std::fmt::Display for CudaDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "CudaDevice: {}, 
+                name: {:?}, 
+                power_limit: {:?}, 
+                driver_major: {:?}, 
+                driver_minor: {:?}
+                available_vram_bytes: {:.2},",
+            self.ordinal,
+            self.name,
+            self.power_limit,
+            self.driver_major,
+            self.driver_minor,
+            (self.available_vram_bytes as f64) / 1_073_741_824.0
+        )
+    }
 }

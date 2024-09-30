@@ -25,6 +25,7 @@ impl CompletionResponse {
                 "No stop reason provided".to_owned(),
             ));
         };
+
         Ok(Self {
             id: "llama_cpp".to_owned(),
             index: None,
@@ -43,7 +44,7 @@ impl CompletionResponse {
 pub struct LlamaCppCompletionResponse {
     pub content: String,
     pub model: String,
-    // pub prompt: String, // Need to think how to handle tokens vs. text
+    pub prompt: Vec<u32>,
     pub generation_settings: LlamaGenerationSettings,
     pub timings: LlamaTimings,
     pub stop: bool,
