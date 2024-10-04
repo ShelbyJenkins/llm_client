@@ -1,5 +1,5 @@
 [package]
-description="llm_devices: Managing devices for LLMs"
+description="Managing Devices and Builds for LLMs"
 edition.workspace=true
 homepage.workspace=true
 license.workspace=true

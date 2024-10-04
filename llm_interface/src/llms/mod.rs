@@ -16,7 +16,7 @@ pub enum LlmBackend {
     MistralRs(local::mistral_rs::MistralRsBackend),
     OpenAi(api::openai::OpenAiBackend),
     Anthropic(api::anthropic::AnthropicBackend),
-    GenericApi(api::generic::GenericApiBackend),
+    GenericApi(api::generic_openai::GenericApiBackend),
 }
 
 impl LlmBackend {
@@ -180,7 +180,7 @@ impl LlmBackend {
         }
     }
 
-    pub fn generic_api(&self) -> crate::Result<&api::generic::GenericApiBackend> {
+    pub fn generic_api(&self) -> crate::Result<&api::generic_openai::GenericApiBackend> {
         match self {
             LlmBackend::GenericApi(b) => Ok(b),
             _ => crate::bail!("Backend is not generic_api"),

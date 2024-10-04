@@ -1,7 +1,7 @@
 use crate::llms::{
     api::{
         config::{ApiConfig, LlmApiConfigTrait},
-        generic::{GenericApiBackend, GenericApiConfig},
+        generic_openai::{GenericApiBackend, GenericApiConfig},
     },
     LlmBackend,
 };

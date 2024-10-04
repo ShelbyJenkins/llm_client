@@ -1,7 +1,7 @@
 
 # Llama.cpp Backend
 
-The current default feature is `llama_cpp_backend`. It is pulled from the repo and built with the [build.rs](../llm_interface/build.rs). 
+The current default feature is `llama_cpp_backend`. Llama.cpp is pulled from the repo and built with llm_interface's [build.rs](../llm_interface/build.rs). The [llm_device](../llm_devices/) crate contains the behavior for building.
 
 ### Linux / Mac / Windows CPU Build (Default)
 
@@ -10,13 +10,14 @@ The current default feature is `llama_cpp_backend`. It is pulled from the repo a
 
 ### Linux / Windows CUDA Build 
 
-* Requires the `cuda` feature flag
+* If CUDA is available on your system, it will build for CUDA automatically.
 * Also requires Nvidia specific [dependencies listed here](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md) or you can run the [dev container](../.devcontainer/devcontainer.json) in this repo.
 * Install time: ~120 seconds
 
 ### Mac GPU Build (Default)
 
-* In theory, llama.cpp builds for Mac GPU backends by default, but I have not tested.
+* Nothing is required, as llama.cpp builds for mac by default.
+* Tested as working.
 
 # Mistral.rs Backend
 

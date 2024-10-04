@@ -1,10 +1,8 @@
-# llm_client: The Easiest Rust Interface for Local LLMs
+# The Easiest Rust Interface for Local LLMs 
 
 ```toml
-// For Mac (CPU and GPU), windows (CPU), or linux (CPU)
+# For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
 llm_client="*"
-// CUDA for windows or linux
-llm_client={version="*", features=["cuda"]}
 ```
 
 This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
@@ -18,6 +16,8 @@ let llm_client = LlmClient::llama_cpp()
 ```
 
 Several of the most common models are available as presets. Loading from local models is also fully supported. See [models.md](./docs/models.md) for more information.
+
+# An Interface for Deterministic Signals from Probabilistic LLM Vibes
 
 ## Reasoning with Primitive Outcomes
 

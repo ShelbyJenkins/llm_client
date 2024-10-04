@@ -3,7 +3,7 @@ use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{
     api::{
         config::{ApiConfig, LlmApiConfigTrait},
-        generic::{GenericApiBackend, GenericApiConfig},
+        generic_openai::{GenericApiBackend, GenericApiConfig},
     },
     LlmBackend,
 };

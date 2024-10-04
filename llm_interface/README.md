@@ -1,8 +1,7 @@
-# llm_interface: The Backend for llm_client
+# llm_interface: The Backend for the llm_client Crate
 
-This crate contains the build scripts, data types, and behaviors for LLMs.
+This crate contains the build.rs, data types, and behaviors for LLMs.
 
-* Supports mistral.rs
 * Llama.cpp (through llama-server) 
 * Various LLM APIs including support for generic OpenAI format LLMs
 

@@ -13,13 +13,11 @@
 [![MIT License][license-shield]][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-# llm_client project: The Easiest Rust Interface for Local LLMs
+# The Easiest Rust Interface for Local LLMs
 
 ```toml
-// For Mac (CPU and GPU), windows (CPU), or linux (CPU)
+# For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
 llm_client="*"
-// CUDA for windows or linux
-llm_client={version="*", features=["cuda"]}
 ```
 
 This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
@@ -37,12 +35,13 @@ Several of the most common models are available as presets. Loading from local m
 
 # Features 
 
+* Automated build and support for CPU, CUDA, MacOS
+* Easy model presets and quant selection
 * Novel cascading prompt workflow for CoT and NLP workflows. DIY workflow creation supported!
-* Breadth of configuration options (sampler params, retry logic, prompt caching)
-* Logit bias and grammar constraints
-* API support for OpenAI, Anthropic, Perplexity, and more
+* Breadth of configuration options (sampler params, retry logic, prompt caching, logit bias, grammars, etc)
+* API support for OpenAI, Anthropic, Perplexity, and any OpenAI compatible API
 
-# llm_client crate: An Interface for Deterministic Signals from Probabilistic LLM Vibes
+# An Interface for Deterministic Signals from Probabilistic LLM Vibes
 
 In addition to basic LLM inference, llm_client is primarily designed for controlled generation using step based cascade workflows. This prompting system runs pre-defined workflows that control and constrain both the overall structure of generation and individual tokens during inference. This allows the implementation of specialized workflows for specific tasks, shaping LLM outputs towards intended, reproducible outcomes. 
 
@@ -90,26 +89,21 @@ Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find 
 
 ## Roadmap
 
-* Migrate from llama.cpp to [mistral.rs](https://github.com/EricLBuehler/mistral.rs). This would greatly simplify consuming as an embedded crate. It's currently a WIP. Blockers:
-    * Build script for crates.io installation
-    * Grammar migration 
-    * Stop word extraction
-    * Dual GPU support (Supported but crashes when I test) and token generation speed (Benchmarks matches Llama.cpp but I haven't been able to reproduce with my setup)
-* Reasoning where the output can be multiple answers
-* Expanding the NLP functionality to include semantic splitting and data further extraction.
-* Refactor the benchmarks module
+
+* Improve the Cascading workflow API to be easier.
+* Refactor the benchmarks module for easy model comparison.
+* WebUI client for local consumption.
 * Server mode for "LLM-in-a-box" deployments
+* Full Rust inference via [mistral.rs](https://github.com/EricLBuehler/mistral.rs) or [candle](https://github.com/huggingface/candle).
 
 ### Dependencies 
 
 * [llm_utils](https://github.com/shelbyJenkins/llm_utils) is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
 * [llm_interface](./llm_interface) is a sub-crate of llm_client. It is the backend for LLM inference.
+* [llm_devices](./llm_devices) is a sub-crate of llm_client. It contains device and build managment behavior.
 * [llama.cpp](https://github.com/ggerganov/llama.cpp) is used in server mode for LLM inference as the current default.
-* [mistral.rs](https://github.com/EricLBuehler/mistral.rs) is available for basic use, but is a WIP. Once integration is complete it will the default for a fully Rust backend.
+* [mistral.rs](https://github.com/EricLBuehler/mistral.rs) is available for basic use, but is a WIP.
 
-## Contributing
-
-Yes.
 
 ## Contact
 
