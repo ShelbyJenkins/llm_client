@@ -15,6 +15,8 @@ pub fn run(
 ) -> crate::Result<()> {
     let mut logger = LoggingConfig {
         logger_name: format!("{}.build", target_sub_path),
+        build_log: true,
+        level: tracing::Level::TRACE,
         ..Default::default()
     };
     logger.load_logger()?;

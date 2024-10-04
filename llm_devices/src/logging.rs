@@ -4,6 +4,7 @@ use colorful::Colorful;
 use indenter::indented;
 
 use std::fmt::Write;
+use std::path::PathBuf;
 use std::{fs::create_dir_all, path::Path};
 use tracing_subscriber::layer::SubscriberExt;
 
@@ -12,13 +13,9 @@ pub struct LoggingConfig {
     pub level: tracing::Level,
     pub logging_enabled: bool,
     pub logger_name: String,
+    pub log_path: Option<PathBuf>,
     pub _tracing_guard: Option<std::sync::Arc<tracing::subscriber::DefaultGuard>>,
-}
-
-impl LoggingConfig {
-    pub fn new() -> Self {
-        Default::default()
-    }
+    pub build_log: bool,
 }
 
 impl Default for LoggingConfig {
@@ -27,12 +24,18 @@ impl Default for LoggingConfig {
             level: tracing::Level::INFO,
             logging_enabled: true,
             logger_name: "llm_interface".to_string(),
+            log_path: None,
             _tracing_guard: None,
+            build_log: false,
         }
     }
 }
 
 impl LoggingConfig {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     pub fn load_logger(&mut self) -> crate::Result<()> {
         self._tracing_guard = if self.logging_enabled {
             Some(std::sync::Arc::new(self.create_logger()?))
@@ -51,11 +54,20 @@ impl LoggingConfig {
     }
 
     fn create_logger(&mut self) -> crate::Result<tracing::subscriber::DefaultGuard> {
-        let log_dir = get_target_directory()?
-            .parent()
-            .map(Path::to_path_buf)
-            .ok_or_else(|| anyhow::anyhow!("Failed to get parent directory"))?
-            .join("llm_logs");
+        let log_dir = if let Some(log_path) = &self.log_path {
+            log_path.clone()
+        } else {
+            let target_dir = get_target_directory()?;
+            if self.build_log {
+                target_dir.join("llm_devices_build_logs")
+            } else {
+                target_dir
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .ok_or_else(|| anyhow::anyhow!("Failed to get parent directory"))?
+                    .join("llm_logs")
+            }
+        };
 
         if !Path::new(&log_dir).exists() {
             create_dir_all(&log_dir).expect("Failed to create log directory");
@@ -96,6 +108,15 @@ impl LoggingConfig {
 pub trait LoggingConfigTrait {
     fn logging_config_mut(&mut self) -> &mut LoggingConfig;
 
+    /// Enables or disables logging for the configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `enabled` - A boolean value where `true` enables logging and `false` disables it.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Self` to allow for method chaining.
     fn logging_enabled(mut self, enabled: bool) -> Self
     where
         Self: Sized,
@@ -104,11 +125,46 @@ pub trait LoggingConfigTrait {
         self
     }
 
+    /// Sets the name of the logger.
+    ///
+    /// This method allows you to specify a custom name for the logger, which can be useful
+    /// for identifying the source of log messages in applications with multiple components
+    /// or services.
+    ///
+    /// # Arguments
+    ///
+    /// * `logger_name` - A string-like value that can be converted into a `String`.
+    ///   This will be used as the name for the logger.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Self` to allow for method chaining.
     fn logger_name<S: Into<String>>(mut self, logger_name: S) -> Self
     where
         Self: Sized,
     {
         self.logging_config_mut().logger_name = logger_name.into();
+        self
+    }
+
+    /// Sets the path where log files will be stored.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - A path-like object that represents the directory where log files should be stored.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Self` to allow for method chaining.
+    ///
+    /// # Notes
+    ///
+    /// - If no path is set, the default path is `CARGO_MANIFEST_DIRECTORY/llm_logs`.
+    fn log_path<P: AsRef<Path>>(mut self, path: P) -> Self
+    where
+        Self: Sized,
+    {
+        self.logging_config_mut().log_path = Some(path.as_ref().to_path_buf());
         self
     }
 

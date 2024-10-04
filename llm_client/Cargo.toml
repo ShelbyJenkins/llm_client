@@ -15,7 +15,7 @@ anyhow.workspace=true
 colorful.workspace=true
 indenter.workspace=true
 llm_devices.workspace=true
-llm_interface={path="../llm_interface", version="0.0.1"}
+llm_interface.workspace=true
 llm_utils.workspace=true
 thiserror.workspace=true
 tokio.workspace=true
