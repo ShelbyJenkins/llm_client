@@ -8,7 +8,7 @@ license.workspace=true
 name="llm_client"
 readme="README.md"
 repository.workspace=true
-version="0.0.4"
+version="0.0.5"
 
 [dependencies]
 anyhow.workspace=true
