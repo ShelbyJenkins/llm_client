@@ -1,7 +1,8 @@
+use llm_devices::devices::DeviceConfig;
 use mistralrs::{Device, DeviceLayerMapMetadata, DeviceMapMetadata};
 
 pub fn mistral_rs_device_map(
-    generic_device_map: &crate::llms::local::devices::DeviceConfig,
+    generic_device_map: &DeviceConfig,
 ) -> crate::Result<(Device, DeviceMapMetadata)> {
     match generic_device_map.gpu_count() {
         0 => new_only_cpu(generic_device_map),
@@ -10,22 +11,18 @@ pub fn mistral_rs_device_map(
     }
 }
 
-fn new_only_cpu(
-    generic_device_map: &crate::llms::local::devices::DeviceConfig,
-) -> crate::Result<(Device, DeviceMapMetadata)> {
+fn new_only_cpu(generic_device_map: &DeviceConfig) -> crate::Result<(Device, DeviceMapMetadata)> {
     std::env::set_var(
         "RAYON_NUM_THREADS",
         generic_device_map
             .cpu_config
-            .set_default_thread_count(generic_device_map.cpu_config.threads, 1.0)
+            .thread_count_or_default()
             .to_string(),
     );
     Ok((Device::Cpu, DeviceMapMetadata::dummy()))
 }
 
-fn new_single_gpu(
-    generic_device_map: &crate::llms::local::devices::DeviceConfig,
-) -> crate::Result<(Device, DeviceMapMetadata)> {
+fn new_single_gpu(generic_device_map: &DeviceConfig) -> crate::Result<(Device, DeviceMapMetadata)> {
     let _gpu_devices = generic_device_map.allocate_layers_to_gpus(0, 0)?;
     let main_gpu = generic_device_map.main_gpu()?;
     // let layer_count = gpu_devices
@@ -47,7 +44,7 @@ fn new_single_gpu(
 }
 
 fn new_multiple_gpu(
-    generic_device_map: &crate::llms::local::devices::DeviceConfig,
+    generic_device_map: &DeviceConfig,
 ) -> crate::Result<(Device, DeviceMapMetadata)> {
     let gpu_devices = generic_device_map.allocate_layers_to_gpus(0, 0)?;
     let main_gpu = generic_device_map.main_gpu()?;

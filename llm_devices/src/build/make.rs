@@ -20,6 +20,7 @@ pub(super) fn local_repo_requires_build(local_repo_path: &PathBuf, executable_na
     }
 }
 
+#[allow(unused_variables)]
 pub(super) fn build_local_repo(
     local_repo_path: &PathBuf,
     builder_args: &[&str],

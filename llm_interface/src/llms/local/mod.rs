@@ -1,4 +1,4 @@
-    #[cfg(any(target_os = "linux", target_os = "windows"))]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 use llm_devices::devices::CudaConfig;
 use llm_devices::devices::DeviceConfig;
 #[cfg(target_os = "macos")]
@@ -264,8 +264,15 @@ pub trait LlmLocalTrait {
             (available_ram_gb * 1_073_741_824f32) as u64;
         #[cfg(target_os = "macos")]
         {
-            self.config().device_config.metal_config.use_ram_bytes =
-                (available_ram_gb * 1_073_741_824f32) as u64;
+            if let Some(metal_config) = &mut self.config().device_config.metal_config {
+                metal_config.use_ram_bytes = (available_ram_gb * 1_073_741_824f32) as u64;
+            } else {
+                let metal_config = MetalConfig {
+                    use_ram_bytes: (available_ram_gb * 1_073_741_824f32) as u64,
+                    ..Default::default()
+                };
+                self.config().device_config.metal_config = Some(metal_config);
+            }
         }
         self
     }
@@ -303,12 +310,20 @@ pub trait LlmLocalTrait {
         self.config().device_config.ram_config.use_percentage = use_ram_percentage;
         #[cfg(target_os = "macos")]
         {
-            self.config().device_config.metal_config.use_percentage = use_ram_percentage;
+            if let Some(metal_config) = &mut self.config().device_config.metal_config {
+                metal_config.use_percentage = use_ram_percentage;
+            } else {
+                let metal_config = MetalConfig {
+                    use_percentage: use_ram_percentage,
+                    ..Default::default()
+                };
+                self.config().device_config.metal_config = Some(metal_config);
+            }
         }
         self
     }
 
-        #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     /// Sets the CUDA configuration for GPU inference.
     ///
     /// # Arguments

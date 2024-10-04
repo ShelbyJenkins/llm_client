@@ -1,11 +1,9 @@
 use super::{MistralRsBackend, MistralRsConfig};
-use crate::{
-    llms::{
-        local::{LlmLocalTrait, LocalLlmConfig},
-        LlmBackend,
-    },
-    logging::{LoggingConfig, LoggingConfigTrait},
+use crate::llms::{
+    local::{LlmLocalTrait, LocalLlmConfig},
+    LlmBackend,
 };
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
     GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
@@ -63,7 +61,7 @@ impl HfTokenTrait for MistralRsBackendBuilder {
 #[cfg(test)]
 mod tests {
     use crate::{
-        llms::local::{devices::CudaConfig, LlmLocalTrait},
+        llms::local::{CudaConfig, LlmLocalTrait},
         requests::completion::request::CompletionRequest,
         LlmInterface,
     };
@@ -96,10 +94,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_single_gpu_map() {
-        let cuda_config = CudaConfig {
-            use_cuda_devices: vec![1],
-            ..Default::default()
-        };
+        let cuda_config = CudaConfig::new_from_cuda_devices(vec![0]);
 
         let backend = LlmInterface::mistral_rs()
             .cuda_config(cuda_config)
@@ -129,10 +124,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
-        let cuda_config = CudaConfig {
-            use_cuda_devices: vec![0, 1],
-            ..Default::default()
-        };
+        let cuda_config = CudaConfig::new_from_cuda_devices(vec![0, 1]);
 
         let backend = LlmInterface::mistral_rs()
             .cuda_config(cuda_config)

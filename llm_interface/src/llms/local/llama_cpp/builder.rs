@@ -71,7 +71,7 @@ impl HfTokenTrait for LlamaCppBackendBuilder {
 
 #[cfg(test)]
 mod tests {
-        #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     use llm_devices::devices::CudaConfig;
     #[cfg(target_os = "macos")]
     use llm_devices::devices::MetalConfig;
@@ -104,7 +104,7 @@ mod tests {
         println!("{res}");
     }
 
-        #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[tokio::test]
     #[serial]
     async fn test_single_gpu_map() {
@@ -134,7 +134,7 @@ mod tests {
         println!("{res}");
     }
 
-        #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
@@ -202,7 +202,6 @@ mod tests {
                 .llama_cpp()
                 .unwrap()
                 .server
-                .local_config
                 .device_config
                 .gpu_count()
                 == 1

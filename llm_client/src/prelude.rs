@@ -9,7 +9,7 @@ pub use llm_devices::devices::CudaConfig;
 pub use llm_devices::logging::LoggingConfigTrait;
 
 #[cfg(target_os = "macos")]
-pub use llm_interface::llms::local::devices::MetalConfig;
+pub use llm_devices::devices::MetalConfig;
 pub use llm_interface::{
     llms::local::LlmLocalTrait,
     requests::{

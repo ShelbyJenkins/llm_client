@@ -24,9 +24,7 @@ tracing.workspace=true
 url.workspace=true
 
 [features]
-all=["cuda", "cudnn", "llama_cpp_backend", "mistral_rs_backend"]
-cuda=["llm_interface/cuda"]
-cudnn=["llm_interface/cudnn"]
+all=["llama_cpp_backend", "mistral_rs_backend"]
 default=["llama_cpp_backend"]
 llama_cpp_backend=["llm_interface/llama_cpp_backend"]
 mistral_rs_backend=["llm_interface/mistral_rs_backend"]

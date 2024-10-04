@@ -1,11 +1,10 @@
 use std::num::NonZeroUsize;
 
 use super::LocalLlmConfig;
-use crate::{
-     logging::LoggingConfig, requests::completion::{CompletionError, CompletionRequest, CompletionResponse}
-};
+use crate::requests::completion::{CompletionError, CompletionRequest, CompletionResponse};
 
 use devices::mistral_rs_device_map;
+use llm_devices::logging::LoggingConfig;
 use llm_utils::models::local_model::{gguf::GgufLoader, LocalLlmModel};
 use mistralrs::{
     DefaultSchedulerMethod,  GGUFLoaderBuilder, GGUFSpecificConfig, MemoryGpuConfig, MistralRs, MistralRsBuilder, ModelDType,  PagedAttentionConfig,  Response, SchedulerConfig, TokenSource

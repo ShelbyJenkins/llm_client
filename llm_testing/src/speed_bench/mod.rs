@@ -60,12 +60,11 @@ impl SpeedBenchmark {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use llm_utils::models::local_model::gguf::preset::LlmPreset;
 
     #[tokio::test]
     #[ignore]
     pub async fn test_llama() -> crate::Result<()> {
-        use llm_utils::models::local_model::gguf::preset::LlmPreset;
-
         let mut benchmark = SpeedBenchmark {
             models: vec![
                 LlmPreset::Phi3_5MiniInstruct,
@@ -85,14 +84,9 @@ mod tests {
     #[tokio::test]
     #[ignore]
     pub async fn test_mistral() -> crate::Result<()> {
-        use llm_client::CudaConfig;
-        use llm_utils::models::local_model::gguf::preset::LlmPreset;
-        let cuda_config = CudaConfig::new(vec![0], None);
-        let builder = LlmClient::mistral_rs().cuda_config(cuda_config);
-
         let mut benchmark = SpeedBenchmark {
             models: vec![LlmPreset::Llama3_2_1bInstruct],
-            backends: vec![TestBackendConfig::from_mistral_rs(builder)],
+            backends: vec![TestBackendConfig::default_mistral_rs()],
             ..Default::default()
         };
         benchmark.run().await?;

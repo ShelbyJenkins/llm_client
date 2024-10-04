@@ -28,22 +28,20 @@ tokio.workspace=true
 tracing.workspace=true
 
 [features]
-all=["cuda", "cudnn", "llama_cpp_backend", "mistral_rs_backend"]
-cuda=["mistralrs?/cuda"]
-cudnn=["mistralrs?/cudnn"]
+all=["llama_cpp_backend", "mistral_rs_backend"]
 default=["llama_cpp_backend"]
 llama_cpp_backend=["clap", "sysinfo"]
-mistral_rs_backend=["mistralrs", "sysinfo"]
-
-[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
-mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", optional=true, rev="776c11664f36f690937db53cd1809614e64127d4"}
-
-[target.'cfg(target_os = "macos")'.dependencies]
-mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", optional=true, rev="776c11664f36f690937db53cd1809614e64127d4", features=["metal"]}
+mistral_rs_backend=["sysinfo"]
 
 [dev-dependencies]
 serial_test.workspace=true
 tokio={workspace=true, features=["macros", "test-util"]}
+
+# [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
+# mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", rev="776c11664f36f690937db53cd1809614e64127d4", features=["cuda", "cudnn"]}
+
+# [target.'cfg(target_os = "macos")'.dependencies]
+# mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", rev="776c11664f36f690937db53cd1809614e64127d4", features=["metal"]}
 
 [build-dependencies]
 cargo_metadata="0.18.1"

@@ -111,7 +111,7 @@ impl MetalConfig {
         GpuDevice {
             ordinal: 0,
             available_vram_bytes: self.use_ram_bytes,
-            allocated_bytes: 0,
+            allocated_layer_bytes: 0,
             allocated_buffer_bytes: 0,
             allocated_layers: 0,
             is_main_gpu: true,
