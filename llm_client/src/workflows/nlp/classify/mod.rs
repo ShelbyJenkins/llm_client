@@ -1,6 +1,6 @@
 use llm_interface::requests::completion::CompletionRequest;
-
-pub mod hierarchy;
+pub mod entity;
+// pub mod hierarchy;
 
 pub struct Classify {
     pub base_req: CompletionRequest,
@@ -9,5 +9,9 @@ pub struct Classify {
 impl Classify {
     pub fn new(base_req: CompletionRequest) -> Self {
         Self { base_req }
+    }
+
+    pub fn entity(self, content: &str) -> entity::ClassifyEntity {
+        entity::ClassifyEntity::new(self.base_req, content)
     }
 }

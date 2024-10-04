@@ -1,6 +1,6 @@
 use llm_client::prelude::*;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {
     // Automatically detect and use all available GPUs
@@ -11,14 +11,13 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             > 0
     );
 
     // Use only a single GPU with index/ordinal 0
-    let cuda_config = CudaConfig::new(vec![0], None);
+    let cuda_config = CudaConfig::new_from_cuda_devices(vec![0]);
 
     let llm_client = LlmClient::llama_cpp()
         .cuda_config(cuda_config)
@@ -31,14 +30,13 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 1
     );
 
     // Use two GPUs with indices/ordinals 0 and 1
-    let cuda_config = CudaConfig::new(vec![0, 1], None);
+    let cuda_config = CudaConfig::new_with_main_device(vec![0, 1], 0);
 
     let llm_client = LlmClient::llama_cpp()
         .cuda_config(cuda_config)
@@ -51,7 +49,6 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 2
@@ -65,7 +62,6 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 0
@@ -83,7 +79,6 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 1
@@ -104,7 +99,6 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 1
@@ -122,7 +116,6 @@ pub async fn main() {
             .llama_cpp()
             .unwrap()
             .server
-            .local_config
             .device_config
             .gpu_count()
             == 0

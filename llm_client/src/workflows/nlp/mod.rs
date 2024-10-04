@@ -1,5 +1,6 @@
-// pub mod classify;
+pub mod classify;
 pub mod extract;
+
 use extract::Extract;
 use llm_interface::{llms::LlmBackend, requests::completion::CompletionRequest};
 
@@ -18,7 +19,7 @@ impl Nlp {
         Extract::new(self.base_req)
     }
 
-    // pub fn classify(self) -> classify::Classify {
-    //     classify::Classify::new(self.base_req)
-    // }
+    pub fn classify(self) -> classify::Classify {
+        classify::Classify::new(self.base_req)
+    }
 }

@@ -1,5 +1,7 @@
+use sysinfo;
+
 #[derive(Debug, Clone)]
-pub(crate) struct RamConfig {
+pub struct RamConfig {
     pub total_ram_bytes: u64,
     pub available_ram_bytes: u64,
     pub used_ram_bytes: u64,
@@ -41,7 +43,6 @@ impl RamConfig {
                 self.use_ram_bytes = self.percentage_of_total(error_on_config_issue)?;
             }
         }
-        crate::trace!("{}", self);
         Ok(())
     }
 
@@ -56,7 +57,7 @@ impl RamConfig {
         if self.use_percentage > 1.0 || self.use_percentage < 0.0 {
             if error_on_config_issue {
                 crate::bail!(
-                    "Percentage of total RAM must be between 0.0 and 1.0. use_percentage: {}",
+                    "Percentage of total RAM must be between 0.0 and 1.0. use_percentage: {:.2}",
                     self.use_percentage
                 );
             } else {
@@ -71,15 +72,23 @@ impl RamConfig {
 
 impl std::fmt::Display for RamConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
+        writeln!(f, "RamConfig:")?;
+        crate::i_nlns(
             f,
-            "RamConfig:
-                Total system RAM: {:.2} bytes,
-                Available system RAM: {:.2} bytes, 
-                Specified RAM for Inference: {:.2} bytes",
-            (self.total_ram_bytes as f64) / 1_073_741_824.0,
-            (self.available_ram_bytes as f64) / 1_073_741_824.0,
-            (self.use_ram_bytes as f64) / 1_073_741_824.0,
+            &[
+                format_args!(
+                    "Total system RAM: {:.2} GB",
+                    (self.total_ram_bytes as f64) / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Available system RAM: {:.2} GB",
+                    (self.available_ram_bytes as f64) / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Specified RAM for Inference: {:.2} GB",
+                    (self.use_ram_bytes as f64) / 1_073_741_824.0
+                ),
+            ],
         )
     }
 }

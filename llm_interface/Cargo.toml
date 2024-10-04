@@ -13,51 +13,43 @@ version="0.0.1"
 [dependencies]
 anyhow.workspace=true
 backoff={version="0.4.0", features=["tokio"]}
-byteorder={version="1.5.0", optional=true}
 bytes="1.7.2"
 clap={version="4.5.17", optional=true}
+colorful.workspace=true
 dotenvy="0.15.7"
-hf-hub={version="0.3.2", optional=true}
+indenter.workspace=true
+llm_devices.workspace=true
 llm_utils.workspace=true
-paste={version="1.0.15", optional=true}
 reqwest="0.12.7"
 secrecy="0.8.0"
 serde.workspace=true
 serde_json.workspace=true
 sysinfo={version="0.31.4", optional=true, default-features=false, features=["system"]}
 thiserror.workspace=true
-tokenizers={version="0.20.0", optional=true}
 tokio.workspace=true
-tracing-appender="0.2.3"
-tracing-subscriber={version="0.3.18", features=["env-filter", "std"]}
 tracing.workspace=true
 
 [features]
 all=["cuda", "cudnn", "llama_cpp_backend", "mistral_rs_backend"]
 cuda=["mistralrs?/cuda"]
 cudnn=["mistralrs?/cudnn"]
-llama_cpp_backend=["byteorder", "clap", "hf-hub", "paste", "sysinfo", "tokenizers"]
-mistral_rs_backend=["byteorder", "hf-hub", "mistralrs", "paste", "sysinfo", "tokenizers"]
+default=["llama_cpp_backend"]
+llama_cpp_backend=["clap", "sysinfo"]
+mistral_rs_backend=["mistralrs", "sysinfo"]
 
-[target.'cfg(not (target_os = "macos"))'.dependencies]
+[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", optional=true, rev="776c11664f36f690937db53cd1809614e64127d4"}
-nvml-wrapper={version="0.10.0"}
 
 [target.'cfg(target_os = "macos")'.dependencies]
 mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", optional=true, rev="776c11664f36f690937db53cd1809614e64127d4", features=["metal"]}
-objc2="0.5.2"
-objc2-metal={version="0.2.2", features=["MTLDevice"]}
 
 [dev-dependencies]
 serial_test.workspace=true
 tokio={workspace=true, features=["macros", "test-util"]}
 
 [build-dependencies]
-anyhow.workspace=true
 cargo_metadata="0.18.1"
-
-[target.'cfg(not (target_os = "macos"))'.build-dependencies]
-nvml-wrapper={version="0.10.0"}
+llm_devices.workspace=true
 
 [[bin]]
 name="server_runner"

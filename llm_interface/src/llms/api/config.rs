@@ -11,23 +11,20 @@ pub struct ApiConfig {
 
 impl ApiConfig {
     pub(crate) fn load_api_key(&mut self) -> crate::Result<Secret<String>> {
-        let span = crate::span!(crate::Level::INFO, "load_api_key");
-        let _enter = span.enter();
-
         if let Some(api_key) = self.api_key.as_ref() {
-            crate::info!("Using api_key from parameter");
+            crate::trace!("Using api_key from parameter");
             return Ok(api_key.to_owned());
         }
-        crate::info!("api_key not set. Attempting to load from .env");
+        crate::trace!("api_key not set. Attempting to load from .env");
         dotenvy::dotenv().ok();
 
         match dotenvy::var(&self.api_key_env_var) {
             Ok(api_key) => {
-                crate::info!("Successfully loaded api_key from .env");
+                crate::trace!("Successfully loaded api_key from .env");
                 Ok(api_key.into())
             }
             Err(_) => {
-                crate::info!(
+                crate::trace!(
                     "{} not found in dotenv, nor was it set manually",
                     self.api_key_env_var
                 );

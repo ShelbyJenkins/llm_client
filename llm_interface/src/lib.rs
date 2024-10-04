@@ -4,7 +4,6 @@ pub(crate) use anyhow::{anyhow, bail, Result};
 pub(crate) use tracing::{debug, error, info, span, trace, warn, Level};
 
 pub mod llms;
-pub mod logging;
 pub mod requests;
 
 pub struct LlmInterface {}

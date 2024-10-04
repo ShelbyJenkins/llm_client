@@ -13,6 +13,9 @@ version="0.0.4"
 
 [dependencies]
 anyhow.workspace=true
+colorful.workspace=true
+indenter.workspace=true
+llm_devices.workspace=true
 llm_interface={path="../llm_interface", version="0.0.1"}
 llm_utils.workspace=true
 thiserror.workspace=true
@@ -29,7 +32,7 @@ llama_cpp_backend=["llm_interface/llama_cpp_backend"]
 mistral_rs_backend=["llm_interface/mistral_rs_backend"]
 
 [dev-dependencies]
-llm_client_testing={path="../llm_client_testing"}
+llm_testing={path="../llm_testing"}
 serde.workspace=true
 serde_json.workspace=true
 serial_test.workspace=true

@@ -1,13 +1,11 @@
 use crate::LlmClient;
-use llm_interface::{
-    llms::{
-        api::{
-            config::{ApiConfig, LlmApiConfigTrait},
-            openai::{OpenAiBackend, OpenAiConfig},
-        },
-        LlmBackend,
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_interface::llms::{
+    api::{
+        config::{ApiConfig, LlmApiConfigTrait},
+        openai::{OpenAiBackend, OpenAiConfig},
     },
-    logging::{LoggingConfig, LoggingConfigTrait},
+    LlmBackend,
 };
 use llm_utils::models::api_model::{openai::OpenAiModelTrait, ApiLlmModel};
 

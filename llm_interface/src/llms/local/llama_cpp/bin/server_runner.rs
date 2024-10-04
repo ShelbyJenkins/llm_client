@@ -1,5 +1,6 @@
-use llm_interface::llms::local::llama_cpp::server::kill_all_servers;
 use std::{env, fs::File, io::Read, path::PathBuf, process::Command};
+
+use llm_interface::llms::local::llama_cpp::server::kill_all_servers;
 
 // cargo run -p llm_client --bin server_runner stop
 
@@ -25,7 +26,7 @@ pub fn main() -> anyhow::Result<()> {
                 Ok(_) => println!("Successfully killed the process from file."),
                 Err(e) => eprintln!("An error occurred killing process from file: {}", e),
             }
-            kill_all_servers();
+            kill_all_servers().expect("Failed to kill all servers");
         }
         _ => println!("No valid subcommand was provided."),
     }

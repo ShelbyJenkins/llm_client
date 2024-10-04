@@ -26,9 +26,16 @@ impl Default for CudaConfig {
 }
 
 impl CudaConfig {
-    pub fn new(use_cuda_devices: Vec<u32>, main_gpu: Option<u32>) -> Self {
+    pub fn new_from_cuda_devices(use_cuda_devices: Vec<u32>) -> Self {
         Self {
-            main_gpu,
+            use_cuda_devices,
+            ..Default::default()
+        }
+    }
+
+    pub fn new_with_main_device(use_cuda_devices: Vec<u32>, main_gpu: u32) -> Self {
+        Self {
+            main_gpu: Some(main_gpu),
             use_cuda_devices,
             ..Default::default()
         }
@@ -204,7 +211,6 @@ impl CudaDevice {
                         driver_minor,
                     };
 
-                    crate::info!(?cuda_device);
                     Ok(cuda_device)
                 } else {
                     crate::bail!("Device {} has 0 bytes of VRAM. Skipping device.", ordinal);
@@ -221,15 +227,12 @@ impl CudaDevice {
         GpuDevice {
             ordinal: self.ordinal,
             available_vram_bytes: self.available_vram_bytes,
-            allocated_bytes: 0,
-            allocated_buffer_bytes: 0,
-            allocated_layers: 0,
-            is_main_gpu: false,
+            ..Default::default()
         }
     }
 }
 
-pub(crate) fn init_nvml_wrapper() -> crate::Result<Nvml> {
+pub fn init_nvml_wrapper() -> crate::Result<Nvml> {
     let library_names = vec![
         "libnvidia-ml.so",   // For Linux
         "libnvidia-ml.so.1", // For WSL
@@ -248,35 +251,44 @@ pub(crate) fn init_nvml_wrapper() -> crate::Result<Nvml> {
 
 impl std::fmt::Display for CudaConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
+        writeln!(f)?;
+        writeln!(f, "CudaConfig:")?;
+        crate::i_nlns(
             f,
-            "CudaConfig: 
-                main_gpu: {:?}, 
-                total_vram_bytes: {:.2},
-                cuda_devices: {:?}",
-            self.main_gpu,
-            (self.total_vram_bytes as f64) / 1_073_741_824.0,
-            self.cuda_devices,
-        )
+            &[
+                format_args!("Main GPU: {:?}", self.main_gpu),
+                format_args!(
+                    "Total vram size: {:.2} GB",
+                    (self.total_vram_bytes as f64) / 1_073_741_824.0
+                ),
+            ],
+        )?;
+        for device in &self.cuda_devices {
+            crate::i_ln(f, format_args!("{}", device))?;
+        }
+        Ok(())
     }
 }
 
 impl std::fmt::Display for CudaDevice {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
+        writeln!(f, "CudaDevice:")?;
+        crate::i_nlns(
             f,
-            "CudaDevice: {}, 
-                name: {:?}, 
-                power_limit: {:?}, 
-                driver_major: {:?}, 
-                driver_minor: {:?}
-                available_vram_bytes: {:.2},",
-            self.ordinal,
-            self.name,
-            self.power_limit,
-            self.driver_major,
-            self.driver_minor,
-            (self.available_vram_bytes as f64) / 1_073_741_824.0
+            &[
+                format_args!("Ordinal: {:?}", self.ordinal),
+                format_args!(
+                    "Available VRAM: {:.2} GB",
+                    (self.available_vram_bytes as f64) / 1_073_741_824.0
+                ),
+                format_args!("Name: {:?}", self.name),
+                format_args!("Power limit: {:?}", self.power_limit),
+                format_args!(
+                    "Driver version: {}.{}",
+                    self.driver_major.unwrap_or(-1),
+                    self.driver_minor.unwrap_or(-1)
+                ),
+            ],
         )
     }
 }

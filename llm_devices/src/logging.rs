@@ -1,7 +1,10 @@
-use std::{
-    fs::create_dir_all,
-    path::{Path, PathBuf},
-};
+use crate::build::get_target_directory;
+
+use colorful::Colorful;
+use indenter::indented;
+
+use std::fmt::Write;
+use std::{fs::create_dir_all, path::Path};
 use tracing_subscriber::layer::SubscriberExt;
 
 #[derive(Clone, Debug)]
@@ -30,34 +33,29 @@ impl Default for LoggingConfig {
 }
 
 impl LoggingConfig {
-    pub(crate) fn load_logger(&mut self) -> crate::Result<()> {
+    pub fn load_logger(&mut self) -> crate::Result<()> {
         self._tracing_guard = if self.logging_enabled {
-            Some(std::sync::Arc::new(self.create_logger()))
+            Some(std::sync::Arc::new(self.create_logger()?))
         } else {
             None
         };
+
+        println!(
+            "{}",
+            format!("Starting {} Logger", self.logger_name)
+                .color(colorful::RGB::new(0, 139, 248))
+                .bold()
+        );
+
         Ok(())
     }
 
-    fn create_logger(&mut self) -> tracing::subscriber::DefaultGuard {
-        let out_dir = std::path::PathBuf::from(env!("OUT_DIR"));
-        let project_dir = out_dir
-            .ancestors()
-            .find(|path| {
-                // Check if this path's directory name is 'target'
-                if let Some(dir_name) = path.file_name() {
-                    dir_name == "target"
-                } else {
-                    false
-                }
-            })
-            .and_then(|target_dir| target_dir.parent());
-        let workspace_dir = if let Some(project_dir) = project_dir {
-            project_dir.to_owned()
-        } else {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        };
-        let log_dir = workspace_dir.join("llm_client_logs");
+    fn create_logger(&mut self) -> crate::Result<tracing::subscriber::DefaultGuard> {
+        let log_dir = get_target_directory()?
+            .parent()
+            .map(Path::to_path_buf)
+            .ok_or_else(|| anyhow::anyhow!("Failed to get parent directory"))?
+            .join("llm_logs");
 
         if !Path::new(&log_dir).exists() {
             create_dir_all(&log_dir).expect("Failed to create log directory");
@@ -81,8 +79,8 @@ impl LoggingConfig {
             .with_writer(file_appender);
 
         let terminal_layer = tracing_subscriber::fmt::layer()
-            .pretty()
-            .with_ansi(true) // Enable ANSI codes for terminal output
+            .compact()
+            .with_ansi(false) // Enable ANSI codes for terminal output
             .with_writer(std::io::stdout);
 
         let subscriber = tracing_subscriber::registry()
@@ -90,7 +88,7 @@ impl LoggingConfig {
             .with(file_layer)
             .with(terminal_layer);
 
-        tracing::subscriber::set_default(subscriber)
+        Ok(tracing::subscriber::set_default(subscriber))
     }
 }
 
@@ -220,4 +218,34 @@ pub trait LoggingConfigTrait {
         self.logging_config_mut().level = tracing::Level::ERROR;
         self
     }
+}
+
+pub fn i_ln(f: &mut std::fmt::Formatter<'_>, arg: std::fmt::Arguments<'_>) -> std::fmt::Result {
+    write!(indented(f), "{}", arg)?;
+    Ok(())
+}
+
+pub fn i_nln(f: &mut std::fmt::Formatter<'_>, arg: std::fmt::Arguments<'_>) -> std::fmt::Result {
+    writeln!(indented(f), "{}", arg)?;
+    Ok(())
+}
+
+pub fn i_lns(
+    f: &mut std::fmt::Formatter<'_>,
+    args: &[std::fmt::Arguments<'_>],
+) -> std::fmt::Result {
+    for arg in args {
+        write!(indented(f), "{}", arg)?;
+    }
+    Ok(())
+}
+
+pub fn i_nlns(
+    f: &mut std::fmt::Formatter<'_>,
+    args: &[std::fmt::Arguments<'_>],
+) -> std::fmt::Result {
+    for arg in args {
+        writeln!(indented(f), "{}", arg)?;
+    }
+    Ok(())
 }

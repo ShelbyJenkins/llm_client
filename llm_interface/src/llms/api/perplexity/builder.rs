@@ -1,15 +1,12 @@
-use crate::{
-    llms::{
-        api::{
-            config::{ApiConfig, LlmApiConfigTrait},
-            generic::{GenericApiBackend, GenericApiConfig},
-        },
-        LlmBackend,
+use crate::llms::{
+    api::{
+        config::{ApiConfig, LlmApiConfigTrait},
+        generic::{GenericApiBackend, GenericApiConfig},
     },
-    logging::{LoggingConfig, LoggingConfigTrait},
+    LlmBackend,
 };
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
 use llm_utils::models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
-
 // Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
     pub config: GenericApiConfig,

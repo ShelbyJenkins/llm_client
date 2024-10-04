@@ -1,20 +1,21 @@
+#[derive(Debug, Default)]
 pub struct GpuDevice {
-    pub(crate) ordinal: u32,
-    pub(crate) available_vram_bytes: u64,
-    pub(crate) allocated_bytes: u64,
-    pub(crate) allocated_buffer_bytes: u64,
-    pub(crate) allocated_layers: u64,
-    pub(crate) is_main_gpu: bool,
+    pub ordinal: u32,
+    pub available_vram_bytes: u64,
+    pub allocated_layer_bytes: u64,
+    pub allocated_buffer_bytes: u64,
+    pub allocated_layers: u64,
+    pub is_main_gpu: bool,
 }
 
 impl GpuDevice {
     fn can_allocate(&self, layer_size: u64) -> bool {
-        self.available_vram_bytes >= self.allocated_bytes + layer_size
+        self.available_vram_bytes >= self.allocated_layer_bytes + layer_size
     }
 
     fn allocate_layer(&mut self, layer_size: u64) {
         self.allocated_layers += 1;
-        self.allocated_bytes += layer_size;
+        self.allocated_layer_bytes += layer_size;
     }
 }
 
@@ -68,30 +69,28 @@ impl GpuLayerAllocator {
 
         // Check if there's enough total VRAM
         if total_available_vram < total_required_vram {
-            return Err(anyhow::anyhow!(
+            crate::bail!(
                 "Insufficient total VRAM. Required: {}GB, Available: {}GB",
                 total_required_vram / 1_073_741_824,
                 total_available_vram / 1_073_741_824
-            ));
+            );
         }
 
         let mut allocation = vec![0; gpus.len()];
         let result = self.dfs_allocate(gpus, &mut allocation, 0, self.total_layers);
-        self.print_allocation(gpus);
+        Self::print_allocation(gpus);
         if !result {
             // Check why allocation failed
             let allocated_layers: u64 = gpus.iter().map(|gpu| gpu.allocated_layers).sum();
             let remaining_layers = self.total_layers - (allocated_layers - buffer_layers);
 
             if remaining_layers > 0 {
-                return Err(anyhow::anyhow!(
+                crate::bail!(
                     "Failed to allocate all layers. {} layers remaining unallocated.",
                     remaining_layers
-                ));
+                );
             } else {
-                return Err(anyhow::anyhow!(
-                    "Allocation failed due to VRAM fragmentation across GPUs."
-                ));
+                crate::bail!("Allocation failed due to VRAM fragmentation across GPUs.");
             }
         }
         Ok(())
@@ -126,7 +125,7 @@ impl GpuLayerAllocator {
 
                 // If allocation failed, backtrack
                 gpus[current_gpu_index].allocated_layers -= 1;
-                gpus[current_gpu_index].allocated_bytes -= self.layer_size;
+                gpus[current_gpu_index].allocated_layer_bytes -= self.layer_size;
                 allocation[current_gpu_index] -= 1;
             }
         }
@@ -134,17 +133,44 @@ impl GpuLayerAllocator {
         false
     }
 
-    fn print_allocation(&self, gpus: &[GpuDevice]) {
-        for gpu in gpus.iter() {
-            crate::trace!(
-                "Ordinal {} | Main GPU: {:5} | Layers: {:3} | Allocated: {:5.2}GB | Buffer: {:5.2}GB | Available: {:5.2}GB",
-                gpu.ordinal,
-                gpu.is_main_gpu,
-                gpu.allocated_layers,
-                gpu.allocated_bytes as f64 / 1_073_741_824.0,
-                gpu.allocated_buffer_bytes as f64 / 1_073_741_824.0,
-                gpu.available_vram_bytes as f64 / 1_073_741_824.0
-            );
-        }
+    fn print_allocation(gpus: &[GpuDevice]) {
+        let message = std::fmt::format(format_args!(
+            "\nGPU Allocation:\n{}",
+            gpus.iter()
+                .map(|gpu| format!("{}", gpu))
+                .collect::<Vec<_>>()
+                .join("\n")
+        ));
+        crate::info!("{}", message);
+    }
+}
+
+impl std::fmt::Display for GpuDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::i_nlns(
+            f,
+            &[
+                format_args!("Ordinal: {}", self.ordinal),
+                format_args!("Main GPU: {}", self.is_main_gpu),
+                format_args!("Allocated Layers: {}", self.allocated_layers),
+                format_args!(
+                    "Layer Size: {:.2} GB",
+                    self.allocated_layer_bytes as f64 / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Buffer Size: {:.2} GB",
+                    self.allocated_buffer_bytes as f64 / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Total Size: {:.2} GB",
+                    (self.allocated_layer_bytes + self.allocated_buffer_bytes) as f64
+                        / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Available VRAM: {:.2} GB",
+                    self.available_vram_bytes as f64 / 1_073_741_824.0
+                ),
+            ],
+        )
     }
 }

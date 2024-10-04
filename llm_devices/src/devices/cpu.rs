@@ -1,5 +1,5 @@
 #[derive(Debug, Clone)]
-pub(crate) struct CpuConfig {
+pub struct CpuConfig {
     pub num_cpus: usize,
     pub threads: Option<i16>,
     pub threads_batch: Option<i16>,
@@ -40,7 +40,6 @@ impl CpuConfig {
         }
         self.threads = self.check_thread_count(self.threads, error_on_config_issue)?;
         self.threads_batch = self.check_thread_count(self.threads_batch, error_on_config_issue)?;
-        crate::trace!("{}", self);
         Ok(())
     }
 
@@ -73,16 +72,12 @@ impl CpuConfig {
         }
     }
 
-    pub(crate) fn thread_count_or_default(&self) -> i16 {
-        let threads = self.count_or_default(self.threads);
-        crate::trace!("Using thread_count to {}", threads);
-        threads
+    pub fn thread_count_or_default(&self) -> i16 {
+        self.count_or_default(self.threads)
     }
 
-    pub(crate) fn thread_count_batch_or_default(&self) -> i16 {
-        let threads = self.count_or_default(self.threads_batch);
-        crate::trace!("Using thread_count_batch to {}", threads);
-        threads
+    pub fn thread_count_batch_or_default(&self) -> i16 {
+        self.count_or_default(self.threads_batch)
     }
 
     fn count_or_default(&self, threads: Option<i16>) -> i16 {
@@ -96,14 +91,16 @@ impl CpuConfig {
 
 impl std::fmt::Display for CpuConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
+        writeln!(f)?;
+        writeln!(f, "CpuConfig:")?;
+        crate::i_nlns(
             f,
-            "CpuConfig: 
-                num_cpus: {}, 
-                threads: {:?}, 
-                threads_batch: {:?}, 
-                use_percentage: {}",
-            self.num_cpus, self.threads, self.threads_batch, self.use_percentage
+            &[
+                format_args!("num_cpus: {}", self.num_cpus),
+                format_args!("threads: {:?}", self.threads),
+                format_args!("threads_batch: {:?}", self.threads_batch),
+                format_args!("use_percentage: {}", self.use_percentage),
+            ],
         )
     }
 }

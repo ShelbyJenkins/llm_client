@@ -1,10 +1,7 @@
-// Possible paths:
-// 1. No GPU devices found "--n-gpu-layers 0"
-// 2. One GPU device found "--n-gpu-layers as is" (or can we set from llm_utils vram?)
-// 3. multiple GPU devices found
-// 4. MacOs Metal???
+use llm_devices::devices::cpu::CpuConfig;
+use llm_devices::devices::DeviceConfig;
 
-pub(crate) struct LlamaCppDeviceMap {
+pub struct LlamaCppServerConfig {
     /// -t, --threads
     /// The number of threads to use during generation (default: -1) (env: LLAMA_ARG_THREADS)
     /// - N
@@ -37,7 +34,7 @@ pub(crate) struct LlamaCppDeviceMap {
     no_kv_offload: Option<NoKvOffload>,
 }
 
-impl Default for LlamaCppDeviceMap {
+impl Default for LlamaCppServerConfig {
     fn default() -> Self {
         Self {
             threads: None,
@@ -51,58 +48,44 @@ impl Default for LlamaCppDeviceMap {
     }
 }
 
-impl LlamaCppDeviceMap {
-    pub fn new(
-        generic_device_map: &crate::llms::local::devices::DeviceConfig,
-    ) -> crate::Result<Self> {
-        match generic_device_map.gpu_count() {
-            0 => Self::new_only_cpu(generic_device_map),
-            1 => Self::new_single_gpu(generic_device_map),
-            _ => Self::new_multiple_gpu(generic_device_map),
+impl LlamaCppServerConfig {
+    pub fn new(device_config: &DeviceConfig) -> crate::Result<Self> {
+        match device_config.gpu_count() {
+            0 => Self::new_only_cpu(device_config),
+            1 => Self::new_single_gpu(device_config),
+            _ => Self::new_multiple_gpu(device_config),
         }
     }
 
-    fn new_only_cpu(
-        generic_device_map: &crate::llms::local::devices::DeviceConfig,
-    ) -> crate::Result<Self> {
+    fn new_only_cpu(device_config: &DeviceConfig) -> crate::Result<Self> {
         Ok(Self {
-            threads: Some(Threads::new_from_cpu_config(&generic_device_map.cpu_config)),
-            threads_batch: Some(ThreadsBatch::new_from_cpu_config(
-                &generic_device_map.cpu_config,
-            )),
+            threads: Some(Threads::new_from_cpu_config(&device_config.cpu_config)),
+            threads_batch: Some(ThreadsBatch::new_from_cpu_config(&device_config.cpu_config)),
             n_gpu_layers: Some(NGpuLayers(0)),
             no_kv_offload: Some(NoKvOffload),
             ..Default::default()
         })
     }
 
-    fn new_single_gpu(
-        generic_device_map: &crate::llms::local::devices::DeviceConfig,
-    ) -> crate::Result<Self> {
-        let gpu_devices = generic_device_map.allocate_layers_to_gpus(1, 1)?;
+    fn new_single_gpu(device_config: &DeviceConfig) -> crate::Result<Self> {
+        let gpu_devices = device_config.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
         Ok(Self {
-            threads_batch: Some(ThreadsBatch::new_from_cpu_config(
-                &generic_device_map.cpu_config,
-            )),
+            threads_batch: Some(ThreadsBatch::new_from_cpu_config(&device_config.cpu_config)),
             split_mode: Some(SplitMode::None),
             n_gpu_layers: Some(NGpuLayers(layer_count)),
-            main_gpu: Some(MainGpu(generic_device_map.main_gpu()?)),
+            main_gpu: Some(MainGpu(device_config.main_gpu()?)),
             ..Default::default()
         })
     }
 
-    fn new_multiple_gpu(
-        generic_device_map: &crate::llms::local::devices::DeviceConfig,
-    ) -> crate::Result<Self> {
-        let gpu_devices = generic_device_map.allocate_layers_to_gpus(1, 1)?;
+    fn new_multiple_gpu(device_config: &DeviceConfig) -> crate::Result<Self> {
+        let gpu_devices = device_config.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
         Ok(Self {
-            threads_batch: Some(ThreadsBatch::new_from_cpu_config(
-                &generic_device_map.cpu_config,
-            )),
+            threads_batch: Some(ThreadsBatch::new_from_cpu_config(&device_config.cpu_config)),
             split_mode: Some(SplitMode::Layer),
-            main_gpu: Some(MainGpu(generic_device_map.main_gpu()?)),
+            main_gpu: Some(MainGpu(device_config.main_gpu()?)),
             n_gpu_layers: Some(NGpuLayers(layer_count)),
             ..Default::default()
         })
@@ -137,7 +120,7 @@ impl LlamaCppDeviceMap {
 
 pub(crate) struct Threads(pub i16);
 impl Threads {
-    fn new_from_cpu_config(cpu_config: &crate::llms::local::devices::cpu::CpuConfig) -> Self {
+    fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
         Self(cpu_config.thread_count_or_default())
     }
     fn as_arg(&self) -> [String; 2] {
@@ -147,7 +130,7 @@ impl Threads {
 
 pub(crate) struct ThreadsBatch(pub i16);
 impl ThreadsBatch {
-    fn new_from_cpu_config(cpu_config: &crate::llms::local::devices::cpu::CpuConfig) -> Self {
+    fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
         Self(cpu_config.thread_count_batch_or_default())
     }
     fn as_arg(&self) -> [String; 2] {

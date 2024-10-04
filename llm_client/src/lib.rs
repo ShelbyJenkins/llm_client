@@ -6,6 +6,8 @@ pub mod primitives;
 pub mod workflows;
 #[allow(unused_imports)]
 pub(crate) use anyhow::{anyhow, bail, Result};
+#[allow(unused_imports)]
+pub(crate) use llm_devices::logging::{i_ln, i_lns, i_nln, i_nlns};
 pub use prelude::*;
 #[allow(unused_imports)]
 pub(crate) use tracing::{debug, error, info, span, trace, warn, Level};
@@ -16,6 +18,13 @@ pub struct LlmClient {
 
 impl LlmClient {
     pub fn new(backend: std::sync::Arc<llm_interface::llms::LlmBackend>) -> Self {
+        println!(
+            "{}",
+            colorful::Colorful::bold(colorful::Colorful::color(
+                "Llm Client Ready",
+                colorful::RGB::new(94, 244, 39)
+            ))
+        );
         Self { backend }
     }
     #[cfg(feature = "llama_cpp_backend")]

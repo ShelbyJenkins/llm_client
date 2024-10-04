@@ -4,8 +4,10 @@ pub use crate::{
     workflows::reason::{decision::DecisionTrait, ReasonTrait},
     LlmClient,
 };
-#[cfg(not(target_os = "macos"))]
-pub use llm_interface::llms::local::devices::CudaConfig;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub use llm_devices::devices::CudaConfig;
+pub use llm_devices::logging::LoggingConfigTrait;
+
 #[cfg(target_os = "macos")]
 pub use llm_interface::llms::local::devices::MetalConfig;
 pub use llm_interface::{

@@ -1,17 +1,14 @@
 use super::{LlamaCppBackend, LlamaCppConfig};
-use crate::{
-    llms::{
-        api::config::{ApiConfig, LlmApiConfigTrait},
-        local::{LlmLocalTrait, LocalLlmConfig},
-        LlmBackend,
-    },
-    logging::{LoggingConfig, LoggingConfigTrait},
+use crate::llms::{
+    api::config::{ApiConfig, LlmApiConfigTrait},
+    local::{LlmLocalTrait, LocalLlmConfig},
+    LlmBackend,
 };
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
     GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };
-
 // Everything here can be implemented for any struct.
 #[derive(Default)]
 pub struct LlamaCppBackendBuilder {
@@ -74,10 +71,10 @@ impl HfTokenTrait for LlamaCppBackendBuilder {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(not(target_os = "macos"))]
-    use crate::llms::local::devices::CudaConfig;
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+    use llm_devices::devices::CudaConfig;
     #[cfg(target_os = "macos")]
-    use crate::llms::local::devices::MetalConfig;
+    use llm_devices::devices::MetalConfig;
 
     use crate::{
         llms::local::LlmLocalTrait, requests::completion::request::CompletionRequest, LlmInterface,
@@ -93,7 +90,6 @@ mod tests {
                 .llama_cpp()
                 .unwrap()
                 .server
-                .local_config
                 .device_config
                 .gpu_count()
                 > 0
@@ -108,14 +104,11 @@ mod tests {
         println!("{res}");
     }
 
-    #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[tokio::test]
     #[serial]
     async fn test_single_gpu_map() {
-        let cuda_config = CudaConfig {
-            use_cuda_devices: vec![1],
-            ..Default::default()
-        };
+        let cuda_config = CudaConfig::new_from_cuda_devices(vec![0]);
 
         let backend = LlmInterface::llama_cpp()
             .cuda_config(cuda_config)
@@ -127,7 +120,6 @@ mod tests {
                 .llama_cpp()
                 .unwrap()
                 .server
-                .local_config
                 .device_config
                 .gpu_count()
                 == 1
@@ -142,14 +134,11 @@ mod tests {
         println!("{res}");
     }
 
-    #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
-        let cuda_config = CudaConfig {
-            use_cuda_devices: vec![0, 1],
-            ..Default::default()
-        };
+        let cuda_config = CudaConfig::new_from_cuda_devices(vec![1, 2]);
 
         let backend = LlmInterface::llama_cpp()
             .cuda_config(cuda_config)
@@ -161,7 +150,6 @@ mod tests {
                 .llama_cpp()
                 .unwrap()
                 .server
-                .local_config
                 .device_config
                 .gpu_count()
                 == 2
@@ -185,7 +173,6 @@ mod tests {
                 .llama_cpp()
                 .unwrap()
                 .server
-                .local_config
                 .device_config
                 .gpu_count()
                 == 0

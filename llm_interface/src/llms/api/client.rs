@@ -1,8 +1,8 @@
+use super::error::map_serialization_error;
 use super::{
     config::ApiConfigTrait,
     error::{map_deserialization_error, ClientError, WrappedError},
 };
-use crate::llms::api::error::map_serialization_error;
 use bytes::Bytes;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -34,7 +34,7 @@ impl<C: ApiConfigTrait> ApiClient<C> {
         let request_maker = || async {
             let serialized_request =
                 serde_json::to_string(&request).map_err(map_serialization_error)?;
-            crate::trace!("Serialized request: {}", serialized_request);
+            crate::trace!("Serialized post request: {}", serialized_request);
             let request_builder = self
                 .http_client
                 .post(self.config.url(path))
@@ -42,7 +42,25 @@ impl<C: ApiConfigTrait> ApiClient<C> {
                 .headers(self.config.headers())
                 .header(reqwest::header::CONTENT_TYPE, "application/json")
                 .body(serialized_request);
-            crate::trace!("Serialized request: {:?}", request_builder);
+            // crate::trace!("Serialized post request: {:?}", request_builder); // This will log API keys!
+            Ok(request_builder.build()?)
+        };
+        self.execute(request_maker).await
+    }
+
+    /// Make a GET request to {path} and deserialize the response body
+    pub(crate) async fn get<O>(&self, path: &str) -> Result<O, ClientError>
+    where
+        O: DeserializeOwned,
+    {
+        let request_maker = || async {
+            crate::trace!("Get request: {}", path);
+            let request_builder = self
+                .http_client
+                .get(self.config.url(path))
+                .headers(self.config.headers());
+
+            // crate::trace!("Serialized post request: {:?}", request_builder); // This will log API keys!
             Ok(request_builder.build()?)
         };
         self.execute(request_maker).await
@@ -90,6 +108,13 @@ impl<C: ApiConfigTrait> ApiClient<C> {
                     tracing::warn!("Rate limited: {}", wrapped_error.error.message);
                     return Err(backoff::Error::Transient {
                         err: ClientError::ApiError(wrapped_error.error),
+                        retry_after: None,
+                    });
+                } else if status.as_u16() == 503 {
+                    return Err(backoff::Error::Transient {
+                        err: ClientError::ServiceUnavailable {
+                            message: wrapped_error.error.message,
+                        },
                         retry_after: None,
                     });
                 } else {

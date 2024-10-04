@@ -121,17 +121,28 @@ impl MetalConfig {
 
 impl std::fmt::Display for MetalConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
+        writeln!(f)?;
+        writeln!(f, "MetalConfig:")?;
+        crate::i_nlns(
             f,
-            "MetalConfig:
-                max_working_set_size: {:.2} GB,
-                available_ram_bytes: {:.2} GB, 
-                allocated_ram_bytes: {:.2} GB,
-                Specified RAM for Inference: {:.2} GB",
-            (self.max_working_set_size as f64) / 1_073_741_824.0,
-            (self.available_ram_bytes as f64) / 1_073_741_824.0,
-            (self.allocated_ram_bytes as f64) / 1_073_741_824.0,
-            (self.use_ram_bytes as f64) / 1_073_741_824.0,
+            &[
+                format_args!(
+                    "max_working_set_size: {:.2} GB",
+                    (self.max_working_set_size as f64) / 1_073_741_824.0
+                ),
+                format_args!(
+                    "available_ram_bytes: {:.2} GB",
+                    (self.available_ram_bytes as f64) / 1_073_741_824.0
+                ),
+                format_args!(
+                    "allocated_ram_bytes: {:.2} GB",
+                    (self.allocated_ram_bytes as f64) / 1_073_741_824.0
+                ),
+                format_args!(
+                    "Specified RAM for Inference: {:.2} GB",
+                    (self.use_ram_bytes as f64) / 1_073_741_824.0
+                ),
+            ],
         )
     }
 }

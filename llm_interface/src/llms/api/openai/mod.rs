@@ -5,13 +5,11 @@ use super::{
     client::ApiClient,
     config::{ApiConfig, ApiConfigTrait},
 };
-use crate::{
-    logging::LoggingConfig,
-    requests::completion::{
-        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
-    },
+use crate::requests::completion::{
+    error::CompletionError, request::CompletionRequest, response::CompletionResponse,
 };
 use completion::OpenAiCompletionRequest;
+use llm_devices::logging::LoggingConfig;
 use llm_utils::models::api_model::ApiLlmModel;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};

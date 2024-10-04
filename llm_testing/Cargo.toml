@@ -2,7 +2,7 @@
 edition.workspace=true
 homepage.workspace=true
 license.workspace=true
-name="llm_client_testing"
+name="llm_testing"
 repository.workspace=true
 
 version="0.0.1"

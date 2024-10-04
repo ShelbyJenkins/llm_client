@@ -1,6 +1,7 @@
 [workspace]
-members=["llm_client", "llm_client_testing", "llm_interface"]
+members=["llm_client", "llm_devices", "llm_interface", "llm_testing"]
 resolver="2"
+
 [workspace.package]
 authors=["Shelby Jenkins"]
 edition="2021"
@@ -8,10 +9,13 @@ exclude=["Cargo.lock", "target/**/*"]
 homepage="https://github.com/shelbyJenkins/llm_client"
 license="MIT"
 repository="https://github.com/shelbyJenkins/llm_client"
+
 [workspace.dependencies]
 anyhow="1.0.89"
+colorful="0.3.2"
+indenter="0.3.3"
+llm_devices={path="./llm_devices", version="0.0.1"}
 llm_utils={path="../llm_utils", version="0.0.9"}
-
 serde="1.0.210"
 serde_json="1.0.128"
 serial_test="3.1.1"

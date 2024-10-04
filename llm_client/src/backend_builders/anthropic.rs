@@ -1,13 +1,11 @@
 use crate::LlmClient;
-use llm_interface::{
-    llms::{
-        api::{
-            anthropic::{AnthropicBackend, AnthropicConfig},
-            config::{ApiConfig, LlmApiConfigTrait},
-        },
-        LlmBackend,
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_interface::llms::{
+    api::{
+        anthropic::{AnthropicBackend, AnthropicConfig},
+        config::{ApiConfig, LlmApiConfigTrait},
     },
-    logging::{LoggingConfig, LoggingConfigTrait},
+    LlmBackend,
 };
 use llm_utils::models::api_model::{anthropic::AnthropicModelTrait, ApiLlmModel};
 

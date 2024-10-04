@@ -5,15 +5,11 @@ use super::{
     client::ApiClient,
     config::{ApiConfig, ApiConfigTrait},
 };
-use crate::{
-    logging::LoggingConfig,
-    requests::completion::{
-        error::CompletionError,
-        request::CompletionRequest,
-        response::CompletionResponse,
-    },
+use crate::requests::completion::{
+    error::CompletionError, request::CompletionRequest, response::CompletionResponse,
 };
 use completion::AnthropicCompletionRequest;
+use llm_devices::logging::LoggingConfig;
 use llm_utils::models::api_model::ApiLlmModel;
 use reqwest::header::HeaderMap;
 use secrecy::{ExposeSecret, Secret};

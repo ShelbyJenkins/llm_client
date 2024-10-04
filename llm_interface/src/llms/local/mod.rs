@@ -1,7 +1,8 @@
-#[cfg(not(target_os = "macos"))]
-use devices::CudaConfig;
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+use llm_devices::devices::CudaConfig;
+use llm_devices::devices::DeviceConfig;
 #[cfg(target_os = "macos")]
-use devices::MetalConfig;
+use llm_devices::devices::MetalConfig;
 use llm_utils::models::local_model::{
     gguf::GgufLoader, metadata::llm::DEFAULT_CONTEXT_LENGTH, LocalLlmModel,
 };
@@ -11,13 +12,11 @@ pub mod llama_cpp;
 #[cfg(feature = "mistral_rs_backend")]
 pub mod mistral_rs;
 
-pub mod devices;
-
 #[derive(Clone, Debug)]
 pub struct LocalLlmConfig {
     pub batch_size: u64,
     pub inference_ctx_size: u64,
-    pub device_config: devices::DeviceConfig,
+    pub device_config: DeviceConfig,
 }
 
 impl Default for LocalLlmConfig {
@@ -25,7 +24,7 @@ impl Default for LocalLlmConfig {
         Self {
             batch_size: 512,
             inference_ctx_size: DEFAULT_CONTEXT_LENGTH,
-            device_config: devices::DeviceConfig::default(),
+            device_config: DeviceConfig::default(),
         }
     }
 }
@@ -309,7 +308,7 @@ pub trait LlmLocalTrait {
         self
     }
 
-    #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
     /// Sets the CUDA configuration for GPU inference.
     ///
     /// # Arguments

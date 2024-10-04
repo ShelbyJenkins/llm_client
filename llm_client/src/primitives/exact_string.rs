@@ -3,7 +3,7 @@ use crate::workflows::reason::ReasonTrait;
 use anyhow::Result;
 use llm_utils::grammar::{ExactStringGrammar, Grammar};
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone)]
 pub struct ExactStringPrimitive {
     pub allowed_strings: Vec<String>,
 }

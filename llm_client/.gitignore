@@ -1,5 +1,4 @@
 /target/
 .env
-/logs/
-/llm_client_logs/
-/llm_interface/src/llms/local/llama_cpp/llama_cpp/*
+/llm_logs/
+Cargo.lock

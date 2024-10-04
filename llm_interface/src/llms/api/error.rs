@@ -8,6 +8,12 @@ pub enum ClientError {
     /// API returns error object with details of API call failure
     #[error("{:?}: {}", .0.r#type, .0.message)]
     ApiError(ApiError),
+    /// Error when API returns 503 status code
+    #[error("Service unavailable: {message}")]
+    ServiceUnavailable { message: String },
+    /// Generic error message
+    #[error("Generic error: {message}")]
+    GenericError { message: String },
     /// Error when a response cannot be deserialized into a Rust type
     #[error("failed to serialize api request: {0}")]
     JSONSerialize(serde_json::Error),

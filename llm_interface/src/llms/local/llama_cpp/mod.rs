@@ -1,6 +1,5 @@
 pub mod builder;
 pub mod completion;
-pub mod devices;
 pub mod server;
 
 use super::LocalLlmConfig;
@@ -9,12 +8,12 @@ use crate::{
         client::ApiClient,
         config::{ApiConfig, ApiConfigTrait},
     },
-    logging::LoggingConfig,
     requests::completion::{
         error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
 };
 use completion::LlamaCppCompletionRequest;
+use llm_devices::logging::LoggingConfig;
 use llm_utils::models::local_model::{gguf::GgufLoader, LocalLlmModel};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
@@ -42,10 +41,21 @@ impl LlamaCppBackend {
         local_config.device_config.initialize()?;
         let model = local_config.load_model(llm_loader)?;
 
-        let mut server = LlamaCppServer::new(&config, local_config)?;
+        let mut server = LlamaCppServer::new(
+            local_config.device_config,
+            &config.api_config.host,
+            &config.api_config.port,
+            local_config.inference_ctx_size,
+        )?;
         let client: ApiClient<LlamaCppConfig> = ApiClient::new(config);
         server.start_server(&client).await?;
-
+        println!(
+            "{}",
+            colorful::Colorful::bold(colorful::Colorful::color(
+                "LlamaCppBackend Initialized",
+                colorful::RGB::new(220, 0, 115)
+            ))
+        );
         Ok(Self {
             client,
             server,
@@ -68,7 +78,10 @@ impl LlamaCppBackend {
     }
 
     pub(crate) fn shutdown(&self) {
-        self.server.shutdown();
+        match self.server.shutdown() {
+            Ok(_) => (),
+            Err(e) => crate::error!("Failed to shutdown server: {}", e),
+        }
     }
 }
 

@@ -1,12 +1,12 @@
 use cpu::CpuConfig;
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub use cuda::CudaConfig;
 use gpu::GpuLayerAllocator;
 #[cfg(target_os = "macos")]
 pub use metal::MetalConfig;
 use ram::RamConfig;
 pub mod cpu;
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub mod cuda;
 pub mod gpu;
 #[cfg(target_os = "macos")]
@@ -17,12 +17,12 @@ pub mod ram;
 #[derive(Debug, Clone)]
 pub struct DeviceConfig {
     /// CPU configuration for thread count.
-    pub(crate) cpu_config: CpuConfig,
+    pub cpu_config: CpuConfig,
 
     /// RAM configuration for non-GPU inference on Windows and Unix.
     ///
     /// This setting is used when GPU acceleration is not available or not enabled.
-    pub(crate) ram_config: RamConfig,
+    pub ram_config: RamConfig,
 
     /// Indicates whether to use any available GPUs for inference.
     ///
@@ -34,7 +34,7 @@ pub struct DeviceConfig {
     ///
     /// This field is only available on platforms other than macOS.
     /// If None, default CUDA settings will be used when GPU is enabled.
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub cuda_config: Option<CudaConfig>,
 
     /// Metal configuration for GPU inference on macOS.
@@ -74,7 +74,7 @@ impl Default for DeviceConfig {
             cpu_config: CpuConfig::default(),
             ram_config: RamConfig::default(),
             use_gpu: true,
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             cuda_config: None,
             #[cfg(target_os = "macos")]
             metal_config: None,
@@ -87,9 +87,9 @@ impl Default for DeviceConfig {
 }
 
 impl DeviceConfig {
-    pub(crate) fn initialize(&mut self) -> crate::Result<()> {
+    pub fn initialize(&mut self) -> crate::Result<()> {
         self.cpu_config.initialize(self.error_on_config_issue)?;
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
             self.initialize_unix_windows()?;
         }
@@ -103,9 +103,11 @@ impl DeviceConfig {
         {
             crate::bail!("Unsupported OS");
         }
+        crate::info!("{}", self);
         Ok(())
     }
-    #[cfg(not(target_os = "macos"))]
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     fn initialize_unix_windows(&mut self) -> crate::Result<()> {
         if self.use_gpu {
             if self.cuda_config.is_none() {
@@ -114,9 +116,7 @@ impl DeviceConfig {
             }
             if let Some(cuda_config) = &mut self.cuda_config {
                 match cuda_config.initialize(self.error_on_config_issue) {
-                    Ok(_) => {
-                        crate::info!("Successfully initialized: {}", cuda_config);
-                    }
+                    Ok(_) => (),
                     Err(e) => {
                         if self.error_on_config_issue {
                             crate::warn!("{}", cuda_config);
@@ -172,7 +172,7 @@ impl DeviceConfig {
     }
 
     pub fn available_memory_bytes(&self) -> crate::Result<u64> {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
             Ok(cuda_config.total_vram_bytes)
         } else {
@@ -206,7 +206,7 @@ impl DeviceConfig {
     }
 
     pub fn main_gpu(&self) -> crate::Result<u32> {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
             cuda_config.main_gpu(self.error_on_config_issue)
         } else {
@@ -225,7 +225,7 @@ impl DeviceConfig {
     }
 
     pub fn gpu_count(&self) -> usize {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
             cuda_config.device_count()
         } else {
@@ -243,12 +243,12 @@ impl DeviceConfig {
         }
     }
 
-    pub(crate) fn allocate_layers_to_gpus(
+    pub fn allocate_layers_to_gpus(
         &self,
         buffer_layer_per_gpu: u64,
         buffer_layer_main_gpu: u64,
     ) -> crate::Result<Vec<gpu::GpuDevice>> {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let mut gpu_devices: Vec<gpu::GpuDevice> = if let Some(cuda_config) = &self.cuda_config {
             cuda_config.to_generic_gpu_devices(self.error_on_config_issue)?
         } else {
@@ -272,5 +272,39 @@ impl DeviceConfig {
         );
         allocator.allocate(&mut gpu_devices)?;
         Ok(gpu_devices)
+    }
+}
+
+impl std::fmt::Display for DeviceConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f)?;
+        write!(f, "DeviceConfig:")?;
+        crate::i_ln(f, format_args!("{}", self.cpu_config))?;
+        crate::i_ln(f, format_args!("{}", self.ram_config))?;
+        crate::i_ln(f, format_args!("use_gpu: {}", self.use_gpu))?;
+
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+        if let Some(cuda_config) = &self.cuda_config {
+            crate::i_ln(f, format_args!("{}", cuda_config))?;
+        }
+        #[cfg(target_os = "macos")]
+        if let Some(metal_config) = &self.metal_config {
+            crate::i_ln(f, format_args!("{}", metal_config))?;
+        }
+        crate::i_ln(
+            f,
+            format_args!("error_on_config_issue: {}", self.error_on_config_issue),
+        )?;
+        if let Some(layer_count) = self.layer_count {
+            crate::i_ln(f, format_args!("layer_count: {}", layer_count))?;
+        }
+        if let Some(average_layer_size_bytes) = self.average_layer_size_bytes {
+            crate::i_ln(
+                f,
+                format_args!("average_layer_size_bytes: {}", average_layer_size_bytes),
+            )?;
+        }
+
+        Ok(())
     }
 }

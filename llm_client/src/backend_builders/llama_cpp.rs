@@ -1,14 +1,12 @@
 use crate::LlmClient;
-use llm_interface::{
-    llms::{
-        api::config::{ApiConfig, LlmApiConfigTrait},
-        local::{
-            llama_cpp::{LlamaCppBackend, LlamaCppConfig},
-            LlmLocalTrait, LocalLlmConfig,
-        },
-        LlmBackend,
+use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_interface::llms::{
+    api::config::{ApiConfig, LlmApiConfigTrait},
+    local::{
+        llama_cpp::{LlamaCppBackend, LlamaCppConfig},
+        LlmLocalTrait, LocalLlmConfig,
     },
-    logging::{LoggingConfig, LoggingConfigTrait},
+    LlmBackend,
 };
 use llm_utils::models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
