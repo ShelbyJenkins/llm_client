@@ -1,5 +1,4 @@
 [workspace]
-description="The Easiest Rust Interface for Local LLMs"
 members=["llm_client", "llm_devices", "llm_interface", "llm_testing"]
 resolver="2"
 

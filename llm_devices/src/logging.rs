@@ -117,13 +117,6 @@ pub trait LoggingConfigTrait {
     /// Use TRACE for purely "I am here!" logs. They indicate the flow of execution
     /// without additional context.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// trace!("Entering function foo");
-    /// trace!("Exiting function foo");
-    /// ```
-    ///
     /// TRACE logs should not be used to log variables or decisions.
     fn log_level_trace(mut self) -> Self
     where
@@ -140,11 +133,6 @@ pub trait LoggingConfigTrait {
     ///
     /// # Examples
     ///
-    /// ```
-    /// debug!("User {} chose option {}", user_id, option);
-    /// debug!("Using chunked sending for request");
-    /// ```
-    ///
     /// DEBUG logs should focus on logging specific data points or choices made in the code.
     fn log_level_debug(mut self) -> Self
     where
@@ -158,14 +146,6 @@ pub trait LoggingConfigTrait {
     ///
     /// Use INFO for important runtime events that don't prevent the application from working
     /// but are significant milestones or status updates.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// info!("Server listening on port 80");
-    /// info!("Logged into <API> as <USER>");
-    /// info!("Completed daily database expiration task");
-    /// ```
     ///
     /// INFO logs should provide a high-level overview of the application's operation.
     fn log_level_info(mut self) -> Self
@@ -181,13 +161,6 @@ pub trait LoggingConfigTrait {
     /// Use WARN for errors that were recovered from or potential issues that don't prevent
     /// the application from working but might lead to problems if not addressed.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// warn!("Connection attempt failed, retrying (attempt 2 of 3)");
-    /// warn!("Disk usage above 90%, consider freeing up space");
-    /// ```
-    ///
     /// WARN logs often indicate situations that should be monitored or addressed soon.
     fn log_level_warn(mut self) -> Self
     where
@@ -201,13 +174,6 @@ pub trait LoggingConfigTrait {
     ///
     /// Use ERROR to log errors within specific tasks that cause the task to fail
     /// but don't crash the entire application.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// error!("Broken pipe responding to request");
-    /// error!("Failed to write to database: {}", e);
-    /// ```
     ///
     /// ERROR logs indicate serious issues that need immediate attention but don't
     /// necessarily stop the application.

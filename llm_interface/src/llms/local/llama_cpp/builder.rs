@@ -138,7 +138,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_two_gpu_map() {
-        let cuda_config = CudaConfig::new_from_cuda_devices(vec![1, 2]);
+        let cuda_config = CudaConfig::new_from_cuda_devices(vec![0, 1]);
 
         let backend = LlmInterface::llama_cpp()
             .cuda_config(cuda_config)
