@@ -73,4 +73,8 @@ impl LlmClient {
     pub fn shutdown(&self) {
         self.backend.shutdown();
     }
+
+    pub fn base_request(&self) -> llm_interface::requests::completion::request::CompletionRequest {
+        llm_interface::requests::completion::request::CompletionRequest::new(self.backend.clone())
+    }
 }

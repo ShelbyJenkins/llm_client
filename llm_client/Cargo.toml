@@ -14,6 +14,7 @@ version="0.0.5"
 anyhow.workspace=true
 colorful.workspace=true
 indenter.workspace=true
+indoc="2.0.5"
 llm_devices.workspace=true
 llm_interface.workspace=true
 llm_utils.workspace=true

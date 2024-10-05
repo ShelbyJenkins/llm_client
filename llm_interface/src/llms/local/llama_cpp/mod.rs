@@ -50,11 +50,12 @@ impl LlamaCppBackend {
         let client: ApiClient<LlamaCppConfig> = ApiClient::new(config);
         server.start_server(&client).await?;
         println!(
-            "{}",
+            "{} with model: {}",
             colorful::Colorful::bold(colorful::Colorful::color(
                 "LlamaCppBackend Initialized",
                 colorful::RGB::new(220, 0, 115)
-            ))
+            )),
+            model.model_base.model_id
         );
         Ok(Self {
             client,

@@ -136,9 +136,7 @@ impl CascadeRound {
             None
         }
     }
-}
 
-impl CascadeRound {
     pub fn open_round(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
         base_req.prompt.add_user_message()?.set_content(&self.task);
         Ok(())
@@ -149,6 +147,15 @@ impl CascadeRound {
             Some(step) => Ok(step),
             None => crate::bail!("No steps in round"),
         }
+    }
+
+    pub fn close_round(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
+        base_req
+            .prompt
+            .add_assistant_message()?
+            .set_content(self.display_outcome()?);
+
+        Ok(())
     }
 
     // pub async fn set_cache_up_to_last_step(
@@ -171,15 +178,6 @@ impl CascadeRound {
     //         }
     //     }
     // }
-
-    pub fn close_round(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
-        base_req
-            .prompt
-            .add_assistant_message()?
-            .set_content(self.display_outcome()?);
-
-        Ok(())
-    }
 }
 
 impl std::fmt::Display for CascadeRound {

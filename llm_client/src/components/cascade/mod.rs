@@ -36,6 +36,10 @@ impl CascadeFlow {
         self.rounds.last_mut().unwrap()
     }
 
+    pub fn add_round(&mut self, round: CascadeRound) {
+        self.rounds.push(round);
+    }
+
     pub async fn run_all_rounds(&mut self, base_req: &mut CompletionRequest) -> Result<()> {
         self.start_time = std::time::Instant::now();
 

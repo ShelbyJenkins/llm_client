@@ -1,6 +1,7 @@
 use llm_interface::requests::completion::CompletionRequest;
 pub mod entity;
-// pub mod hierarchy;
+pub mod hierarchy;
+pub mod label;
 
 pub struct Classify {
     pub base_req: CompletionRequest,
