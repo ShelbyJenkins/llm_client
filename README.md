@@ -58,7 +58,7 @@ This runs the reason one round cascading prompt workflow with an integer output.
 
 <img src="./docs/media/reason_one_round_example_annotated.png" width="60%" alt="An example run of this workflow with these instructions.">
 
-This method significantly improves the reliability of LLM use cases. For example, [there are test cases this repo](./tests/common/test_sets) that can be used to benchmark an LLM. There is a large increase in accuracy when comparing [basic inference with a constrained outcome](./tests/src/llm_client_tests/basic_primitive_tests.rs) and [a CoT style cascading prompt workflow](./llm_client/src/workflows/reason/one_round.rs). The [decision workflow](./llm_client/examples/decision.rs) that runs N count of CoT workflows across a tempature gradient approaches 100% accuracy for the test cases.
+This method significantly improves the reliability of LLM use cases. For example, [there are test cases this repo](./tests/common/test_sets) that can be used to benchmark an LLM. There is a large increase in accuracy when comparing [basic inference with a constrained outcome](./tests/src/llm_client_tests/basic_primitive_tests.rs) and [a CoT style cascading prompt workflow](./llm_client/src/workflows/reason/one_round.rs). The [decision workflow](./llm_client/examples/decision.rs) that runs N count of CoT workflows across a temperature gradient approaches 100% accuracy for the test cases.
 
 I have a full breakdown of this in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."  
 
