@@ -1,6 +1,6 @@
 use super::PrimitiveTrait;
 use anyhow::Result;
-use llm_utils::grammar::{Grammar, SentencesGrammar};
+use crate::components::grammar::{Grammar, SentencesGrammar};
 pub struct SentencesPrimitive {
     pub min_count: u8,
     pub max_count: u8,

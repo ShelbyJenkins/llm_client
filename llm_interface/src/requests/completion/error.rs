@@ -8,7 +8,7 @@ pub enum CompletionError {
     #[error("LocalClientError: {0}")]
     LocalClientError(String),
     #[error("RequestTokenLimitError: {0}")]
-    RequestTokenLimitError(#[from] llm_utils::prompting::token_count::RequestTokenLimitError),
+    RequestTokenLimitError(#[from] llm_prompt::RequestTokenLimitError),
     #[error("StopReasonUnsupported: {0}")]
     StopReasonUnsupported(String),
     #[error("ExceededRetryCount")]

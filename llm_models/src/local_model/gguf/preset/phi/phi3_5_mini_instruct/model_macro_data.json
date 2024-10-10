@@ -1,0 +1,16 @@
+{
+    "model_id": "Phi-3.5-mini-instruct",
+    "gguf_repo_id": "bartowski/Phi-3.5-mini-instruct-GGUF",
+    "number_of_parameters": 4,
+    "f_name_for_q_bits": {
+        "q8": "Phi-3.5-mini-instruct-Q8_0.gguf",
+        "q6": "Phi-3.5-mini-instruct-Q6_K.gguf",
+        "q5": "Phi-3.5-mini-instruct-Q5_K_M.gguf",
+        "q4": "Phi-3.5-mini-instruct-Q4_K_M.gguf",
+        "q3": "Phi-3.5-mini-instruct-Q3_K_M.gguf",
+        "q2": "Phi-3.5-mini-instruct-Q2_K.gguf"
+    },
+    "base_generation_prefix": "<|assistant|>\n",
+    "tokenizer_json_path": "phi/tokenizer.json",
+    "tokenizer_config_json_path": "phi/phi3_5_mini_instruct/tokenizer_config.json"
+}

@@ -1,0 +1,19 @@
+[package]
+description="LLM Prompting"
+edition.workspace=true
+homepage.workspace=true
+license.workspace=true
+name="llm_prompt"
+readme="README.md"
+repository.workspace=true
+version="0.0.1"
+
+[dependencies]
+anyhow.workspace=true
+colorful.workspace=true
+indenter.workspace=true
+minijinja="2.0.1"
+thiserror.workspace=true
+
+[dev-dependencies]
+llm_models.workspace=true

@@ -2,11 +2,11 @@ use llm_interface::{
     llms::LlmBackend,
     requests::{
         completion::{CompletionRequest, CompletionResponse},
-        constraints::logit_bias::{LogitBias, LogitBiasTrait},
+        logit_bias::{LogitBias, LogitBiasTrait},
         req_components::{RequestConfig, RequestConfigTrait},
     },
 };
-use llm_utils::prompting::LlmPrompt;
+use llm_prompt::LlmPrompt;
 
 #[derive(Clone)]
 pub struct BasicCompletion {

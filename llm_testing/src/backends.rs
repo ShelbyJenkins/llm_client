@@ -2,7 +2,7 @@
 use llm_client::backend_builders::mistral_rs::MistralRsBackendBuilder;
 use llm_client::{backend_builders::llama_cpp::LlamaCppBackendBuilder, LlmClient};
 
-use llm_utils::models::local_model::gguf::preset::LlmPreset;
+use llm_models::local_model::gguf::preset::LlmPreset;
 
 const TINY_LLM_PRESET: LlmPreset = LlmPreset::Llama3_2_3bInstruct;
 const MEDIUM_LLM_PRESET: LlmPreset = LlmPreset::Llama3_1_8bInstruct;

@@ -6,7 +6,7 @@ use crate::llms::{
     LlmBackend,
 };
 use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
-use llm_utils::models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
+use llm_models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
 // Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
     pub config: GenericApiConfig,

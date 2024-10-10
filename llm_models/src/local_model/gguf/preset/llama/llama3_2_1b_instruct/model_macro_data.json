@@ -1,0 +1,15 @@
+{
+    "model_id": "Meta-Llama-3.2-1B-Instruct",
+    "gguf_repo_id": "bartowski/Llama-3.2-1B-Instruct-GGUF",
+    "number_of_parameters": 3,
+    "f_name_for_q_bits": {
+        "q8": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "q6": "Llama-3.2-1B-Instruct-Q6_K.gguf",
+        "q5": "Llama-3.2-1B-Instruct-Q5_K_M.gguf",
+        "q4": "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+        "q3": "Llama-3.2-1B-Instruct-Q3_K_M.gguf"
+    },
+    "base_generation_prefix": "<|start_header_id|>assistant<|end_header_id|>\n\n",
+    "tokenizer_json_path": "llama/llama3_1_8b_instruct/tokenizer.json",
+    "tokenizer_config_json_path": "llama/llama3_1_8b_instruct/tokenizer_config.json"
+}

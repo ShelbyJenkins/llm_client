@@ -5,7 +5,7 @@ use anyhow::{anyhow, Result};
 use core::panic;
 use llm_interface::requests::{
     completion::{CompletionFinishReason, CompletionRequest},
-    constraints::stop_sequence::StoppingSequence,
+    stop_sequence::StoppingSequence,
 };
 pub use round::CascadeRound;
 use step::InferenceStep;

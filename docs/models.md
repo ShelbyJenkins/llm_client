@@ -1,6 +1,6 @@
-There are three options for loading GGUF models. There are [examples](https://github.com/ShelbyJenkins/llm_utils/tree/main/examples) in the llm_utils crate.
+There are three options for loading GGUF models. There are [examples](../llm_models/examples/) in the llm_models crate.
 
-In the [device config example](../examples/device_config.rs), you can see how to use different GPU and CPU configurations. 
+In the [device config example](../llm_client/examples/device_config.rs), you can see how to use different GPU and CPU configurations. 
 
 # Loading Models from Presets
 

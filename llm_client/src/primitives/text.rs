@@ -1,6 +1,6 @@
 use super::PrimitiveTrait;
 use anyhow::Result;
-use llm_utils::grammar::{Grammar, TextGrammar};
+use crate::components::grammar::{Grammar, TextGrammar};
 pub struct TextPrimitive {
     pub text_token_length: u32,
 }

@@ -60,7 +60,7 @@ impl SpeedBenchmark {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use llm_utils::models::local_model::gguf::preset::LlmPreset;
+    use llm_models::local_model::gguf::preset::LlmPreset;
 
     #[tokio::test]
     #[ignore]

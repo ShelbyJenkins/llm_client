@@ -14,10 +14,11 @@ backoff={version="0.4.0", features=["tokio"]}
 bytes="1.7.2"
 clap={version="4.5.17", optional=true}
 colorful.workspace=true
-dotenvy="0.15.7"
+dotenvy.workspace=true
 indenter.workspace=true
 llm_devices.workspace=true
-llm_utils.workspace=true
+llm_models.workspace=true
+llm_prompt.workspace=true
 reqwest="0.12.7"
 secrecy="0.8.0"
 serde.workspace=true
@@ -26,6 +27,7 @@ sysinfo={version="0.31.4", optional=true, default-features=false, features=["sys
 thiserror.workspace=true
 tokio.workspace=true
 tracing.workspace=true
+url="2.5.2"
 
 [features]
 all=["llama_cpp_backend", "mistral_rs_backend"]

@@ -1,6 +1,6 @@
 use crate::requests::{
-    constraints::stop_sequence::StoppingSequence,
     res_components::{GenerationSettings, InferenceProbabilities, TimingUsage, TokenUsage},
+    stop_sequence::StoppingSequence,
 };
 
 pub struct CompletionResponse {

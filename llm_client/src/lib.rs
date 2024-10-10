@@ -5,7 +5,7 @@ pub mod prelude;
 pub mod primitives;
 pub mod workflows;
 #[allow(unused_imports)]
-pub(crate) use anyhow::{anyhow, bail, Result};
+pub(crate) use anyhow::{Error, anyhow, bail, Result};
 #[allow(unused_imports)]
 pub(crate) use llm_devices::logging::{i_ln, i_lns, i_nln, i_nlns};
 pub use prelude::*;

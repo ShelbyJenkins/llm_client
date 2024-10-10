@@ -1,5 +1,5 @@
 use llm_client::CompletionResponse;
-use llm_utils::models::local_model::gguf::preset::LlmPreset;
+use llm_models::local_model::gguf::preset::LlmPreset;
 
 use crate::backends::TestBackendConfig;
 

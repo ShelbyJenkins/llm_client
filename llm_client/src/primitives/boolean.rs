@@ -1,7 +1,7 @@
 use super::PrimitiveTrait;
+use crate::components::grammar::{BooleanGrammar, Grammar};
 use crate::workflows::reason::ReasonTrait;
 use anyhow::Result;
-use llm_utils::grammar::{BooleanGrammar, Grammar};
 
 #[derive(Default)]
 pub struct BooleanPrimitive {}

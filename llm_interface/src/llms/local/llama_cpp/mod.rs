@@ -14,7 +14,7 @@ use crate::{
 };
 use completion::LlamaCppCompletionRequest;
 use llm_devices::logging::LoggingConfig;
-use llm_utils::models::local_model::{gguf::GgufLoader, LocalLlmModel};
+use llm_models::local_model::{gguf::GgufLoader, LocalLlmModel};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 use server::LlamaCppServer;

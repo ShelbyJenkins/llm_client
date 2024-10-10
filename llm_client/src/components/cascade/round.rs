@@ -20,6 +20,11 @@ impl CascadeRound {
         }
     }
 
+    pub fn step_separator(&mut self, separator: char) -> &mut Self {
+        self.step_separator = Some(separator);
+        self
+    }
+
     pub fn add_inference_step(&mut self, step_config: &StepConfig) -> &mut CascadeStep {
         self.unresolved_steps
             .push_back(CascadeStep::new_inference_step(

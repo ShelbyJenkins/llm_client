@@ -3,7 +3,7 @@ use llm_devices::devices::CudaConfig;
 use llm_devices::devices::DeviceConfig;
 #[cfg(target_os = "macos")]
 use llm_devices::devices::MetalConfig;
-use llm_utils::models::local_model::{
+use llm_models::local_model::{
     gguf::GgufLoader, metadata::llm::DEFAULT_CONTEXT_LENGTH, LocalLlmModel,
 };
 

@@ -1,5 +1,5 @@
 [workspace]
-members=["llm_client", "llm_devices", "llm_interface", "llm_testing"]
+members=["llm_client", "llm_devices", "llm_interface", "llm_models", "llm_prompt", "llm_testing"]
 resolver="2"
 
 [workspace.package]
@@ -13,10 +13,14 @@ repository="https://github.com/shelbyJenkins/llm_client"
 [workspace.dependencies]
 anyhow="1.0.89"
 colorful="0.3.2"
+dotenvy="0.15.7"
 indenter="0.3.3"
 llm_devices={path="./llm_devices", version="0.0.2"}
 llm_interface={path="./llm_interface", version="0.0.1"}
-llm_utils={path="../llm_utils", version="0.0.10"}
+llm_models={path="./llm_models", version="0.0.1"}
+llm_prompt={path="./llm_prompt", version="0.0.1"}
+# llm_utils={path="../llm_utils", version="0.0.10"}
+llm_utils={path="../llm_utils"}
 serde="1.0.210"
 serde_json="1.0.128"
 serial_test="3.1.1"

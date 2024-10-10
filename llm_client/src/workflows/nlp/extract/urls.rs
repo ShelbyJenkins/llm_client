@@ -10,7 +10,7 @@ use llm_interface::requests::{
     completion::CompletionRequest,
     req_components::{RequestConfig, RequestConfigTrait},
 };
-use llm_utils::text_utils::extract::extract_urls;
+use llm_utils::extract::extract_urls;
 use url::Url;
 
 #[derive(Clone)]

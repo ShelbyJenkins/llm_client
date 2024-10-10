@@ -2,12 +2,11 @@ use super::{error::CompletionError, response::CompletionResponse};
 use crate::{
     llms::LlmBackend,
     requests::{
-        completion::response::CompletionFinishReason,
-        constraints::{logit_bias::LogitBias, stop_sequence::StopSequences},
-        req_components::RequestConfig,
+        completion::response::CompletionFinishReason, logit_bias::LogitBias,
+        req_components::RequestConfig, stop_sequence::StopSequences,
     },
 };
-use llm_utils::prompting::LlmPrompt;
+use llm_prompt::LlmPrompt;
 
 pub struct CompletionRequest {
     pub start_time: std::time::Instant,

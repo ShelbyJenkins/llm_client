@@ -5,11 +5,11 @@ pub mod sentences;
 pub mod text;
 pub mod words;
 
+use crate::components::grammar::Grammar;
 use anyhow::Result;
 pub use boolean::BooleanPrimitive;
 pub use exact_string::ExactStringPrimitive;
 pub use integer::IntegerPrimitive;
-use llm_utils::grammar::Grammar;
 pub use sentences::SentencesPrimitive;
 pub use text::TextPrimitive;
 pub use words::WordsPrimitive;

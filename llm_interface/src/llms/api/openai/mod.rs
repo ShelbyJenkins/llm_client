@@ -10,7 +10,7 @@ use crate::requests::completion::{
 };
 use completion::OpenAiCompletionRequest;
 use llm_devices::logging::LoggingConfig;
-use llm_utils::models::api_model::ApiLlmModel;
+use llm_models::api_model::ApiLlmModel;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 

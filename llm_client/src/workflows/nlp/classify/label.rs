@@ -78,7 +78,7 @@ impl LabelEntity {
             Entity type: '{}'
             ",
             self.build_tag_list(),
-            self.entity.entity_type.as_deref().unwrap(),
+            self.entity.specific_identifer.as_deref().unwrap(),
         };
 
         let round = self.flow.new_round(task);

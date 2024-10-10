@@ -1,0 +1,16 @@
+{
+    "model_id": "Mistral-Small-Instruct-2409",
+    "gguf_repo_id": "bartowski/Mistral-Small-Instruct-2409-GGUF",
+    "number_of_parameters": 12,
+    "f_name_for_q_bits": {
+        "q8": "Mistral-Small-Instruct-2409-Q8_0.gguf",
+        "q6": "Mistral-Small-Instruct-2409-Q6_K.gguf",
+        "q5": "Mistral-Small-Instruct-2409-Q5_K_M.gguf",
+        "q4": "Mistral-Small-Instruct-2409-Q4_K_M.gguf",
+        "q3": "Mistral-Small-Instruct-2409-Q3_K_M.gguf",
+        "q2": "Mistral-Small-Instruct-2409-Q2_K.gguf"
+    },
+    "base_generation_prefix": "",
+    "tokenizer_json_path": "mistralai/mistral_small_instruct_2409/tokenizer.json",
+    "tokenizer_config_json_path": "mistralai/mistral_small_instruct_2409/tokenizer_config.json"
+}

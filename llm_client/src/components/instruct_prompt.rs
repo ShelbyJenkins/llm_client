@@ -1,10 +1,5 @@
 use anyhow::{anyhow, Result};
-use llm_utils::prompting::{
-    PromptMessage,
-    PromptMessageType,
-    TextConcatenator,
-    TextConcatenatorTrait,
-};
+use llm_prompt::{PromptMessage, PromptMessageType, TextConcatenator, TextConcatenatorTrait};
 
 #[derive(Clone)]
 pub struct InstructPrompt {

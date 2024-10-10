@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use llm_utils::grammar::Grammar;
+use crate::components::grammar::Grammar;
 
 use crate::{primitives::ExactStringPrimitive, PrimitiveTrait};
 

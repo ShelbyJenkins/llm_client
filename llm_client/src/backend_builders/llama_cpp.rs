@@ -8,7 +8,7 @@ use llm_interface::llms::{
     },
     LlmBackend,
 };
-use llm_utils::models::local_model::{
+use llm_models::local_model::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
     GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };

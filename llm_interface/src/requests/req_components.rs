@@ -1,8 +1,4 @@
-use llm_utils::prompting::token_count::{
-    check_and_get_max_tokens,
-    RequestTokenLimitError,
-    TokenState,
-};
+use llm_prompt::{check_and_get_max_tokens, MaxTokenState, RequestTokenLimitError};
 
 #[derive(Clone)]
 pub struct RequestConfig {
@@ -202,7 +198,7 @@ impl RequestConfig {
             self.set_max_tokens_for_request(total_prompt_tokens)?; // To ensure both token sets are set
         }
 
-        let initial_state = TokenState {
+        let initial_state = MaxTokenState {
             actual_request: self
                 .actual_request_tokens
                 .expect("requested_response_tokens"),
@@ -214,7 +210,7 @@ impl RequestConfig {
         self.requested_response_tokens =
             Some((initial_state.requested_response as f32 * token_increase_factor) as u64);
 
-        let new_state = TokenState {
+        let new_state = MaxTokenState {
             actual_request: self
                 .actual_request_tokens
                 .expect("requested_response_tokens"),

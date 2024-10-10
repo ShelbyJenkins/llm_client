@@ -2,9 +2,10 @@ use crate::requests::{
     completion::{
         error::CompletionError, request::CompletionRequest, response::CompletionResponse,
     },
-    constraints::logit_bias::LogitBias,
+    logit_bias::LogitBias,
 };
-use llm_utils::prompting::LlmPrompt;
+use llm_models::tokenizer::LlmTokenizer;
+use llm_prompt::{LlmPrompt, PromptTokenizer};
 pub mod api;
 #[cfg(any(feature = "llama_cpp_backend", feature = "mistral_rs_backend"))]
 pub mod local;
@@ -58,12 +59,38 @@ impl LlmBackend {
     pub fn new_prompt(&self) -> LlmPrompt {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
-            LlmBackend::LlamaCpp(b) => LlmPrompt::new_chat_template_prompt(&b.model),
+            LlmBackend::LlamaCpp(b) => LlmPrompt::new_chat_template_prompt(
+                &b.model.chat_template.chat_template,
+                &b.model.chat_template.bos_token,
+                &b.model.chat_template.eos_token,
+                b.model.chat_template.unk_token.as_deref(),
+                b.model.chat_template.base_generation_prefix.as_deref(),
+                self.prompt_tokenizer(),
+            ),
             #[cfg(feature = "mistral_rs_backend")]
-            LlmBackend::MistralRs(b) => LlmPrompt::new_chat_template_prompt(&b.model),
-            LlmBackend::OpenAi(b) => LlmPrompt::new_openai_prompt(&b.model),
-            LlmBackend::Anthropic(b) => LlmPrompt::new_openai_prompt(&b.model),
-            LlmBackend::GenericApi(b) => LlmPrompt::new_openai_prompt(&b.model),
+            LlmBackend::MistralRs(b) => LlmPrompt::new_chat_template_prompt(
+                &b.model.chat_template.chat_template,
+                &b.model.chat_template.bos_token,
+                &b.model.chat_template.eos_token,
+                &b.model.chat_template.unk_token,
+                &b.model.chat_template.base_generation_prefix,
+                self.prompt_tokenizer(),
+            ),
+            LlmBackend::OpenAi(b) => LlmPrompt::new_openai_prompt(
+                Some(b.model.tokens_per_message),
+                b.model.tokens_per_name,
+                self.prompt_tokenizer(),
+            ),
+            LlmBackend::Anthropic(b) => LlmPrompt::new_openai_prompt(
+                Some(b.model.tokens_per_message),
+                b.model.tokens_per_name,
+                self.prompt_tokenizer(),
+            ),
+            LlmBackend::GenericApi(b) => LlmPrompt::new_openai_prompt(
+                Some(b.model.tokens_per_message),
+                b.model.tokens_per_name,
+                self.prompt_tokenizer(),
+            ),
         }
     }
 
@@ -103,7 +130,7 @@ impl LlmBackend {
         }
     }
 
-    pub fn tokenizer(&self) -> &std::sync::Arc<llm_utils::tokenizer::LlmTokenizer> {
+    pub fn tokenizer(&self) -> &std::sync::Arc<LlmTokenizer> {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(b) => &b.model.model_base.tokenizer,
@@ -112,6 +139,23 @@ impl LlmBackend {
             LlmBackend::OpenAi(b) => &b.model.model_base.tokenizer,
             LlmBackend::Anthropic(b) => &b.model.model_base.tokenizer,
             LlmBackend::GenericApi(b) => &b.model.model_base.tokenizer,
+        }
+    }
+
+    fn prompt_tokenizer(&self) -> std::sync::Arc<dyn PromptTokenizer> {
+        match self {
+            #[cfg(feature = "llama_cpp_backend")]
+            LlmBackend::LlamaCpp(b) => std::sync::Arc::clone(&b.model.model_base.tokenizer)
+                as std::sync::Arc<dyn PromptTokenizer>,
+            #[cfg(feature = "mistral_rs_backend")]
+            LlmBackend::MistralRs(b) => std::sync::Arc::clone(&b.model.model_base.tokenizer)
+                as std::sync::Arc<dyn PromptTokenizer>,
+            LlmBackend::OpenAi(b) => std::sync::Arc::clone(&b.model.model_base.tokenizer)
+                as std::sync::Arc<dyn PromptTokenizer>,
+            LlmBackend::Anthropic(b) => std::sync::Arc::clone(&b.model.model_base.tokenizer)
+                as std::sync::Arc<dyn PromptTokenizer>,
+            LlmBackend::GenericApi(b) => std::sync::Arc::clone(&b.model.model_base.tokenizer)
+                as std::sync::Arc<dyn PromptTokenizer>,
         }
     }
 

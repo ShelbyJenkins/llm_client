@@ -1,6 +1,6 @@
 use super::cascade_request;
+use crate::components::grammar::Grammar;
 use llm_interface::requests::completion::CompletionRequest;
-use llm_utils::grammar::Grammar;
 
 #[derive(Clone)]
 pub enum CascadeStep {
@@ -147,9 +147,9 @@ impl InferenceStep {
                 &self.dynamic_suffix,
             ) {
                 (Some(step_prefix), Some(dynamic_suffix)) => {
-                    format!("{} {}{}", step_prefix, llm_content, dynamic_suffix)
+                    format!("{}{}{}", step_prefix, llm_content, dynamic_suffix)
                 }
-                (Some(step_prefix), None) => format!("{} {}", step_prefix, llm_content),
+                (Some(step_prefix), None) => format!("{}{}", step_prefix, llm_content),
                 (None, Some(dynamic_suffix)) => {
                     format!("{}{}", llm_content, dynamic_suffix)
                 }
@@ -169,7 +169,7 @@ pub struct GuidanceStep {
 impl GuidanceStep {
     fn display_outcome(&self) -> String {
         match self.step_config.display_prefix(self.step_counter) {
-            Some(step_prefix) => format!("{} {}", step_prefix, self.llm_content),
+            Some(step_prefix) => format!("{}{}", step_prefix, self.llm_content),
             None => self.llm_content.to_owned(),
         }
     }

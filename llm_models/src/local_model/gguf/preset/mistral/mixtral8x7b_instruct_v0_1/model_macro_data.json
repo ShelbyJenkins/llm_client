@@ -1,0 +1,16 @@
+{
+    "model_id": "Mixtral-8x7B-Instruct-v0.1",
+    "gguf_repo_id": "MaziyarPanahi/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "number_of_parameters": 56,
+    "f_name_for_q_bits": {
+        "q8": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+        "q6": "Mixtral-8x7B-Instruct-v0.1.Q6_K.gguf",
+        "q5": "Mixtral-8x7B-Instruct-v0.1.Q5_K_M.gguf",
+        "q4": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+        "q3": "Mixtral-8x7B-Instruct-v0.1.Q3_K_M.gguf",
+        "q2": "Mixtral-8x7B-Instruct-v0.1.Q2_K.gguf"
+    },
+    "base_generation_prefix": "",
+    "tokenizer_json_path": "mistral/mixtral8x7b_instruct_v0_1/tokenizer.json",
+    "tokenizer_config_json_path": "mistral/mixtral8x7b_instruct_v0_1/tokenizer_config.json"
+}

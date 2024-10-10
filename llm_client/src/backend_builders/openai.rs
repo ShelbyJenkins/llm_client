@@ -7,7 +7,7 @@ use llm_interface::llms::{
     },
     LlmBackend,
 };
-use llm_utils::models::api_model::{openai::OpenAiModelTrait, ApiLlmModel};
+use llm_models::api_model::{openai::OpenAiModelTrait, ApiLlmModel};
 
 // Everything here can be implemented for any struct.
 pub struct OpenAiBackendBuilder {

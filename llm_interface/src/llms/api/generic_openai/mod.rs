@@ -7,7 +7,7 @@ use crate::requests::completion::{
     error::CompletionError, request::CompletionRequest, response::CompletionResponse,
 };
 use llm_devices::logging::LoggingConfig;
-use llm_utils::models::api_model::ApiLlmModel;
+use llm_models::api_model::ApiLlmModel;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 
