@@ -16,4 +16,4 @@ minijinja="2.0.1"
 thiserror.workspace=true
 
 [dev-dependencies]
-llm_models.workspace=true
+llm_models={path="../llm_models"}
