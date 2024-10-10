@@ -16,11 +16,10 @@ colorful="0.3.2"
 dotenvy="0.15.7"
 indenter="0.3.3"
 llm_devices={path="./llm_devices", version="0.0.2"}
-llm_interface={path="./llm_interface", version="0.0.1"}
+llm_interface={path="./llm_interface", version="0.0.2"}
 llm_models={path="./llm_models", version="0.0.1"}
 llm_prompt={path="./llm_prompt", version="0.0.1"}
-# llm_utils={path="../llm_utils", version="0.0.10"}
-llm_utils={path="../llm_utils"}
+llm_utils={path="../llm_utils", version="0.0.10"}
 serde="1.0.210"
 serde_json="1.0.128"
 serial_test="3.1.1"

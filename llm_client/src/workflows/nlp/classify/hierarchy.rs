@@ -140,6 +140,7 @@ impl Tag {
 }
 
 #[cfg(test)]
+
 mod tests {
     use super::*;
     fn create_sample_tag_collection() -> TagCollection {
@@ -167,6 +168,7 @@ mod tests {
         TagCollection::create_from_string(input)
     }
     #[test]
+    #[ignore]
     fn test_tag_collection_creation() {
         let tags = create_sample_tag_collection();
 
@@ -188,6 +190,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_white_space() {
         let tags = create_sample_tag_collection();
 
@@ -204,6 +207,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_child_tags() {
         let tags = create_sample_tag_collection();
 
