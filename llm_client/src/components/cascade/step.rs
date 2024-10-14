@@ -1,6 +1,6 @@
 use super::cascade_request;
 use crate::components::grammar::Grammar;
-use llm_interface::requests::completion::CompletionRequest;
+use llm_interface::requests::{completion::CompletionRequest, logit_bias::LogitBias};
 
 #[derive(Clone)]
 pub enum CascadeStep {
@@ -127,6 +127,10 @@ impl InferenceStep {
         } else {
             base_req.prompt.clear_generation_prefix();
         }
+
+        // Request logit bias
+        base_req.logit_bias = Some(self.step_config.logit_bias.clone());
+
         base_req.config.cache_prompt = self.step_config.cache_prompt;
         cascade_request(base_req, self).await
     }
@@ -183,6 +187,7 @@ pub struct StepConfig {
     pub use_counter: bool,
     pub cache_prompt: bool,
     pub grammar: Grammar,
+    pub logit_bias: LogitBias,
 }
 
 impl Default for StepConfig {
@@ -194,11 +199,42 @@ impl Default for StepConfig {
             use_counter: false,
             cache_prompt: true,
             grammar: Grammar::default(),
+            logit_bias: LogitBias::default(),
         }
     }
 }
 
 impl StepConfig {
+    pub fn step_prefix<T: Into<String>>(&mut self, step_prefix: T) -> &mut Self {
+        self.step_prefix = Some(step_prefix.into());
+        self
+    }
+
+    pub fn stop_word_done<T: Into<String>>(&mut self, stop_word_done: T) -> &mut Self {
+        self.stop_word_done = stop_word_done.into();
+        self
+    }
+
+    pub fn stop_word_no_result<T: Into<String>>(&mut self, stop_word_no_result: T) -> &mut Self {
+        self.stop_word_no_result = Some(stop_word_no_result.into());
+        self
+    }
+
+    pub fn use_counter(&mut self, use_counter: bool) -> &mut Self {
+        self.use_counter = use_counter;
+        self
+    }
+
+    pub fn cache_prompt(&mut self, cache_prompt: bool) -> &mut Self {
+        self.cache_prompt = cache_prompt;
+        self
+    }
+
+    pub fn grammar(&mut self, grammar: Grammar) -> &mut Self {
+        self.grammar = grammar;
+        self
+    }
+
     fn display_prefix(&self, step_counter: usize) -> Option<String> {
         match (self.use_counter, &self.step_prefix) {
             (true, Some(step_prefix)) => Some(format!("{} {}", step_counter, step_prefix)),

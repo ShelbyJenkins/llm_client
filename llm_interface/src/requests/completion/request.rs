@@ -183,6 +183,9 @@ impl std::fmt::Display for CompletionRequest {
 
         writeln!(f, "  prompt: {}", self.prompt)?;
         writeln!(f, "  stop_sequences: {:?}", self.stop_sequences.to_vec())?;
+        if let Some(logit_bias) = &self.logit_bias {
+            writeln!(f, "  logit_bias: {}", logit_bias)?;
+        }
         writeln!(f, "  grammar_string: {:?}", self.grammar_string)?;
         write!(f, "  config: {}", self.config)
     }

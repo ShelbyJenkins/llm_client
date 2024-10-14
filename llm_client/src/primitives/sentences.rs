@@ -1,11 +1,14 @@
 use super::PrimitiveTrait;
-use anyhow::Result;
 use crate::components::grammar::{Grammar, SentencesGrammar};
+use anyhow::Result;
+
+#[derive(Debug, Clone)]
 pub struct SentencesPrimitive {
     pub min_count: u8,
     pub max_count: u8,
     pub capitalize_first: bool,
     pub concatenator: String,
+    pub disallowed_chars: Vec<char>,
 }
 
 impl Default for SentencesPrimitive {
@@ -15,6 +18,7 @@ impl Default for SentencesPrimitive {
             max_count: 1,
             capitalize_first: true,
             concatenator: " ".to_string(),
+            disallowed_chars: vec![],
         }
     }
 }
@@ -46,12 +50,23 @@ impl SentencesPrimitive {
         self
     }
 
+    pub fn disallowed_char(&mut self, disallowed_char: char) -> &mut Self {
+        self.disallowed_chars.push(disallowed_char);
+        self
+    }
+
+    pub fn disallowed_chars(&mut self, disallowed_chars: Vec<char>) -> &mut Self {
+        self.disallowed_chars.extend(disallowed_chars);
+        self
+    }
+
     fn grammar_inner(&self) -> SentencesGrammar {
         Grammar::sentences()
             .min_count(self.min_count)
             .max_count(self.max_count)
             .capitalize_first(self.capitalize_first)
             .concatenator(&self.concatenator)
+            .disallowed_chars(self.disallowed_chars.clone())
     }
 }
 

@@ -3,19 +3,23 @@ use crate::{components::cascade::step::StepConfig, primitives::*};
 
 use llm_interface::requests::completion::CompletionRequest;
 
-use super::entity::ClassifyEntity;
 use super::hierarchy::TagCollection;
+use super::subject_of_text::ClassifySubjectOfText;
 
 pub struct LabelEntity {
     pub base_req: CompletionRequest,
-    pub entity: ClassifyEntity,
+    pub entity: ClassifySubjectOfText,
     pub tags: TagCollection,
     pub assigned_tags: TagCollection,
     pub flow: CascadeFlow,
 }
 
 impl LabelEntity {
-    pub fn new(base_req: CompletionRequest, entity: ClassifyEntity, tags: TagCollection) -> Self {
+    pub fn new(
+        base_req: CompletionRequest,
+        entity: ClassifySubjectOfText,
+        tags: TagCollection,
+    ) -> Self {
         Self {
             base_req,
             entity,
@@ -43,7 +47,6 @@ impl LabelEntity {
                 }
             }
         }
-        // println!("{}", self.flow);
         Ok(self)
     }
 
@@ -75,10 +78,10 @@ impl LabelEntity {
             After discussing all options, propose the best candidate(s): \"Therefore, the most relevant category/categories are... category_1 because reasons. Also, category_2 because reasons. Also, category_3 because reasons.\".
             Finally, state restate the best category or categories as a list: \"Assigned category/categories: category_1, category_2, category_3, no additional categories apply.\".
             Categories: {}. 
-            Entity type: '{}'
+  
             ",
             self.build_tag_list(),
-            self.entity.specific_identifer.as_deref().unwrap(),
+
         };
 
         let round = self.flow.new_round(task);
@@ -257,52 +260,31 @@ birth term:full term birth
         TagCollection::create_from_string(input)
     }
 
-    const CASES: &[&str] = &[
-        // "Ciliate: Metopus sp. strain SALT15A",
-        // "Coastal soil sample",
-        // "Edible insect Gryllus bimaculatus (Pet Feed Store)",
-        // "Public spring water",
-        "River Snow from South Saskatchewan River",
+    const CASES: &[(&str, &str)] = &[
+        ("Ciliate: Metopus sp. strain SALT15A", "ciliate"),
+        ("Coastal soil sample", "soil"),
+        ("Edible insect Gryllus bimaculatus (Pet Feed Store)", "insect"),
+        ("Public spring water", "water"),
+        ("River snow from South Saskatchewan River", "snow"),
+        ("Tara packed so many boxes that she ran out of tape, and had to go to the store to buy more. Then she made grilled cheese sandwiches for lunch. She did a lot of things. She did too much.", "tara"),
+        ("A green turtle on a log in a mountain lake.", "turtle"),
+        ("Green turtle on log\nSunlight warms her emerald shell\nStillness all around", "turtle"),
     ];
-
-    #[tokio::test]
-    #[ignore]
-    pub async fn test() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp().init().await?;
-
-        let entity = llm_client
-            .nlp()
-            .classify()
-            .entity("A green turtle on a log in a mountain lake.");
-        let entity = entity.run().await?;
-
-        let req = LabelEntity::new(
-            entity.base_req.clone(),
-            entity,
-            create_sample_tag_collection(),
-        );
-
-        let entity = req.run().await?;
-        println!("{}", entity);
-
-        Ok(())
-    }
+    use crate::prelude::*;
 
     #[tokio::test]
     #[ignore]
     pub async fn test_cases() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp().init().await?;
+        let llm_client = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
 
-        for case in CASES {
+        for (case, _) in CASES {
             let entity = llm_client.nlp().classify().entity(case);
             let entity = entity.run().await?;
-            println!("{}", entity.flow);
             let req = LabelEntity::new(
                 entity.base_req.clone(),
                 entity,
                 create_sample_tag_collection(),
             );
-
             let entity = req.run().await?;
             println!("{}", entity.flow);
             println!("{}", entity);

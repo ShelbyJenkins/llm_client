@@ -4,18 +4,17 @@ pub mod boolean;
 pub mod exact_string;
 pub mod faux_url;
 pub mod integer;
-pub mod sentences;
+
 pub mod text;
-pub mod words;
 
 pub use basic_url::BasicUrlGrammar;
 pub use boolean::BooleanGrammar;
 pub use exact_string::ExactStringGrammar;
 pub use faux_url::FauxUrlGrammar;
 pub use integer::IntegerGrammar;
-pub use sentences::SentencesGrammar;
-pub use text::TextGrammar;
-pub use words::WordsGrammar;
+pub use text::sentences::SentencesGrammar;
+pub use text::text::TextGrammar;
+pub use text::words::WordsGrammar;
 
 #[derive(Clone)]
 pub enum Grammar {

@@ -74,10 +74,7 @@ impl OpenAiCompletionRequest {
         Ok(OpenAiCompletionRequest {
             messages,
             model: req.backend.model_id().to_owned(),
-            logit_bias: req
-                .logit_bias
-                .as_ref()
-                .and_then(|lb| lb.built_openai_bias.clone()),
+            logit_bias: req.logit_bias.as_ref().and_then(|lb| lb.get_openai()),
             frequency_penalty: req.config.frequency_penalty,
             logprobs: None,
             top_logprobs: None,

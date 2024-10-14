@@ -1,5 +1,4 @@
-use super::{Grammar, GrammarError, GrammarSetterTrait};
-use std::cell::RefCell;
+use super::{create_range, Grammar, GrammarError, GrammarSetterTrait, RefCell};
 
 #[derive(Clone, Default)]
 pub struct WordsGrammar {
@@ -93,7 +92,7 @@ pub fn words_grammar<T: AsRef<str>>(
     stop_word_done: &Option<T>,
     stop_word_no_result: &Option<T>,
 ) -> String {
-    let range = create_range(min_count, max_count, stop_word_done);
+    let range = create_range(false, min_count, max_count, stop_word_done);
     let item = format!("item ::= [a-z]{{1,{word_char_length}}} \"{concatenator}\"",);
     match (stop_word_done, stop_word_no_result) {
         (Some(stop_word_done), Some(stop_word_no_result)) => format!(
@@ -114,36 +113,6 @@ pub fn words_grammar<T: AsRef<str>>(
             )
         }
         (None, None) => format!("root ::= \" \" {range}\n{item}"),
-    }
-}
-
-fn create_range<T: AsRef<str>>(min_count: u8, max_count: u8, stop_word_done: &Option<T>) -> String {
-    let max_count = match max_count.cmp(&min_count) {
-        std::cmp::Ordering::Less => {
-            eprintln!("Max count must be greater than or equal to min count. Setting max count to min count.");
-            min_count
-        }
-        _ => max_count,
-    };
-    if min_count == 0 && max_count == 0 {
-        "item{0,1}".to_owned()
-    } else {
-        let mut range = String::new();
-        if min_count > 0 {
-            range.push_str(&format!("item{{{min_count}}} "));
-        }
-        if max_count > min_count {
-            let opt_count = max_count - min_count;
-            if let Some(stop_word_done) = stop_word_done {
-                range.push_str(&format!(
-                    "( item | \"{}\" ){{0,{opt_count}}}",
-                    stop_word_done.as_ref()
-                ))
-            } else {
-                range.push_str(&format!("item{{0,{opt_count}}}"));
-            };
-        }
-        range
     }
 }
 

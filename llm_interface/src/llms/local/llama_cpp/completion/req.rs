@@ -67,10 +67,7 @@ impl LlamaCppCompletionRequest {
             ),
             grammar: req.grammar_string.clone(),
             cache_prompt,
-            logit_bias: req
-                .logit_bias
-                .as_ref()
-                .and_then(|lb| lb.built_llama_cpp_bias.clone()),
+            logit_bias: req.logit_bias.as_ref().and_then(|lb| lb.get_llama_cpp()),
             frequency_penalty: req.config.frequency_penalty,
             stream: None,
             n_predict: req.config.actual_request_tokens,

@@ -1,14 +1,18 @@
 use super::PrimitiveTrait;
-use anyhow::Result;
 use crate::components::grammar::{Grammar, TextGrammar};
+use anyhow::Result;
 pub struct TextPrimitive {
     pub text_token_length: u32,
+    pub disallowed_chars: Vec<char>,
+    pub allow_newline: bool,
 }
 
 impl Default for TextPrimitive {
     fn default() -> Self {
         TextPrimitive {
             text_token_length: 200,
+            disallowed_chars: vec![],
+            allow_newline: false,
         }
     }
 }
@@ -19,8 +23,26 @@ impl TextPrimitive {
         self
     }
 
+    pub fn disallowed_char(&mut self, disallowed_char: char) -> &mut Self {
+        self.disallowed_chars.push(disallowed_char);
+        self
+    }
+
+    pub fn disallowed_chars(&mut self, disallowed_chars: Vec<char>) -> &mut Self {
+        self.disallowed_chars.extend(disallowed_chars);
+        self
+    }
+
+    pub fn allow_newline(&mut self, allow_newline: bool) -> &mut Self {
+        self.allow_newline = allow_newline;
+        self
+    }
+
     fn grammar_inner(&self) -> TextGrammar {
-        Grammar::text().item_token_length(self.text_token_length)
+        Grammar::text()
+            .item_token_length(self.text_token_length)
+            .disallowed_chars(self.disallowed_chars.clone())
+            .allow_newline(self.allow_newline)
     }
 }
 
