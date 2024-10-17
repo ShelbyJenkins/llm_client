@@ -71,7 +71,7 @@ impl<P: PrimitiveTrait> BasicPrimitiveWorkflow<P> {
 
         let step_config = StepConfig {
             step_prefix: Some(format!(
-                "generating {}:",
+                "Generating {}:\n",
                 self.primitive.solution_description(self.result_can_be_none),
             )),
             stop_word_no_result: self
@@ -142,7 +142,8 @@ basic_primitive_workflow_primitive_impl! {
     integer => IntegerPrimitive,
     sentences => SentencesPrimitive,
     words => WordsPrimitive,
-    exact_string => ExactStringPrimitive
+    exact_string => ExactStringPrimitive,
+    text_list => TextListPrimitive
 }
 
 #[derive(Clone)]

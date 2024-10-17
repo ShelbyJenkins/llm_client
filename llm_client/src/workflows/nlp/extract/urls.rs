@@ -19,6 +19,7 @@ pub struct ExtractUrls {
     pub instruct_prompt: InstructPrompt,
     pub criteria: Option<String>,
     pub results: Vec<String>,
+    pub max_urls: usize,
 }
 
 impl ExtractUrls {
@@ -28,7 +29,13 @@ impl ExtractUrls {
             base_req,
             criteria: None,
             results: Vec::new(),
+            max_urls: 5,
         }
+    }
+
+    pub fn max_urls(mut self, max_urls: usize) -> Self {
+        self.max_urls = max_urls;
+        self
     }
 
     pub async fn run_return_urls(&mut self) -> Result<Option<Vec<Url>>> {
@@ -91,26 +98,19 @@ impl ExtractUrls {
 
         let initial_qualities_task = format!("We are extracting URLs from text using the instructions:\n{} Briefly describe the criteria of the URLs to be extracted.", self.instruct_prompt.build_instructions().unwrap());
         let config = StepConfig {
-            step_prefix: Some("Criteria:".to_owned()),
-            grammar: SentencesPrimitive::default()
-                .min_count(1)
-                .max_count(2)
-                .grammar(),
+            step_prefix: Some("Criteria: ".to_owned()),
+            grammar: TextPrimitive::default().text_token_length(200).grammar(),
             ..StepConfig::default()
         };
         flow.new_round(initial_qualities_task)
             .add_inference_step(&config);
         flow.last_round()?.run_all_steps(&mut self.base_req).await?;
 
-        let refine_criteria_task = format!("Reframe the instructions and criteria into a statment used to evaluate if a URL should be extracted. This statement should have a boolean answer. The answer should represent whether or not the URL satisfies the criteria. This should be a single sentence 'is' statment; as in, 'The URL is likely to, or likely,  the qualities the criteria requests: true or false'.\nCriteria:\n{}\nInstructions:\n{}", flow.primitive_result().unwrap(), self.instruct_prompt.build_instructions().unwrap());
+        let refine_criteria_task = format!("Reframe the instructions and criteria into a statment used to evaluate if a URL should be extracted. This statement should have a boolean answer. The answer should represent whether or not the URL satisfies the criteria. This should be a single sentence 'is' statment; as in, 'The URL is <criteria>: true or false'.\nCriteria:\n{}\nInstructions:\n{}", flow.primitive_result().unwrap(), self.instruct_prompt.build_instructions().unwrap());
         let config = StepConfig {
-            step_prefix: Some("The URL is".to_owned()),
-            stop_word_done: ":".to_owned(),
-            grammar: SentencesPrimitive::default()
-                .min_count(1)
-                .max_count(1)
-                .capitalize_first(false)
-                .grammar(),
+            step_prefix: Some("The URL is ".to_owned()),
+            stop_word_done: ": true or false".to_owned(),
+            grammar: TextPrimitive::default().text_token_length(200).grammar(),
             ..StepConfig::default()
         };
         flow.new_round(refine_criteria_task)
@@ -139,7 +139,7 @@ impl ExtractUrls {
     async fn validate_step(&mut self, flow: &mut CascadeFlow) -> Result<bool> {
         let config = StepConfig {
             cache_prompt: true,
-            step_prefix: Some(format!(" is {}:", self.criteria.as_ref().unwrap())),
+            step_prefix: Some(format!(" is {}: ", self.criteria.as_ref().unwrap())),
             grammar: BooleanPrimitive::default().grammar(),
             ..StepConfig::default()
         };
@@ -165,7 +165,7 @@ impl ExtractUrls {
         let config = StepConfig {
             cache_prompt: true,
             step_prefix: Some(format!(
-                "At least one of the remaining URLs, {remaining_urls}, is {}:",
+                "At least one of the remaining URLs, {remaining_urls}, is {}: ",
                 self.criteria.as_ref().unwrap()
             )),
             grammar: BooleanPrimitive::default().grammar(),
@@ -193,6 +193,9 @@ impl ExtractUrls {
         flow.new_round(task).step_separator = None;
         flow.last_round()?.open_round(&mut self.base_req)?;
         for i in 1..=primitive.allowed_strings.len() {
+            if self.results.len() >= self.max_urls {
+                break;
+            }
             if i > 1 {
                 flow.new_round("Return the next URL that is likely to satisfy the criteria, or if there are no more URLs to extract say 'No qualifying URLs.'.").step_separator = None;
                 flow.last_round()?.open_round(&mut self.base_req)?;

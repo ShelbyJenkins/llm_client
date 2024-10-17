@@ -15,4 +15,5 @@ impl Classify {
     pub fn entity(self, content: &str) -> subject_of_text::ClassifySubjectOfText {
         subject_of_text::ClassifySubjectOfText::new(self.base_req, content)
     }
+
 }

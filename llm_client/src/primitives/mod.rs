@@ -3,6 +3,7 @@ pub mod exact_string;
 pub mod integer;
 pub mod sentences;
 pub mod text;
+pub mod text_list;
 pub mod words;
 
 use crate::components::grammar::Grammar;
@@ -12,10 +13,11 @@ pub use exact_string::ExactStringPrimitive;
 pub use integer::IntegerPrimitive;
 pub use sentences::SentencesPrimitive;
 pub use text::TextPrimitive;
+pub use text_list::TextListPrimitive;
 pub use words::WordsPrimitive;
 
 pub trait PrimitiveTrait: Default {
-    type PrimitiveResult: std::str::FromStr + std::fmt::Display;
+    type PrimitiveResult: std::fmt::Display;
 
     fn clear_primitive(&mut self);
 

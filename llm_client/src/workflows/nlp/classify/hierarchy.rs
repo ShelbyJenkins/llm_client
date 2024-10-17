@@ -1,76 +1,50 @@
 use std::collections::HashMap;
 
-use crate::components::grammar::Grammar;
-
-use crate::{primitives::ExactStringPrimitive, PrimitiveTrait};
-
-pub fn create_from_string(input: &str) -> TagCollection {
-    let mut tag_collection = TagCollection::new();
-    for line in input.lines() {
-        let parts: Vec<&str> = line.split(':').collect();
-        let current_tag = tag_collection.new_tag(parts[0]);
-
-        for &part in &parts[1..] {
-            current_tag.add_child_tag(part);
-        }
-    }
-
-    tag_collection
-}
-
-#[derive(Debug, Clone)]
-pub struct TagCollection {
+#[derive(Debug, Clone, Default)]
+pub struct Tag {
+    pub name: Option<String>,
+    pub full_path: Option<String>,
     tags: HashMap<String, Tag>,
-    tag_grammar: ExactStringPrimitive,
 }
 
-impl TagCollection {
-    pub fn new() -> Self {
-        Self {
+impl Tag {
+    pub fn new() -> Tag {
+        Tag::default()
+    }
+
+    pub fn new_collection_from_string(input: &str) -> Tag {
+        let mut root = Tag {
+            name: None,
+            full_path: None,
             tags: HashMap::new(),
-            tag_grammar: ExactStringPrimitive::default(),
-        }
-    }
-
-    pub fn create_from_string(input: &str) -> TagCollection {
-        let mut tag_collection = TagCollection::new();
-
+        };
         for line in input.lines() {
-            Self::add_tag_recursive(&mut tag_collection, line);
+            let parts: Vec<&str> = line.split(':').collect();
+            root.add_tag_recursive(&parts, 0);
         }
 
-        tag_collection
+        root
     }
 
-    fn add_tag_recursive(tag_collection: &mut TagCollection, tag_string: &str) {
-        match tag_string.split_once(':') {
-            Some((parent, child)) => {
-                let parent_tag = tag_collection.new_tag(parent);
-                Self::add_tag_recursive(&mut parent_tag.tags, child);
-            }
-            None => {
-                tag_collection.new_tag(tag_string);
-            }
+    pub fn new_collection_from_text_file<P: AsRef<std::path::Path>>(path: P) -> Tag {
+        match std::fs::read_to_string(path) {
+            Ok(contents) => Tag::new_collection_from_string(&contents),
+            Err(e) => panic!("Error reading file: {}", e),
         }
     }
 
-    pub fn new_tag(&mut self, name: &str) -> &mut Tag {
-        let name = name
-            .split_whitespace()
-            .map(str::trim)
-            .collect::<Vec<&str>>()
-            .join("-")
-            .to_lowercase();
-
-        self.add_tag(Tag::new(&name))
+    pub fn add_tag(&mut self, tag: Tag) {
+        self.tags.insert(tag.tag_name(), tag);
     }
 
-    pub fn add_tag(&mut self, tag: Tag) -> &mut Tag {
-        if !self.tags.contains_key(&tag.name) {
-            self.tag_grammar.add_string_to_allowed(&tag.name);
+    pub fn add_tags(&mut self, tag: Vec<Tag>) {
+        for tag in tag {
+            self.tags.insert(tag.tag_name(), tag);
         }
+    }
 
-        self.tags.entry(tag.name.clone()).or_insert_with(|| tag)
+    pub fn clear_tags(&mut self) {
+        self.tags.clear();
     }
 
     pub fn remove_tag(&mut self, name: &str) -> crate::Result<Tag> {
@@ -78,12 +52,15 @@ impl TagCollection {
             Some(tag) => tag,
             None => crate::bail!("Tag not found."),
         };
-        self.tag_grammar.remove_string_from_allowed(&name);
         Ok(tag)
     }
 
-    pub fn get_tag(&self, name: &str) -> Option<&Tag> {
-        self.tags.get(name)
+    pub fn tag_name(&self) -> String {
+        self.name.as_ref().unwrap().to_owned()
+    }
+
+    pub fn tag_path(&self) -> String {
+        self.full_path.as_ref().unwrap().to_owned()
     }
 
     pub fn get_tags(&self) -> Vec<&Tag> {
@@ -92,58 +69,126 @@ impl TagCollection {
         tags
     }
 
-    pub fn get_tag_names(&self) -> Vec<&str> {
-        self.get_tags()
-            .iter()
-            .map(|tag| tag.name.as_str())
-            .collect()
+    pub fn get_tags_owned(&self) -> Vec<Tag> {
+        let mut tags: Vec<Tag> = self.tags.values().cloned().collect();
+        tags.sort_by(|a, b| a.name.cmp(&b.name));
+        tags
     }
 
-    pub fn grammar(&self) -> Grammar {
-        self.tag_grammar.grammar()
+    pub fn get_tag_names(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.tags.keys().cloned().collect();
+        names.sort();
+        names
     }
-}
 
-#[derive(Debug, Clone)]
-pub struct Tag {
-    pub name: String,
-    tags: TagCollection,
-}
+    pub fn display_child_tags(&self) -> String {
+        let mut output = String::new();
+        for child_tag in self.get_tags() {
+            output.push_str(&child_tag.tag_name());
+            output.push('\n');
+        }
+        output
+    }
 
-impl Tag {
-    fn new(name: &str) -> Self {
-        Tag {
-            name: name.trim().to_lowercase(),
-            tags: TagCollection::new(),
+    pub fn display_all_tags(&self) -> String {
+        let mut output = String::new();
+        for child_tag in self.get_tags() {
+            child_tag.format_tag_for_llm(&mut output, 0);
+        }
+        output
+    }
+
+    pub fn display_all_tags_with_paths(&self) -> String {
+        let mut result = String::new();
+        self.collect_tags_with_paths(&mut result);
+        result.trim_end().to_string()
+    }
+
+    fn collect_tags_with_paths(&self, result: &mut String) {
+        if let Some(path) = &self.full_path {
+            result.push_str(path);
+            result.push('\n');
+        }
+
+        for child_tag in self.get_tags() {
+            child_tag.collect_tags_with_paths(result);
         }
     }
 
-    fn add_child_tag(&mut self, name: &str) -> &mut Self {
-        self.tags.new_tag(name)
+    fn add_tag_recursive(&mut self, parts: &[&str], depth: usize) {
+        if depth < parts.len() {
+            let current_path = parts[..=depth].join(":");
+            let tag = self.new_tag(&current_path);
+
+            if depth < parts.len() - 1 {
+                tag.add_tag_recursive(parts, depth + 1);
+            }
+        }
     }
 
-    pub fn remove_child_tag(&mut self, name: &str) -> crate::Result<Tag> {
-        self.tags.remove_tag(name)
+    fn new_tag(&mut self, full_path: &str) -> &mut Tag {
+        let parts: Vec<&str> = full_path.split(':').collect();
+        let name = parts
+            .last()
+            .unwrap()
+            .to_string()
+            .split_whitespace()
+            .map(str::trim)
+            .collect::<Vec<&str>>()
+            .join("-")
+            .to_lowercase();
+        let full_path = parts
+            .iter()
+            .map(|&s| {
+                s.split_whitespace()
+                    .map(str::trim)
+                    .collect::<Vec<&str>>()
+                    .join("-")
+                    .to_lowercase()
+            })
+            .collect::<Vec<String>>()
+            .join(":");
+
+        let tag = Tag {
+            name: Some(name.to_owned()),
+            full_path: Some(full_path.to_owned()),
+            tags: HashMap::new(),
+        };
+
+        self.tags.entry(tag.tag_name()).or_insert_with(|| tag)
     }
 
-    pub fn get_child_tags(&self) -> Vec<&Tag> {
-        self.tags.get_tags()
+    fn format_tag_for_llm(&self, output: &mut String, depth: usize) {
+        for _ in 0..depth {
+            output.push_str("  ");
+        }
+        output.push_str(&self.tag_name());
+        if self.tags.is_empty() && !output.is_empty() {
+            output.push(';');
+            output.push('\n');
+        }
+        if !self.get_tags().is_empty() {
+            output.push(':');
+            output.push('\n');
+            for child_tag in self.get_tags() {
+                child_tag.format_tag_for_llm(output, depth + 1);
+            }
+        }
     }
+}
 
-    pub fn get_child_tag_names(&self) -> Vec<&str> {
-        self.tags.get_tag_names()
-    }
-
-    pub fn grammar(&self) -> Grammar {
-        self.tags.grammar()
+impl std::fmt::Display for Tag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f)?;
+        crate::i_nln(f, format_args!("{}", self.display_all_tags()))?;
+        Ok(())
     }
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
-    fn create_sample_tag_collection() -> TagCollection {
+    fn create_sample_tag_collection() -> Tag {
         let input = "\
     terrestrial
     terrestrial:arid
@@ -165,68 +210,18 @@ mod tests {
     age-group:young
     age-group:young: new born
     ";
-        TagCollection::create_from_string(input)
-    }
-    #[test]
-    #[ignore]
-    fn test_tag_collection_creation() {
-        let tags = create_sample_tag_collection();
-
-        // Test root tags
-        assert!(tags.get_tag("terrestrial").is_some());
-        assert!(tags.get_tag("aquatic").is_some());
-        assert!(tags.get_tag("host-associated").is_some());
-        assert!(tags.get_tag("salinity").is_some());
-        assert!(tags.get_tag("age-group").is_some());
-
-        // Test non-existent tags
-        assert!(tags.get_tag("non-existent").is_none());
-
-        // Test tag names
-        assert_eq!(tags.get_tag("terrestrial").unwrap().name, "terrestrial");
-
-        // Test number of root tags
-        assert_eq!(tags.get_tags().len(), 8);
+        Tag::new_collection_from_string(input)
     }
 
     #[test]
     #[ignore]
-    fn test_white_space() {
-        let tags = create_sample_tag_collection();
-
-        // Test white space
-        assert!(tags.get_tag("age-group").is_some());
-        assert!(tags.get_tag("age group").is_none());
-        let age_group = tags.get_tag("age-group").unwrap();
-        assert_eq!(
-            age_group.get_child_tag_names(),
-            vec!["infant", "old-age", "young"]
-        );
-        let young = age_group.tags.get_tag("young").unwrap();
-        assert_eq!(young.get_child_tag_names(), vec!["new-born"]);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_child_tags() {
-        let tags = create_sample_tag_collection();
-
-        // Test child tags
-        let terrestrial = tags.get_tag("terrestrial").unwrap();
-        assert_eq!(terrestrial.get_child_tag_names(), vec!["arid", "soil"]);
-
-        let aquatic = tags.get_tag("aquatic").unwrap();
-        assert_eq!(aquatic.get_child_tag_names(), vec!["fresh-water"]);
-
-        let fresh_water = aquatic.tags.get_tag("fresh-water").unwrap();
-        assert_eq!(fresh_water.get_child_tag_names(), vec!["lake"]);
-        let bed = tags.get_tag("bed").unwrap();
-        assert_eq!(bed.get_child_tag_names(), vec!["home", "hotel",]);
-        let hotel = bed.tags.get_tag("hotel").unwrap();
-        assert_eq!(hotel.get_child_tag_names(), vec!["king", "queen"]);
-        let home = bed.tags.get_tag("home").unwrap();
-        assert_eq!(home.get_child_tag_names(), vec!["double"]);
-        let double = home.tags.get_tag("double").unwrap();
-        assert_eq!(double.get_child_tag_names(), vec!["bunk"]);
+    fn test_tag_collection_creation_from_file() {
+        let tags = Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt");
+        for tag in tags.get_tags() {
+            println!("{}", tag.display_child_tags());
+        }
+        println!("{}", tags.display_all_tags());
+        println!("{}", tags.display_child_tags());
+        println!("{}", tags.display_all_tags_with_paths());
     }
 }

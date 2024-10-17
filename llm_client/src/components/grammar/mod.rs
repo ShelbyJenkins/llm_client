@@ -1,3 +1,4 @@
+use text::text_list::TextListGrammar;
 use thiserror::Error;
 pub mod basic_url;
 pub mod boolean;
@@ -23,6 +24,7 @@ pub enum Grammar {
     Text(TextGrammar),
     Sentences(SentencesGrammar),
     Words(WordsGrammar),
+    TextList(TextListGrammar),
     BasicUrl(BasicUrlGrammar),
     ExactString(ExactStringGrammar),
     FauxUrl(FauxUrlGrammar),
@@ -91,6 +93,7 @@ grammar_default! {
         Text => text: TextGrammar,
         Sentences => sentences: SentencesGrammar,
         Words => words: WordsGrammar,
+        TextList => text_list: TextListGrammar,
         BasicUrl => basic_url: BasicUrlGrammar,
         ExactString => exact_string: ExactStringGrammar,
         FauxUrl => faux_url: FauxUrlGrammar,

@@ -84,20 +84,20 @@ pub fn exact_string_grammar<T: AsRef<str>>(
     pattern.push(')');
     match (stop_word_done, stop_word_no_result) {
         (Some(stop_word_done), Some(stop_word_no_result)) => format!(
-            "root ::= \" \" ( {pattern} | \"{}\" ) \" {}\"",
+            "root ::= ( {pattern} | \"{}\" ) \" {}\"",
             stop_word_no_result.as_ref(),
             stop_word_done.as_ref()
         ),
         (None, Some(stop_word_no_result)) => {
             format!(
-                "root ::= \" \" ( {pattern} | \"{}\" )",
+                "root ::= ( {pattern} | \"{}\" )",
                 stop_word_no_result.as_ref()
             )
         }
         (Some(stop_word_done), None) => {
-            format!("root ::= \" \" {pattern} \" {}\"", stop_word_done.as_ref())
+            format!("root ::= {pattern} \" {}\"", stop_word_done.as_ref())
         }
-        (None, None) => format!("root ::= \" \" {pattern}"),
+        (None, None) => format!("root ::= {pattern}"),
     }
 }
 

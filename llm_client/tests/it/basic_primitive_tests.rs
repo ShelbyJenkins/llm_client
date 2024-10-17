@@ -5,6 +5,15 @@ mod basic_primitive_unit_tests {
     #[tokio::test]
     #[serial]
     #[ignore]
+    async fn text_list() -> crate::Result<()> {
+        let llm_client = default_tiny_llm().await?;
+        text_list_integration_tester(&llm_client).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[ignore]
     async fn boolean() -> crate::Result<()> {
         let llm_client = default_tiny_llm().await?;
         boolean_integration_tester(&llm_client, &TestLevel::IntegrationTest).await?;
@@ -198,6 +207,30 @@ pub(super) async fn exact_string_optional_integration_tester(
     }
 
     tests.check_results();
+    Ok(())
+}
+
+pub(super) async fn text_list_integration_tester(llm_client: &LlmClient) -> crate::Result<()> {
+    let mut gen = llm_client.basic_primitive().text_list();
+
+    gen.instructions()
+        .set_content("List the top 5 most popular programming languages. Provide a one sentence description for each language.");
+    let res = gen.return_primitive().await?;
+
+    for item in &res {
+        println!("\n{}\n", item);
+    }
+
+    let mut gen = llm_client.basic_primitive().text_list();
+    gen.primitive.item_prefix("Language: ");
+    gen.instructions()
+    .set_content("List the top 5 most popular programming languages. Provide a one sentence description for each language.");
+    let res = gen.return_primitive().await?;
+
+    for item in &res {
+        println!("\n{}\n", item);
+    }
+
     Ok(())
 }
 

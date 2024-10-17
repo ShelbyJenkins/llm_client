@@ -1,6 +1,8 @@
 pub mod sentences;
 pub mod text;
+pub mod text_list;
 pub mod words;
+
 use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::cell::RefCell;
 
