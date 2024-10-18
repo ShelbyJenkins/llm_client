@@ -12,23 +12,26 @@ impl Tag {
         Tag::default()
     }
 
-    pub fn new_collection_from_string(input: &str) -> Tag {
+    pub fn new_collection_from_string(input: &str, path_sep: &str) -> Tag {
         let mut root = Tag {
             name: None,
             full_path: None,
             tags: HashMap::new(),
         };
         for line in input.lines() {
-            let parts: Vec<&str> = line.split(':').collect();
-            root.add_tag_recursive(&parts, 0);
+            let parts: Vec<&str> = line.split(path_sep).collect();
+            root.add_tag_recursive(&parts, 0, path_sep);
         }
 
         root
     }
 
-    pub fn new_collection_from_text_file<P: AsRef<std::path::Path>>(path: P) -> Tag {
+    pub fn new_collection_from_text_file<P: AsRef<std::path::Path>>(
+        path: P,
+        path_sep: &str,
+    ) -> Tag {
         match std::fs::read_to_string(path) {
-            Ok(contents) => Tag::new_collection_from_string(&contents),
+            Ok(contents) => Tag::new_collection_from_string(&contents, path_sep),
             Err(e) => panic!("Error reading file: {}", e),
         }
     }
@@ -115,19 +118,19 @@ impl Tag {
         }
     }
 
-    fn add_tag_recursive(&mut self, parts: &[&str], depth: usize) {
+    fn add_tag_recursive(&mut self, parts: &[&str], depth: usize, path_sep: &str) {
         if depth < parts.len() {
-            let current_path = parts[..=depth].join(":");
-            let tag = self.new_tag(&current_path);
+            let current_path = parts[..=depth].join(path_sep);
+            let tag = self.new_tag(&current_path, path_sep);
 
             if depth < parts.len() - 1 {
-                tag.add_tag_recursive(parts, depth + 1);
+                tag.add_tag_recursive(parts, depth + 1, path_sep);
             }
         }
     }
 
-    fn new_tag(&mut self, full_path: &str) -> &mut Tag {
-        let parts: Vec<&str> = full_path.split(':').collect();
+    fn new_tag(&mut self, full_path: &str, path_sep: &str) -> &mut Tag {
+        let parts: Vec<&str> = full_path.split(path_sep).collect();
         let name = parts
             .last()
             .unwrap()
@@ -210,13 +213,14 @@ mod tests {
     age-group:young
     age-group:young: new born
     ";
-        Tag::new_collection_from_string(input)
+        Tag::new_collection_from_string(input, ":")
     }
 
     #[test]
     #[ignore]
     fn test_tag_collection_creation_from_file() {
-        let tags = Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt");
+        let tags =
+            Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":");
         for tag in tags.get_tags() {
             println!("{}", tag.display_child_tags());
         }

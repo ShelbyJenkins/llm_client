@@ -244,7 +244,7 @@ mod test {
             subject,
             content,
             criteria,
-            Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt"),
+            Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":"),
         );
         let entity = req.run().await?;
         println!("{}", entity.flow);
@@ -261,7 +261,10 @@ mod test {
         ("River snow from South Saskatchewan River", "snow"),
         ("Tara packed so many boxes that she ran out of tape, and had to go to the store to buy more. Then she made grilled cheese sandwiches for lunch. She did a lot of things. She did too much.", "tara"),
         ("A green turtle on a log in a mountain lake.", "turtle"),
-        ("Green turtle on log\nSunlight warms her emerald shell\nStillness all around", "turtle"),
+        (
+            "Green turtle on log\nSunlight warms her emerald shell\nStillness all around",
+            "turtle",
+        ),
     ];
     use crate::prelude::*;
 
@@ -271,8 +274,7 @@ mod test {
         let llm_client = LlmClient::llama_cpp().llama3_2_3b_instruct().init().await?;
 
         for (case, _) in CASES {
-            let entity = llm_client.nlp().classify().entity(case);
-            let entity = entity.run().await?;
+            let entity = llm_client.nlp().classify().entity(case).run().await?;
             let subject = entity.subject.as_ref().unwrap().to_owned();
             let content = entity.content.to_owned();
             let criteria = "We are applying labels used to filter where a sample was collected from. The entity indicates the object or location from where it was collected, and the content may provide additional information.".to_owned();
@@ -281,7 +283,7 @@ mod test {
                 subject,
                 content,
                 criteria,
-                Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt"),
+                Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":"),
             );
             let entity = req.run().await?;
             println!("{}", entity.flow);
