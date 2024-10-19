@@ -1,5 +1,6 @@
 use llm_interface::requests::completion::CompletionRequest;
-pub mod hierarchy;
+pub mod hierarchical_tag_system;
+// pub mod hierarchy;
 pub mod label;
 pub mod subject_of_text;
 
@@ -15,5 +16,4 @@ impl Classify {
     pub fn entity(self, content: &str) -> subject_of_text::ClassifySubjectOfText {
         subject_of_text::ClassifySubjectOfText::new(self.base_req, content)
     }
-
 }

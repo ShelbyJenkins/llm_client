@@ -1,16 +1,14 @@
-use core::panic;
-
 use crate::components::cascade::CascadeFlow;
 use crate::{components::cascade::step::StepConfig, primitives::*};
 
 use llm_interface::requests::completion::CompletionRequest;
 
-use super::hierarchy::Tag;
+use super::hierarchical_tag_system::Tag;
 
 pub struct LabelEntity {
     pub base_req: CompletionRequest,
-    pub subject: String,
-    pub content: String,
+    pub entity: String,
+    pub context_text: String,
     pub tags: Tag,
     pub assigned_tags: Tag,
     pub flow: CascadeFlow,
@@ -20,15 +18,15 @@ pub struct LabelEntity {
 impl LabelEntity {
     pub fn new(
         base_req: CompletionRequest,
-        subject: String,
-        content: String,
+        entity: String,
+        context_text: String,
         criteria: String,
         tags: Tag,
     ) -> Self {
         Self {
             base_req,
-            subject,
-            content,
+            entity,
+            context_text,
             criteria,
             tags,
             assigned_tags: Tag::new(),
@@ -74,35 +72,33 @@ impl LabelEntity {
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<Tag>> + 'a>> {
         Box::pin(async move {
             let mut assigned_child_tags: Vec<Tag> = Vec::new();
-            let task = self.prompt(&parent_tag);
-            let round = self.flow.new_round(task);
+
+            let round = self.flow.new_round(self.cot_prompt(&parent_tag));
             round.open_round(&mut self.base_req)?;
             round.step_separator = None;
             let is_root = parent_tag.name.is_none();
             if is_root {
                 let step_config = StepConfig {
-                    step_prefix: Some(
-                        "Thinking out loud about which root category(ies) apply... ".to_owned(),
-                    ),
-                    stop_word_done: " No additional relevant categories.".to_owned(),
-                    grammar: TextPrimitive::default().text_token_length(200).grammar(),
+                    step_prefix: Some("The entity ".to_owned()),
+                    grammar: TextPrimitive::default().text_token_length(800).grammar(),
                     ..StepConfig::default()
                 };
                 round.add_inference_step(&step_config);
                 round.run_next_step(&mut self.base_req).await?;
             } else {
                 let step_config = StepConfig {
-                    step_prefix: Some(
-                        "Thinking out loud about which category(ies) apply... ".to_owned(),
-                    ),
-                    stop_word_done: "The relevant  ".to_owned(),
+                    step_prefix: Some("The entity ".to_owned()),
                     grammar: TextPrimitive::default().text_token_length(100).grammar(),
                     ..StepConfig::default()
                 };
                 round.add_inference_step(&step_config);
                 round.run_next_step(&mut self.base_req).await?;
             };
+            round.close_round(&mut self.base_req)?;
 
+            let round = self.flow.new_round(self.list_prompt(&parent_tag));
+            round.open_round(&mut self.base_req)?;
+            round.step_separator = None;
             let length = parent_tag.get_tags().len();
             for i in 1..=length {
                 let mut step_config = StepConfig {
@@ -113,13 +109,14 @@ impl LabelEntity {
                     ..StepConfig::default()
                 };
                 if i == 1 {
-                    step_config.step_prefix = Some("The relevant category(ies) are:\n".to_owned());
+                    step_config.step_prefix =
+                        Some("The applicable classifications are:\n".to_owned());
                     step_config.stop_word_no_result = Some("None of the above.".to_owned())
                 } else {
-                    step_config.step_prefix = None;
+                    // step_config.step_prefix = None;
                     step_config.step_prefix = Some("\n".to_owned());
                     step_config.stop_word_no_result =
-                        Some("No additional relevant categories.".to_owned());
+                        Some("No additional classifications.".to_owned());
                 };
 
                 round.add_inference_step(&step_config);
@@ -136,6 +133,7 @@ impl LabelEntity {
                 };
             }
             round.close_round(&mut self.base_req)?;
+
             parent_tag.clear_tags();
             for tag in assigned_child_tags {
                 if tag.get_tags().len() > 0 {
@@ -149,59 +147,95 @@ impl LabelEntity {
         })
     }
 
-    fn prompt(&self, parent_tag: &Tag) -> String {
+    fn cot_prompt(&self, parent_tag: &Tag) -> String {
         if let Some(name) = &parent_tag.name {
             indoc::formatdoc! {"
-            To determine which categories to apply use this criteria:
-            '{}'
-            The sample text containing the entity: '{}'
-            The entity: '{}'
-            Of these categories from the '{name}' category:
+            In a single paragraph, explain if any child classifications of the '{name}' classification apply to the entity '{}'.
+
+            Classifications:
             ```
             {}
             ```
-            Start by discussing which categor(ies) apply, and conclude with a newline seperate list of the best choices like:
-            \"
-            The relevant category(ies) are:
-            category1
-            category2
-            etc.
-            \"
-            If none of the categories apply, say 'None of the above.' After selecting all relevant categories, conclude with 'No additional relevant categories.'
+
+            The entity is, '{}' and additional details are provided in the context text, '{}'. Are any of the parent classifications applicable? If so, which?
             ",
-            self.criteria,
-            self.content,
-            self.subject,
-            parent_tag.display_child_tags()
+            self.entity,
+            parent_tag.display_child_tag_descriptions(),
+            self.entity,
+            self.context_text,
             }
         } else {
             indoc::formatdoc! {"
-            To determine which categories to apply use this criteria:
+            List all relevant root classifications whose children classifications apply to the entity '{}'.
+
+            Criteria: 
             '{}'
-            All available categories and their categories:
+     
+            Classifications:
             ```
             {}
             ```
-            The sample text containing the entity: '{}'
-            The entity: '{}'
-            Which root categories apply or have sub-categories that apply?
-            Root categories:
-            ```
-            {}
-            ```
-            Briefly discuss which sub-categories(ies) apply, and conclude with a newline seperate list of the applicable root categories like:
-            \"
-            The relevant category(ies) are:
-            category1
-            category2
-            etc.
-            \"
-            If none of the categories apply, say 'None of the above.' After selecting all relevant categories, conclude with 'No additional relevant categories.'
+
+            The entity is, '{}' and additional details are provided in the context text, '{}'. Are any of the child classifications of the root classifications applicable? If so, which? What are their parent classifications.
             ",
-                self.criteria,
-                parent_tag.display_all_tags_with_paths(),
-                self.subject,
-                self.content,
+            self.entity,
+            self.criteria,
+            parent_tag.display_child_tag_descriptions(),
+            self.entity,
+            self.context_text,
+            }
+        }
+    }
+
+    fn list_prompt(&self, parent_tag: &Tag) -> String {
+        if let Some(name) = &parent_tag.name {
+            indoc::formatdoc! {"
+                Build a newline seperated list of the most relevant classifications for the entity '{}'.
+                Use the child classifications of the '{name}' classification:
+                ```
+                {}
+                ```
+                Format:
+                \"
+                The applicable classifications are:
+                classification1
+                classification2
+                etc.
+                No additional classifications.
+                \"
+
+                Or if none of the classifications apply:
+                \"
+                The applicable classifications are:
+                None of the above.
+                \"
+                ",
+                self.entity,
+                parent_tag.display_child_tags()
+            }
+        } else {
+            indoc::formatdoc! {"
+                Build a newline seperated list of the root classifications for the entity '{}'. Include root classifications whose child classifications apply.
+                Use the root classifications:
+                ```
+                {}
+                ```
+                Format:
+                \"
+                The applicable classifications are:
+                classification1
+                classification2
+                etc.
+                No additional classifications.
+                \"
+                
+                Or if none of the classifications apply:
+                \"
+                The applicable classifications are:
+                None of the above.
+                \"
+                ",
+                self.entity,
                 parent_tag.display_child_tags()
             }
         }
@@ -212,8 +246,8 @@ impl std::fmt::Display for LabelEntity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f)?;
         writeln!(f, "LabelEntity:")?;
-        crate::i_nln(f, format_args!("subject: {}", self.subject))?;
-        crate::i_nln(f, format_args!("content: {}", self.content))?;
+        crate::i_nln(f, format_args!("entity: {}", self.entity))?;
+        crate::i_nln(f, format_args!("context_text: {}", self.context_text))?;
         crate::i_nln(f, format_args!("duration: {:?}", self.flow.duration))?;
         crate::i_nln(f, format_args!("assigned_tags: {}", self.assigned_tags))?;
         Ok(())
@@ -222,10 +256,25 @@ impl std::fmt::Display for LabelEntity {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        workflows::nlp::classify::{hierarchy::Tag, label::LabelEntity},
-        LlmClient,
+    use workflows::nlp::classify::{
+        hierarchical_tag_system::tag, subject_of_text::ClassifySubjectOfText,
     };
+
+    use crate::workflows::nlp::classify::hierarchical_tag_system::TagCollection;
+
+    use super::*;
+    use crate::*;
+
+    fn criteria() -> String {
+        indoc::formatdoc! {"
+            # Microbial Source Classification
+            We have a hierarchical classification system used to categorize, filter, and sort the where a microbial organism was collected from.
+            The 'entity' is the primary indicator of the collection source.
+            The 'context text' provides additional details like the environment, location, or other aspects of the collection source.
+            'Classifications' pertain to aspects of the collection source—what or where the microbial organism was collected from.
+            We are interested in the source of a microbial organism. Classifications should only apply to direct aspects of the source or any details specified in the context text. An entity can have multiple classifications.
+            "}
+    }
 
     #[tokio::test]
     #[ignore]
@@ -236,15 +285,61 @@ mod test {
             .await?;
 
         let subject = "Gryllus bimaculatus".to_owned();
-        let content = "Edible insect Gryllus bimaculatus (Pet Feed Store)".to_owned();
-        let criteria = "We are applying labels used to filter where a microbial organism was collected from. The entity indicates the object or location from where it was collected, and the content may provide additional information. Only apply labels that apply to what or where the sample was collected from.".to_owned();
-        let entity = llm_client.nlp().classify().entity(&content);
+        let context_text = "Edible insect Gryllus bimaculatus (Pet Feed Store)".to_owned();
+        let tag_collection = TagCollection::default()
+            .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")
+            .tag_path_seperator(":")
+            .load()
+            .unwrap();
+
         let req = LabelEntity::new(
-            entity.base_req.clone(),
+            CompletionRequest::new(llm_client.backend.clone()),
             subject,
-            content,
-            criteria,
-            Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":"),
+            context_text,
+            criteria(),
+            tag_collection.get_root_tag()?,
+        );
+        let entity = req.run().await?;
+        println!("{}", entity.flow);
+        println!("{}", entity);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[ignore]
+    pub async fn test_full_workflow() -> crate::Result<()> {
+        let llm_client = LlmClient::llama_cpp()
+            .mistral_nemo_instruct2407()
+            .init()
+            .await?;
+
+        let mut tag_collection = TagCollection::default()
+            .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")
+            .tag_path_seperator(":")
+            .load()
+            .unwrap();
+
+        // Run this once!
+        tag_collection
+            .populate_descriptions(&llm_client, &criteria())
+            .await?;
+
+        let entity_classification = ClassifySubjectOfText::new(
+            CompletionRequest::new(llm_client.backend.clone()),
+            "Edible insect Gryllus bimaculatus (Pet Feed Store)",
+        )
+        .run()
+        .await?;
+        let entity = entity_classification.subject.unwrap().to_owned();
+        let context_text = entity_classification.content.to_owned();
+
+        let req = LabelEntity::new(
+            CompletionRequest::new(llm_client.backend.clone()),
+            entity,
+            context_text,
+            criteria(),
+            tag_collection.get_root_tag()?,
         );
         let entity = req.run().await?;
         println!("{}", entity.flow);
@@ -256,34 +351,42 @@ mod test {
     const CASES: &[(&str, &str)] = &[
         ("Ciliate: Metopus sp. strain SALT15A", "ciliate"),
         ("Coastal soil sample", "soil"),
-        ("Edible insect Gryllus bimaculatus (Pet Feed Store)", "insect"),
+        (
+            "Edible insect Gryllus bimaculatus (Pet Feed Store)",
+            "insect",
+        ),
         ("Public spring water", "water"),
         ("River snow from South Saskatchewan River", "snow"),
-        ("Tara packed so many boxes that she ran out of tape, and had to go to the store to buy more. Then she made grilled cheese sandwiches for lunch. She did a lot of things. She did too much.", "tara"),
         ("A green turtle on a log in a mountain lake.", "turtle"),
         (
             "Green turtle on log\nSunlight warms her emerald shell\nStillness all around",
             "turtle",
         ),
     ];
-    use crate::prelude::*;
 
     #[tokio::test]
     #[ignore]
     pub async fn test_cases() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp().llama3_2_3b_instruct().init().await?;
-
+        let llm_client = LlmClient::llama_cpp()
+            .mistral_nemo_instruct2407()
+            .init()
+            .await?;
+        let tag_collection = TagCollection::default()
+            .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")
+            .tag_path_seperator(":")
+            .load()
+            .unwrap();
         for (case, _) in CASES {
             let entity = llm_client.nlp().classify().entity(case).run().await?;
             let subject = entity.subject.as_ref().unwrap().to_owned();
-            let content = entity.content.to_owned();
-            let criteria = "We are applying labels used to filter where a sample was collected from. The entity indicates the object or location from where it was collected, and the content may provide additional information.".to_owned();
+            let context_text = entity.content.to_owned();
+
             let req = LabelEntity::new(
                 entity.base_req.clone(),
                 subject,
-                content,
-                criteria,
-                Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":"),
+                context_text,
+                criteria(),
+                tag_collection.get_root_tag()?,
             );
             let entity = req.run().await?;
             println!("{}", entity.flow);

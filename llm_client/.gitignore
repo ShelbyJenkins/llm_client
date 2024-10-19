@@ -2,3 +2,4 @@
 .env
 /llm_logs/
 Cargo.lock
+/generations

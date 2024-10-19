@@ -1,39 +1,20 @@
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+use serde::{Deserialize, Serialize};
+
+use super::generation::TagDescription;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Tag {
     pub name: Option<String>,
     pub full_path: Option<String>,
-    tags: HashMap<String, Tag>,
+    pub description: Option<TagDescription>,
+    pub tags: HashMap<String, Tag>,
 }
 
 impl Tag {
     pub fn new() -> Tag {
         Tag::default()
-    }
-
-    pub fn new_collection_from_string(input: &str, path_sep: &str) -> Tag {
-        let mut root = Tag {
-            name: None,
-            full_path: None,
-            tags: HashMap::new(),
-        };
-        for line in input.lines() {
-            let parts: Vec<&str> = line.split(path_sep).collect();
-            root.add_tag_recursive(&parts, 0, path_sep);
-        }
-
-        root
-    }
-
-    pub fn new_collection_from_text_file<P: AsRef<std::path::Path>>(
-        path: P,
-        path_sep: &str,
-    ) -> Tag {
-        match std::fs::read_to_string(path) {
-            Ok(contents) => Tag::new_collection_from_string(&contents, path_sep),
-            Err(e) => panic!("Error reading file: {}", e),
-        }
     }
 
     pub fn add_tag(&mut self, tag: Tag) {
@@ -72,12 +53,6 @@ impl Tag {
         tags
     }
 
-    pub fn get_tags_owned(&self) -> Vec<Tag> {
-        let mut tags: Vec<Tag> = self.tags.values().cloned().collect();
-        tags.sort_by(|a, b| a.name.cmp(&b.name));
-        tags
-    }
-
     pub fn get_tag_names(&self) -> Vec<String> {
         let mut names: Vec<String> = self.tags.keys().cloned().collect();
         names.sort();
@@ -93,6 +68,33 @@ impl Tag {
         output
     }
 
+    pub fn display_child_tag_descriptions(&self) -> String {
+        let mut output = String::new();
+        for child_tag in self.get_tags() {
+            output.push_str(&child_tag.format_tag_description());
+            output.push('\n');
+        }
+        output
+    }
+
+    fn format_tag_description(&self) -> String {
+        if let Some(description) = &self.description {
+            indoc::formatdoc! {"
+            Parent Classification '{}' 
+            {}
+            ",
+            self.tag_name(),
+            description.is_applicable,
+            }
+        } else {
+            indoc::formatdoc! {"
+            Classification '{}' 
+            ",
+            self.tag_name(),
+            }
+        }
+    }
+
     pub fn display_all_tags(&self) -> String {
         let mut output = String::new();
         for child_tag in self.get_tags() {
@@ -103,22 +105,36 @@ impl Tag {
 
     pub fn display_all_tags_with_paths(&self) -> String {
         let mut result = String::new();
-        self.collect_tags_with_paths(&mut result);
+        self.collect_tags_with_paths(&mut result, Vec::new());
         result.trim_end().to_string()
     }
 
-    fn collect_tags_with_paths(&self, result: &mut String) {
-        if let Some(path) = &self.full_path {
-            result.push_str(path);
-            result.push('\n');
+    fn collect_tags_with_paths(&self, result: &mut String, mut current_path: Vec<String>) {
+        if let Some(name) = &self.name {
+            current_path.push(name.clone());
         }
 
-        for child_tag in self.get_tags() {
-            child_tag.collect_tags_with_paths(result);
+        let mut leaf_tags = Vec::new();
+
+        for (_, child_tag) in &self.tags {
+            if child_tag.tags.is_empty() {
+                if let Some(name) = &child_tag.name {
+                    leaf_tags.push(name.clone());
+                }
+            } else {
+                child_tag.collect_tags_with_paths(result, current_path.clone());
+            }
+        }
+
+        if !leaf_tags.is_empty() {
+            result.push_str(&current_path.join("::"));
+            result.push_str("::{");
+            result.push_str(&leaf_tags.join(", "));
+            result.push_str("}\n");
         }
     }
 
-    fn add_tag_recursive(&mut self, parts: &[&str], depth: usize, path_sep: &str) {
+    pub(super) fn add_tag_recursive(&mut self, parts: &[&str], depth: usize, path_sep: &str) {
         if depth < parts.len() {
             let current_path = parts[..=depth].join(path_sep);
             let tag = self.new_tag(&current_path, path_sep);
@@ -153,6 +169,7 @@ impl Tag {
             .join(":");
 
         let tag = Tag {
+            description: None,
             name: Some(name.to_owned()),
             full_path: Some(full_path.to_owned()),
             tags: HashMap::new(),
@@ -185,47 +202,5 @@ impl std::fmt::Display for Tag {
         writeln!(f)?;
         crate::i_nln(f, format_args!("{}", self.display_all_tags()))?;
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    fn create_sample_tag_collection() -> Tag {
-        let input = "\
-    terrestrial
-    terrestrial:arid
-    terrestrial:soil
-    aquatic
-    aquatic:fresh water
-    aquatic:fresh water:lake
-    bed
-    bed:hotel:queen
-    bed:hotel:king
-    bed:home:double:bunk
-    host-associated:animal
-    host:digestive
-    tract:mouth
-    salinity:low
-    salinity
-    age group:infant
-    age  group:old age:senior
-    age-group:young
-    age-group:young: new born
-    ";
-        Tag::new_collection_from_string(input, ":")
-    }
-
-    #[test]
-    #[ignore]
-    fn test_tag_collection_creation_from_file() {
-        let tags =
-            Tag::new_collection_from_text_file("/workspaces/test/bacdive_hierarchy.txt", ":");
-        for tag in tags.get_tags() {
-            println!("{}", tag.display_child_tags());
-        }
-        println!("{}", tags.display_all_tags());
-        println!("{}", tags.display_child_tags());
-        println!("{}", tags.display_all_tags_with_paths());
     }
 }

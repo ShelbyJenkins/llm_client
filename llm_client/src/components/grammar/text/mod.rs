@@ -6,9 +6,10 @@ pub mod words;
 use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::cell::RefCell;
 
-const NEWLINE_CHARS: [char; 8] = [
-    '\r', '\n', '\u{000C}', '\u{000B}', '\u{000C}', '\u{0085}', '\u{2028}', '\u{2029}',
-];
+// const NEWLINE_CHARS: [char; 8] = [
+//     '\r', '\n', '\u{000C}', '\u{000B}', '\u{000C}', '\u{0085}', '\u{2028}', '\u{2029}',
+// ];
+const NEWLINE_CHARS: [char; 2] = ['\r', '\n'];
 
 // We'll have to store each char, and then manually allow or disallow each char
 fn build_disallowed(disallowed_chars: &[char]) -> String {
