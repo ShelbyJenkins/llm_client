@@ -2,7 +2,7 @@ use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::{cell::RefCell, str::FromStr};
 use url::Url;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 pub struct BasicUrlGrammar {
     pub stop_word_done: Option<String>,
     pub stop_word_no_result: Option<String>,

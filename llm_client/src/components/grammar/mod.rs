@@ -2,22 +2,25 @@ use text::text_list::TextListGrammar;
 use thiserror::Error;
 pub mod basic_url;
 pub mod boolean;
+pub mod custom;
 pub mod exact_string;
 pub mod faux_url;
 pub mod integer;
-
+pub mod none;
 pub mod text;
 
 pub use basic_url::BasicUrlGrammar;
 pub use boolean::BooleanGrammar;
+pub use custom::CustomGrammar;
 pub use exact_string::ExactStringGrammar;
 pub use faux_url::FauxUrlGrammar;
 pub use integer::IntegerGrammar;
+pub use none::NoneGrammar;
 pub use text::sentences::SentencesGrammar;
 pub use text::text::TextGrammar;
 pub use text::words::WordsGrammar;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Grammar {
     Boolean(BooleanGrammar),
     Integer(IntegerGrammar),
@@ -28,6 +31,8 @@ pub enum Grammar {
     BasicUrl(BasicUrlGrammar),
     ExactString(ExactStringGrammar),
     FauxUrl(FauxUrlGrammar),
+    None(NoneGrammar),
+    Custom(CustomGrammar),
 }
 
 macro_rules! grammar_default {
@@ -97,6 +102,8 @@ grammar_default! {
         BasicUrl => basic_url: BasicUrlGrammar,
         ExactString => exact_string: ExactStringGrammar,
         FauxUrl => faux_url: FauxUrlGrammar,
+        None => none: NoneGrammar,
+        Custom => custom: CustomGrammar,
     }
 }
 

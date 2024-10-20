@@ -1,6 +1,6 @@
 use super::{build_disallowed, Grammar, GrammarError, GrammarSetterTrait, RefCell, NEWLINE_CHARS};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct TextGrammar {
     pub item_token_length: u32,
     pub stop_word_done: Option<String>,

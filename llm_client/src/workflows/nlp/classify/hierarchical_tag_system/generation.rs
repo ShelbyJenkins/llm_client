@@ -35,8 +35,8 @@ impl TagCollectionDescriber {
 
     const DESCRIPTION_MIN_COUNT: u8 = 3;
     const DESCRIPTION_MAX_COUNT: u8 = 4;
-    const SUMMARY_MIN_COUNT: u8 = 3;
-    const SUMMARY_MAX_COUNT: u8 = 5;
+    const INSTRUCTIONS_MIN_COUNT: u8 = 3;
+    const INSTRUCTIONS_MAX_COUNT: u8 = 5;
     fn describe_tag<'a>(
         &'a mut self,
         parent_tag: &'a mut Tag,
@@ -44,8 +44,8 @@ impl TagCollectionDescriber {
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<()>> + 'a>> {
         let description_min_count = Self::DESCRIPTION_MIN_COUNT.saturating_sub(level).max(1);
         let description_max_count = Self::DESCRIPTION_MAX_COUNT.saturating_sub(level).max(2);
-        let instructions_min_count = Self::SUMMARY_MIN_COUNT.saturating_sub(level).max(2);
-        let instructions_max_count = Self::SUMMARY_MAX_COUNT.saturating_sub(level).max(3);
+        let instructions_min_count = Self::INSTRUCTIONS_MIN_COUNT.saturating_sub(level).max(1);
+        let instructions_max_count = Self::INSTRUCTIONS_MAX_COUNT.saturating_sub(level).max(2);
         Box::pin(async move {
             if parent_tag.description.is_none() {
                 self.flow = CascadeFlow::new("TagDescription");

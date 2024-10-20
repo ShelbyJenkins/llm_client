@@ -6,6 +6,14 @@ use llm_models::local_model::{
 #[test]
 fn load_from_vram() {
     let model = GgufLoader::default()
+        .super_nova_medius13b()
+        .preset_with_available_vram_gb(46)
+        .load()
+        .unwrap();
+
+    println!("{:#?}", model);
+
+    let model = GgufLoader::default()
         .llama3_1_70b_nemotron_instruct()
         .preset_with_available_vram_gb(46)
         .load()

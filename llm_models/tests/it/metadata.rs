@@ -7,6 +7,7 @@ fn test_base_generation_prefix() {
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
+    println!("{:#?}", model.chat_template.base_generation_prefix);
     assert_eq!(
         Some("<|start_header_id|>assistant<|end_header_id|>\n\n"),
         model.chat_template.base_generation_prefix.as_deref()
@@ -16,6 +17,7 @@ fn test_base_generation_prefix() {
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
+    println!("{:#?}", model.chat_template.base_generation_prefix);
     assert_eq!(
         Some(""),
         model.chat_template.base_generation_prefix.as_deref()
@@ -25,8 +27,20 @@ fn test_base_generation_prefix() {
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
+    println!("{:#?}", model.chat_template.base_generation_prefix);
     assert_eq!(
         Some("<|assistant|>\n"),
         model.chat_template.base_generation_prefix.as_deref()
     );
+
+    // let model = GgufLoader::default()
+    //     .super_nova_medius13b()
+    //     .preset_with_available_vram_gb(48)
+    //     .load()
+    //     .unwrap();
+    // println!("{:#?}", model.chat_template.base_generation_prefix);
+    // assert_eq!(
+    //     Some("<|assistant|>\n"),
+    //     model.chat_template.base_generation_prefix.as_deref()
+    // );
 }

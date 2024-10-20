@@ -3,7 +3,7 @@ use super::{
     NEWLINE_CHARS,
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct TextListGrammar {
     pub item_token_length: u32,
     pub min_count: u8,

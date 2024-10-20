@@ -119,7 +119,13 @@ impl InferenceStep {
         self.step_config
             .grammar
             .set_stop_word_done(&self.step_config.stop_word_done);
-        base_req.grammar_string = Some(self.step_config.grammar.grammar_string());
+        if !matches!(self.step_config.grammar, Grammar::None(_)) {
+            base_req.grammar_string = Some(self.step_config.grammar.grammar_string());
+            base_req.stop_sequences.required = true;
+        } else {
+            base_req.grammar_string = None;
+            base_req.stop_sequences.required = false;
+        }
 
         // Request prompt
         if let Some(generation_prefix) = generation_prefix {

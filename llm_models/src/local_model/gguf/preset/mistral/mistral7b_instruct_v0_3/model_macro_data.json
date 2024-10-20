@@ -11,7 +11,6 @@
         "q2": "Mistral-7B-Instruct-v0.3.Q2_K.gguf",
         "q1": "Mistral-7B-Instruct-v0.3.IQ1_M.gguf"
     },
-    "base_generation_prefix": "",
     "tokenizer_json_path": "mistral/mistral7b_instruct_v0_3/tokenizer.json",
     "tokenizer_config_json_path": "mistral/mistral7b_instruct_v0_3/tokenizer_config.json"
 }

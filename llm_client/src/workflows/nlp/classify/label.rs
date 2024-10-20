@@ -1,4 +1,5 @@
 use crate::components::cascade::{CascadeFlow, CascadeRound};
+use crate::components::grammar::{CustomGrammar, NoneGrammar};
 use crate::{components::cascade::step::StepConfig, primitives::*};
 
 use llm_interface::requests::completion::CompletionRequest;
@@ -91,37 +92,43 @@ impl LabelEntity {
     }
 
     async fn list_potential_tags(&mut self) -> crate::Result<Vec<Tag>> {
-        self.flow
-            .new_round(self.consider_potential_prompt(&self.tags));
-        self.flow.last_round()?.open_round(&mut self.base_req)?;
-        let step_config = StepConfig {
-            step_prefix: Some(format!(
-                "Classification Categories applicable to '{}': ",
-                self.entity
-            )),
-            grammar: TextPrimitive::default().text_token_length(200).grammar(),
-            ..StepConfig::default()
-        };
-        self.flow.last_round()?.add_inference_step(&step_config);
-        self.flow
-            .last_round()?
-            .run_next_step(&mut self.base_req)
-            .await?;
-        self.flow.last_round()?.close_round(&mut self.base_req)?;
+        // self.flow
+        //     .new_round(self.consider_potential_prompt(&self.tags));
+        // self.flow.last_round()?.open_round(&mut self.base_req)?;
+        // let step_config = StepConfig {
+        //     step_prefix: Some(format!(
+        //         "Lets consider which slassification Categories may be applicable to '{}'... ",
+        //         self.entity
+        //     )),
+        //     grammar: NoneGrammar::default().wrap(),
+        //     ..StepConfig::default()
+        // };
+        // self.flow.last_round()?.add_inference_step(&step_config);
+        // self.flow
+        //     .last_round()?
+        //     .run_next_step(&mut self.base_req)
+        //     .await?;
+        // self.flow.last_round()?.close_round(&mut self.base_req)?;
 
+        let list_grammar_string = indoc::formatdoc! {"
+        root ::= item{{2}} ( item{{0,4}} | \"No additional classifications\" ) \"No additional classifications\"
+        item ::= \"root\" part{{1,5}} \"\\n\"
+        part ::= \"::\" [a-z()-]{{3,33}}
+        ",
+        };
+        let grammar = CustomGrammar::default().custom_grammar(list_grammar_string);
         self.flow.new_round(self.list_potential_prompt(&self.tags));
         self.flow.last_round()?.open_round(&mut self.base_req)?;
-        let mut grammar: TextListPrimitive = TextListPrimitive::default();
-        grammar.max_count(5).item_prefix("root::");
+
         let step_config = StepConfig {
             stop_word_done: "No additional classifications".to_owned(),
-            grammar: grammar.grammar(),
+            grammar: grammar.clone().wrap(),
             ..StepConfig::default()
         };
 
-        let mut first_potential_tags = self.list_tags(&step_config, &grammar).await?;
+        let mut first_potential_tags = self.list_tags(&step_config).await?;
         let potentential_tags = if first_potential_tags.len() < 2 {
-            first_potential_tags.extend(self.list_tags(&step_config, &grammar).await?);
+            first_potential_tags.extend(self.list_tags(&step_config).await?);
             first_potential_tags
         } else {
             first_potential_tags
@@ -135,33 +142,37 @@ impl LabelEntity {
         self.flow
             .new_round(self.list_additional_tags_prompt(&parent_tag));
         self.flow.last_round()?.open_round(&mut self.base_req)?;
-        let mut grammar = TextListPrimitive::default();
-        grammar
-            .max_count(4)
-            .item_prefix(format!("root::{}", parent_tag.full_path.as_ref().unwrap()));
+        // let mut grammar = TextListPrimitive::default();
+        // grammar
+        //     .max_count(4)
+        //     .item_prefix(format!("root::{}", parent_tag.full_path.as_ref().unwrap()));
+
+        let list_grammar_string = indoc::formatdoc! {"
+        root ::= item ( item{{0,4}} | \"No additional classifications\" ) \"No additional classifications\"
+        item ::= \"root\" part{{1,5}} \"\\n\"
+        part ::= \"::\" [a-z()-]{{3,33}}
+        ",
+        };
+        let grammar = CustomGrammar::default().custom_grammar(list_grammar_string);
 
         let step_config = StepConfig {
             stop_word_done: "No additional classifications".to_owned(),
-            grammar: grammar.grammar(),
+            grammar: grammar.clone().wrap(),
             ..StepConfig::default()
         };
-        let potentential_tags = self.list_tags(&step_config, &grammar).await?;
+        let potentential_tags = self.list_tags(&step_config).await?;
         self.flow.last_round()?.close_round(&mut self.base_req)?;
         Ok(potentential_tags)
     }
 
-    async fn list_tags(
-        &mut self,
-        step_config: &StepConfig,
-        grammar: &TextListPrimitive,
-    ) -> crate::Result<Vec<Tag>> {
+    async fn list_tags(&mut self, step_config: &StepConfig) -> crate::Result<Vec<Tag>> {
         let mut potentential_tags: Vec<Tag> = Vec::new();
         let round = self.flow.last_round()?;
         round.add_inference_step(&step_config);
         round.run_next_step(&mut self.base_req).await?;
         match round.last_step()?.primitive_result() {
             Some(result_string) => {
-                let tag_names = grammar.parse_to_primitive(&result_string)?;
+                let tag_names = result_string.split_whitespace();
                 for tag_name_result in tag_names {
                     if let Some(tag) = self.tags.get_tag(&tag_name_result) {
                         potentential_tags.push(tag.clone());
@@ -195,7 +206,7 @@ impl LabelEntity {
                 )),
                 stop_word_done: "Applicability of classification".to_owned(),
                 stop_word_no_result: Some("is not applicable".to_owned()),
-                grammar: SentencesPrimitive::default().max_count(1).grammar(),
+                grammar: SentencesPrimitive::default().max_count(3).grammar(),
                 ..StepConfig::default()
             };
             round.add_inference_step(&step_config);
@@ -215,7 +226,7 @@ impl LabelEntity {
                 )),
                 stop_word_no_result: Some("is not applicable".to_owned()),
                 stop_word_done: "In conclusion".to_owned(),
-                grammar: SentencesPrimitive::default().max_count(1).grammar(),
+                grammar: SentencesPrimitive::default().max_count(3).grammar(),
                 ..StepConfig::default()
             };
             round.add_inference_step(&step_config);
@@ -318,7 +329,8 @@ impl LabelEntity {
 
         Criteria:
         {}
-        Format: 'root::path::path::tag_name' for each category selection.
+        
+        Given the criteria, discuss which classification categories could potentially apply to the entity? 
         ",
         root_tag.display_all_tags_with_paths(),
         self.entity,
@@ -327,22 +339,47 @@ impl LabelEntity {
         }
     }
 
-    fn list_potential_prompt(&self, _root_tag: &Tag) -> String {
+    fn list_potential_prompt(&self, root_tag: &Tag) -> String {
         indoc::formatdoc! {"
+        Classification Categories:
+        {}
+        
         Entity:
         {}
 
         Context Text:
         {}
 
-        Create a list of all classifications that apply to the entity. Say 'No additional classifications' when complete. List the best fitting classifications first.
+        Criteria:
+        {}
+        
+        Given the criteria, discuss which classification categories could potentially apply to the entity? 
+        Create a list of all classifications that apply to the entity. Say 'No additional classifications' when complete. List the best fitting classifications first. Return at least 1 or 'No additional classifications'.
         Format: 'root::path::path::tag_name' for each classification.
         ",
-
+        root_tag.display_all_tags_with_nested_paths(),
         self.entity,
         self.context_text,
+        self.criteria,
         }
     }
+
+    // fn list_potential_prompt(&self, _root_tag: &Tag) -> String {
+    //     indoc::formatdoc! {"
+    //     Entity:
+    //     {}
+
+    //     Context Text:
+    //     {}
+
+    //     Create a list of all classifications that apply to the entity. Say 'No additional classifications' when complete. List the best fitting classifications first. Return at least 1 or 'No additional classifications'.
+    //     Format: 'root::path::path::tag_name' for each classification.
+    //     ",
+
+    //     self.entity,
+    //     self.context_text,
+    //     }
+    // }
 
     fn list_additional_tags_prompt(&self, parent_tag: &Tag) -> String {
         indoc::formatdoc! {"
@@ -464,7 +501,10 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_one() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
+        let llm_client = LlmClient::llama_cpp()
+            .llama3_1_70b_nemotron_instruct()
+            .init()
+            .await?;
 
         let subject = "Gryllus bimaculatus".to_owned();
         let context_text = "Edible insect Gryllus bimaculatus (Pet Feed Store)".to_owned();

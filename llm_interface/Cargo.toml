@@ -56,4 +56,4 @@ required-features=["llama_cpp_backend"]
 
 [package.metadata.llama_cpp_backend]
 repo="https://github.com/ggerganov/llama.cpp"
-tag="b3848"
+tag="b3943"

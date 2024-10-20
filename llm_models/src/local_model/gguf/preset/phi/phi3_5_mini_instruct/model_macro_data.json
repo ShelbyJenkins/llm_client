@@ -10,7 +10,6 @@
         "q3": "Phi-3.5-mini-instruct-Q3_K_M.gguf",
         "q2": "Phi-3.5-mini-instruct-Q2_K.gguf"
     },
-    "base_generation_prefix": "<|assistant|>\n",
     "tokenizer_json_path": "phi/tokenizer.json",
     "tokenizer_config_json_path": "phi/phi3_5_mini_instruct/tokenizer_config.json"
 }

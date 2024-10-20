@@ -10,7 +10,6 @@
         "q3": "Mistral-Small-Instruct-2409-Q3_K_M.gguf",
         "q2": "Mistral-Small-Instruct-2409-Q2_K.gguf"
     },
-    "base_generation_prefix": "",
     "tokenizer_json_path": "mistralai/mistral_small_instruct_2409/tokenizer.json",
     "tokenizer_config_json_path": "mistralai/mistral_small_instruct_2409/tokenizer_config.json"
 }

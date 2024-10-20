@@ -64,6 +64,11 @@ impl LlamaMetadata {
         gguf: &crate::local_model::gguf::tools::gguf_file::GgufFile,
     ) -> crate::Result<Self> {
         let arch: String = gguf.get_value("general.architecture")?;
+        let arch = if arch == "qwen2" {
+            "llama".to_string()
+        } else {
+            arch
+        };
         let path_prefixes: &[&str] = &[&arch];
         Ok(Self {
             context_length: gguf

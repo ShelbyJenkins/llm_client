@@ -1,12 +1,12 @@
 //! Adding a preset model checklist:
 //! 1. Add a new variant to the `LlmPreset` enum via generate_models! macro
-//! 2. Create directory for the new model in `llm_utils/src/models/local_model/preset`
+//! 2. Create directory for the new model in `llm_client/llm_models/src/local_model/gguf/preset`
 //! 3. Add model_macro_data.json to the new model's directory
 //! 4. Add the model's config.json to the new model's directory
 //! 5. (Optional) Add the model's tokenizer_config.json to the new model's directory
 //! 6. (Optional) Add the model's tokenizer.json to the new model's directory
-//! 7. Add a test to llm_utils/src/models/local_model/preset/mod.rs/tests for the new model
-//! 8. Add a test_base_generation_prefix test case to llm_utils/src/models/local_model/chat_template.rs/tests for the new model
+//! 7. Add a test to llm_client/llm_models/tests/it/preset.rs for the new model
+//! 8. Add a test_base_generation_prefix test case to llm_client/llm_models/tests/it/metadata.rs for the new model
 use crate::local_model::{
     gguf::loaders::preset::GgufPresetLoader, metadata::config_json::ConfigJson, GgufLoader,
     LocalLlmModel,
@@ -18,7 +18,6 @@ pub struct LlmPresetData {
     pub gguf_repo_id: String,
     pub number_of_parameters: u64,
     pub f_name_for_q_bits: QuantizationConfig,
-    pub base_generation_prefix: String,
     pub tokenizer_json_path: Option<String>,
     pub tokenizer_config_json_path: Option<String>,
 }
@@ -203,6 +202,7 @@ macro_rules! generate_models {
 
 generate_models!(
     LlmPreset {
+        SuperNovaMedius13b => "llama/supernova_medius",
         Llama3_1_70bNemotronInstruct => "llama/llama3_1_70b_nemotron_instruct",
         Llama3_1_8bInstruct => "llama/llama3_1_8b_instruct",
         Llama3_2_3bInstruct => "llama/llama3_2_3b_instruct",

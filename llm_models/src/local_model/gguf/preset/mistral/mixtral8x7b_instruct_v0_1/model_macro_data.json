@@ -10,7 +10,6 @@
         "q3": "Mixtral-8x7B-Instruct-v0.1.Q3_K_M.gguf",
         "q2": "Mixtral-8x7B-Instruct-v0.1.Q2_K.gguf"
     },
-    "base_generation_prefix": "",
     "tokenizer_json_path": "mistral/mixtral8x7b_instruct_v0_1/tokenizer.json",
     "tokenizer_config_json_path": "mistral/mixtral8x7b_instruct_v0_1/tokenizer_config.json"
 }

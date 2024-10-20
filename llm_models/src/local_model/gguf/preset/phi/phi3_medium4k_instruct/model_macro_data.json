@@ -11,7 +11,6 @@
         "q2": "Phi-3-medium-4k-instruct-Q2_K.gguf",
         "q1": "Phi-3-medium-4k-instruct-IQ1_M.gguf"
     },
-    "base_generation_prefix": "<|assistant|>\n",
     "tokenizer_json_path": "phi/tokenizer.json",
     "tokenizer_config_json_path": "phi/phi3_medium4k_instruct/tokenizer_config.json"
 }
