@@ -44,7 +44,14 @@ impl Tag {
     }
 
     pub fn tag_path(&self) -> String {
-        self.full_path.as_ref().unwrap().to_owned()
+        format!(
+            "root::{}",
+            self.full_path
+                .as_ref()
+                .unwrap()
+                .to_owned()
+                .replace(":", "::")
+        )
     }
 
     pub fn get_tags(&self) -> Vec<&Tag> {
@@ -59,6 +66,67 @@ impl Tag {
         names
     }
 
+    pub fn get_tag(&self, tag_path: &str) -> Option<&Tag> {
+        // Remove 'root::' prefix if present
+        let tag_path = tag_path.strip_prefix("root::").unwrap_or(tag_path);
+        // Extract the actual tag path by splitting on whitespace and taking the first part
+        let actual_path = tag_path.split_whitespace().next().unwrap_or(tag_path);
+        // Split the path
+        let parts: Vec<&str> = actual_path.split("::").collect();
+
+        for i in (0..parts.len()).rev() {
+            // println!("trying: {:?}", &parts[..=i]);
+            if let Some(tag) = self.get_tag_recursive(&parts[..=i]) {
+                return Some(tag);
+            }
+        }
+
+        None
+    }
+
+    fn get_tag_recursive(&self, path_parts: &[&str]) -> Option<&Tag> {
+        if path_parts.is_empty() {
+            return Some(self);
+        }
+
+        let current = path_parts[0];
+        let remaining = &path_parts[1..];
+
+        // Handle curly braces
+        let tags_to_try = if current.starts_with('{') && current.ends_with('}') {
+            current[1..current.len() - 1]
+                .split(',')
+                .map(|s| s.trim())
+                .collect::<Vec<_>>()
+        } else {
+            vec![current]
+        };
+
+        for &tag in &tags_to_try {
+            // Try case-insensitive exact match
+            let matching_child = self
+                .tags
+                .iter()
+                .find(|(child_name, _)| child_name.to_lowercase() == tag.to_lowercase());
+
+            if let Some((_, child_tag)) = matching_child {
+                if remaining.is_empty() {
+                    return Some(child_tag);
+                }
+                if let Some(found) = child_tag.get_tag_recursive(remaining) {
+                    return Some(found);
+                }
+            }
+        }
+
+        // If no match found and we have remaining parts, try skipping this part
+        if !remaining.is_empty() {
+            return self.get_tag_recursive(remaining);
+        }
+
+        None
+    }
+
     pub fn display_child_tags(&self) -> String {
         let mut output = String::new();
         for child_tag in self.get_tags() {
@@ -68,23 +136,36 @@ impl Tag {
         output
     }
 
-    pub fn display_child_tag_descriptions(&self) -> String {
+    pub fn display_child_tags_comma(&self) -> String {
+        let mut names = String::new();
+        for child_tag in self.get_tags() {
+            names.push_str(&format!("'{}', ", child_tag.tag_name()));
+        }
+        names
+    }
+
+    pub fn display_child_tag_descriptions(&self, entity: &str) -> String {
         let mut output = String::new();
         for child_tag in self.get_tags() {
-            output.push_str(&child_tag.format_tag_description());
+            output.push_str(&child_tag.format_tag_criteria(entity));
             output.push('\n');
         }
         output
     }
 
-    fn format_tag_description(&self) -> String {
+    pub fn format_tag_criteria(&self, entity: &str) -> String {
         if let Some(description) = &self.description {
-            indoc::formatdoc! {"
-            Parent Classification '{}' 
-            {}
-            ",
-            self.tag_name(),
-            description.is_applicable,
+            if description.is_parent_tag {
+                indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {}",
+                self.tag_name(),
+                description.is_applicable.trim(),
+                }
+            } else {
+                indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {} Specifically, of type '{}'",
+                self.tag_name(),
+                description.is_applicable.trim(),
+                self.tag_name(),
+                }
             }
         } else {
             indoc::formatdoc! {"
@@ -105,27 +186,44 @@ impl Tag {
 
     pub fn display_all_tags_with_paths(&self) -> String {
         let mut result = String::new();
-        self.collect_tags_with_paths(&mut result, Vec::new());
+        self.collect_tags_with_paths(&mut result);
         result.trim_end().to_string()
     }
 
-    fn collect_tags_with_paths(&self, result: &mut String, mut current_path: Vec<String>) {
+    fn collect_tags_with_paths(&self, result: &mut String) {
+        if let Some(full_path) = &self.full_path {
+            // Convert single ":" to "::" and prepend "root"
+            let formatted_path = format!("root::{}", full_path.replace(":", "::"));
+            result.push_str(&formatted_path);
+            result.push('\n');
+        }
+
+        // Recursively process child tags
+        for (_, child_tag) in &self.tags {
+            child_tag.collect_tags_with_paths(result);
+        }
+    }
+
+    pub fn display_all_tags_with_nested_paths(&self) -> String {
+        let mut result = String::new();
+        self.collect_tags_with_nested_paths(&mut result, vec!["root".to_string()]);
+        result.trim_end().to_string()
+    }
+
+    fn collect_tags_with_nested_paths(&self, result: &mut String, mut current_path: Vec<String>) {
         if let Some(name) = &self.name {
             current_path.push(name.clone());
         }
-
         let mut leaf_tags = Vec::new();
-
         for (_, child_tag) in &self.tags {
             if child_tag.tags.is_empty() {
                 if let Some(name) = &child_tag.name {
                     leaf_tags.push(name.clone());
                 }
             } else {
-                child_tag.collect_tags_with_paths(result, current_path.clone());
+                child_tag.collect_tags_with_nested_paths(result, current_path.clone());
             }
         }
-
         if !leaf_tags.is_empty() {
             result.push_str(&current_path.join("::"));
             result.push_str("::{");
@@ -200,7 +298,7 @@ impl Tag {
 impl std::fmt::Display for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f)?;
-        crate::i_nln(f, format_args!("{}", self.display_all_tags()))?;
+        crate::i_nln(f, format_args!("{}", self.display_all_tags_with_paths()))?;
         Ok(())
     }
 }

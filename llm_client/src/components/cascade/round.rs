@@ -134,6 +134,24 @@ impl CascadeRound {
         }
     }
 
+    pub async fn cache_next_step(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
+        let mut current_step = self.unresolved_steps.pop_front().unwrap();
+        let generation_prefix = self.generation_prefix(&current_step)?;
+        match current_step
+            .set_cache_up_to_step(generation_prefix.as_deref(), base_req)
+            .await
+        {
+            Ok(..) => {
+                self.resolved_steps.push_back(current_step);
+                Ok(())
+            }
+            Err(e) => {
+                self.unresolved_steps.push_front(current_step);
+                Err(e)
+            }
+        }
+    }
+
     pub fn primitive_result(&self) -> Option<String> {
         if let Some(step) = self.resolved_steps.back() {
             step.primitive_result()
@@ -150,6 +168,13 @@ impl CascadeRound {
     pub fn last_step(&mut self) -> crate::Result<&mut CascadeStep> {
         match self.resolved_steps.back_mut() {
             Some(step) => Ok(step),
+            None => crate::bail!("No steps in round"),
+        }
+    }
+
+    pub fn drop_last_step(&mut self) -> crate::Result<()> {
+        match self.resolved_steps.pop_back() {
+            Some(..) => Ok(()),
             None => crate::bail!("No steps in round"),
         }
     }

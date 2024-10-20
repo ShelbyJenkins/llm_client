@@ -277,7 +277,7 @@ mod tests {
         }
         println!("{}", tags.display_all_tags());
         println!("{}", tags.display_child_tags());
-        println!("{}", tags.display_all_tags_with_paths());
+        println!("{}", tags.display_all_tags_with_nested_paths());
         Ok(())
     }
 
@@ -289,12 +289,17 @@ mod tests {
             .tag_path_seperator(":")
             .load()?;
         let tags = tag_collection.get_root_tag()?;
-        for tag in tags.get_tags() {
-            println!("{}", tag.display_child_tags());
-        }
-        println!("{}", tags.display_all_tags());
-        println!("{}", tags.display_child_tags());
+
         println!("{}", tags.display_all_tags_with_paths());
+        println!("{}", tags.display_all_tags_with_nested_paths());
+        assert!(tags.get_tag("host::arthropoda::tick").is_some());
+        assert!(tags
+            .get_tag("infection::patient::{blood-culture}")
+            .is_some());
+        assert!(tags.get_tag("root::host::arthropoda::tick").is_some());
+        assert!(tags
+            .get_tag("root::infection::patient::{blood-culture}")
+            .is_some());
         Ok(())
     }
 }

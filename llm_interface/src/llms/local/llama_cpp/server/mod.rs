@@ -14,7 +14,7 @@ use status::{server_status, ServerStatus};
 
 const STATUS_CHECK_TIME_MS: u64 = 650;
 const STATUS_RETRY_TIMEOUT_MS: u64 = 200;
-const START_UP_CHECK_TIME_S: u64 = 30;
+const START_UP_CHECK_TIME_S: u64 = 180;
 const START_UP_RETRY_TIME_S: u64 = 5;
 
 pub struct LlamaCppServer {

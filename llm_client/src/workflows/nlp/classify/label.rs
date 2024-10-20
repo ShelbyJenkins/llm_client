@@ -1,9 +1,9 @@
-use crate::components::cascade::CascadeFlow;
+use crate::components::cascade::{CascadeFlow, CascadeRound};
 use crate::{components::cascade::step::StepConfig, primitives::*};
 
 use llm_interface::requests::completion::CompletionRequest;
 
-use super::hierarchical_tag_system::Tag;
+use super::hierarchical_tag_system::{tag, Tag};
 
 pub struct LabelEntity {
     pub base_req: CompletionRequest,
@@ -58,187 +58,375 @@ impl LabelEntity {
 
     async fn run_cascade(&mut self) -> crate::Result<()> {
         self.flow.open_cascade();
-        let tag_collection = self.tags.clone();
-        let assigned_tag = self.evaluate_tag_set(tag_collection).await?;
 
-        self.assigned_tags = assigned_tag;
+        let initial_tags = self.list_potential_tags().await?;
+        let initial_tags = Self::deduplicate_tags(initial_tags);
+        let (mut initial_tags, mut potential_exact_tags) =
+            Self::seperate_parent_and_exact_tags(initial_tags, Vec::new());
+
+        let mut potential_parent_tags: Vec<Tag> = Vec::new();
+        for tag in &mut initial_tags {
+            let additional_tags = self.list_additional_tags(tag).await?;
+            let (new_potential_parent_tags, new_potential_exact_tags) =
+                Self::seperate_parent_and_exact_tags(additional_tags, Vec::new());
+            let new_potential_exact_tags = Self::deduplicate_tags(new_potential_exact_tags);
+            let new_potential_parent_tags = Self::deduplicate_tags(new_potential_parent_tags);
+            potential_exact_tags.extend(new_potential_exact_tags);
+            potential_parent_tags.extend(new_potential_parent_tags);
+        }
+
+        let potential_exact_tags = Self::deduplicate_tags(potential_exact_tags);
+        let potential_parent_tags = Self::deduplicate_tags(potential_parent_tags);
+
+        for tag in potential_parent_tags {
+            println!("Parent Tag childred: {:?}", tag.get_tag_names());
+        }
+        for tag in &potential_exact_tags {
+            println!("Exact Tags: {}", tag.tag_name());
+        }
+        self.evaluate_exact_tags(potential_exact_tags).await?;
+
         self.flow.close_cascade()?;
         Ok(())
     }
 
-    fn evaluate_tag_set<'a>(
-        &'a mut self,
-        mut parent_tag: Tag,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<Tag>> + 'a>> {
-        Box::pin(async move {
-            let mut assigned_child_tags: Vec<Tag> = Vec::new();
+    async fn list_potential_tags(&mut self) -> crate::Result<Vec<Tag>> {
+        self.flow
+            .new_round(self.consider_potential_prompt(&self.tags));
+        self.flow.last_round()?.open_round(&mut self.base_req)?;
+        let step_config = StepConfig {
+            step_prefix: Some(format!(
+                "Classification Categories applicable to '{}': ",
+                self.entity
+            )),
+            grammar: TextPrimitive::default().text_token_length(200).grammar(),
+            ..StepConfig::default()
+        };
+        self.flow.last_round()?.add_inference_step(&step_config);
+        self.flow
+            .last_round()?
+            .run_next_step(&mut self.base_req)
+            .await?;
+        self.flow.last_round()?.close_round(&mut self.base_req)?;
 
-            let round = self.flow.new_round(self.cot_prompt(&parent_tag));
-            round.open_round(&mut self.base_req)?;
-            round.step_separator = None;
-            let is_root = parent_tag.name.is_none();
-            if is_root {
-                let step_config = StepConfig {
-                    step_prefix: Some("The entity ".to_owned()),
-                    grammar: TextPrimitive::default().text_token_length(800).grammar(),
-                    ..StepConfig::default()
-                };
-                round.add_inference_step(&step_config);
-                round.run_next_step(&mut self.base_req).await?;
-            } else {
-                let step_config = StepConfig {
-                    step_prefix: Some("The entity ".to_owned()),
-                    grammar: TextPrimitive::default().text_token_length(100).grammar(),
-                    ..StepConfig::default()
-                };
-                round.add_inference_step(&step_config);
-                round.run_next_step(&mut self.base_req).await?;
-            };
-            round.close_round(&mut self.base_req)?;
+        self.flow.new_round(self.list_potential_prompt(&self.tags));
+        self.flow.last_round()?.open_round(&mut self.base_req)?;
+        let mut grammar: TextListPrimitive = TextListPrimitive::default();
+        grammar.max_count(5).item_prefix("root::");
+        let step_config = StepConfig {
+            stop_word_done: "No additional classifications".to_owned(),
+            grammar: grammar.grammar(),
+            ..StepConfig::default()
+        };
 
-            let round = self.flow.new_round(self.list_prompt(&parent_tag));
-            round.open_round(&mut self.base_req)?;
-            round.step_separator = None;
-            let length = parent_tag.get_tags().len();
-            for i in 1..=length {
-                let mut step_config = StepConfig {
-                    grammar: ExactStringPrimitive::default()
-                        .add_strings_to_allowed(&parent_tag.get_tag_names())
-                        .grammar(),
-                    stop_word_done: "\n".to_owned(),
-                    ..StepConfig::default()
-                };
-                if i == 1 {
-                    step_config.step_prefix =
-                        Some("The applicable classifications are:\n".to_owned());
-                    step_config.stop_word_no_result = Some("None of the above.".to_owned())
-                } else {
-                    // step_config.step_prefix = None;
-                    step_config.step_prefix = Some("\n".to_owned());
-                    step_config.stop_word_no_result =
-                        Some("No additional classifications.".to_owned());
-                };
+        let mut first_potential_tags = self.list_tags(&step_config, &grammar).await?;
+        let potentential_tags = if first_potential_tags.len() < 2 {
+            first_potential_tags.extend(self.list_tags(&step_config, &grammar).await?);
+            first_potential_tags
+        } else {
+            first_potential_tags
+        };
 
-                round.add_inference_step(&step_config);
-                round.run_next_step(&mut self.base_req).await?;
+        self.flow.last_round()?.close_round(&mut self.base_req)?;
+        Ok(potentential_tags)
+    }
 
-                match round.primitive_result() {
-                    Some(tag_name) => {
-                        let tag = parent_tag.remove_tag(&tag_name)?;
-                        assigned_child_tags.push(tag);
+    async fn list_additional_tags(&mut self, parent_tag: &Tag) -> crate::Result<Vec<Tag>> {
+        self.flow
+            .new_round(self.list_additional_tags_prompt(&parent_tag));
+        self.flow.last_round()?.open_round(&mut self.base_req)?;
+        let mut grammar = TextListPrimitive::default();
+        grammar
+            .max_count(4)
+            .item_prefix(format!("root::{}", parent_tag.full_path.as_ref().unwrap()));
+
+        let step_config = StepConfig {
+            stop_word_done: "No additional classifications".to_owned(),
+            grammar: grammar.grammar(),
+            ..StepConfig::default()
+        };
+        let potentential_tags = self.list_tags(&step_config, &grammar).await?;
+        self.flow.last_round()?.close_round(&mut self.base_req)?;
+        Ok(potentential_tags)
+    }
+
+    async fn list_tags(
+        &mut self,
+        step_config: &StepConfig,
+        grammar: &TextListPrimitive,
+    ) -> crate::Result<Vec<Tag>> {
+        let mut potentential_tags: Vec<Tag> = Vec::new();
+        let round = self.flow.last_round()?;
+        round.add_inference_step(&step_config);
+        round.run_next_step(&mut self.base_req).await?;
+        match round.last_step()?.primitive_result() {
+            Some(result_string) => {
+                let tag_names = grammar.parse_to_primitive(&result_string)?;
+                for tag_name_result in tag_names {
+                    if let Some(tag) = self.tags.get_tag(&tag_name_result) {
+                        potentential_tags.push(tag.clone());
+                    } else {
+                        println!("{tag_name_result} not found")
                     }
-                    None => {
-                        break;
-                    }
-                };
-            }
-            round.close_round(&mut self.base_req)?;
-
-            parent_tag.clear_tags();
-            for tag in assigned_child_tags {
-                if tag.get_tags().len() > 0 {
-                    let tag = self.evaluate_tag_set(tag).await?;
-                    parent_tag.add_tag(tag);
-                } else {
-                    parent_tag.add_tag(tag);
                 }
             }
-            Ok(parent_tag)
-        })
+            None => {
+                crate::bail!("No tags provided.");
+            }
+        };
+        Ok(potentential_tags)
     }
 
-    fn cot_prompt(&self, parent_tag: &Tag) -> String {
-        if let Some(name) = &parent_tag.name {
-            indoc::formatdoc! {"
-            In a single paragraph, explain if any child classifications of the '{name}' classification apply to the entity '{}'.
+    async fn evaluate_exact_tags(&mut self, potential_tags: Vec<Tag>) -> crate::Result<()> {
+        let mut not_applicable_tag_names: Vec<String> = Vec::new();
+        self.dummy_evaluate_exact_tags(&potential_tags).await?;
+        let round = self.flow.last_round()?;
 
-            Classifications:
-            ```
-            {}
-            ```
+        for tag in &potential_tags {
+            let guidance_content = format!("{}", tag.format_tag_criteria(&self.entity));
+            round.add_guidance_step(&StepConfig::default(), guidance_content);
+            round.cache_next_step(&mut self.base_req).await?;
 
-            The entity is, '{}' and additional details are provided in the context text, '{}'. Are any of the parent classifications applicable? If so, which?
-            ",
-            self.entity,
-            parent_tag.display_child_tag_descriptions(),
-            self.entity,
-            self.context_text,
+            let step_config = StepConfig {
+                step_prefix: Some(format!(
+                    "Explicit aspects of '{}' applicable to '{}': ",
+                    self.context_text,
+                    tag.tag_name()
+                )),
+                stop_word_done: "Applicability of classification".to_owned(),
+                stop_word_no_result: Some("is not applicable".to_owned()),
+                grammar: SentencesPrimitive::default().max_count(1).grammar(),
+                ..StepConfig::default()
+            };
+            round.add_inference_step(&step_config);
+            round.run_next_step(&mut self.base_req).await?;
+            match round.primitive_result() {
+                Some(_) => (),
+                None => {
+                    not_applicable_tag_names.push(tag.tag_name());
+                    continue;
+                }
+            };
+            let step_config = StepConfig {
+                step_prefix: Some(format!(
+                    "Applicability of classification '{}' to '{}': ",
+                    tag.tag_name(),
+                    self.entity,
+                )),
+                stop_word_no_result: Some("is not applicable".to_owned()),
+                stop_word_done: "In conclusion".to_owned(),
+                grammar: SentencesPrimitive::default().max_count(1).grammar(),
+                ..StepConfig::default()
+            };
+            round.add_inference_step(&step_config);
+            round.run_next_step(&mut self.base_req).await?;
+            match round.primitive_result() {
+                Some(_) => (),
+                None => {
+                    not_applicable_tag_names.push(tag.tag_name());
+                    continue;
+                }
+            };
+
+            let step_config = StepConfig {
+                step_prefix: Some(format!("In conclusion, '{}' ", tag.tag_name(),)),
+                grammar: ExactStringPrimitive::default()
+                    .add_strings_to_allowed(&["is applicable", "is not applicable"])
+                    .grammar(),
+                cache_prompt: false,
+                ..StepConfig::default()
+            };
+            round.add_inference_step(&step_config);
+            round.run_next_step(&mut self.base_req).await?;
+            let guidance_content = match round.primitive_result().as_deref() {
+                Some("is applicable") => {
+                    format!(
+                        "In conclusion, '{}' is applicable to '{}'.",
+                        tag.tag_name(),
+                        self.entity
+                    )
+                }
+                Some("is not applicable") => {
+                    not_applicable_tag_names.push(tag.tag_name());
+                    format!(
+                        "In conclusion, '{}' is not applicable to '{}'.",
+                        tag.tag_name(),
+                        self.entity
+                    )
+                }
+                Some(other) => {
+                    crate::bail!("Unexpected result: {}", other);
+                }
+                None => {
+                    crate::bail!("No result for tag: {}", tag.tag_name());
+                }
+            };
+            round.drop_last_step()?;
+            round.add_guidance_step(&StepConfig::default(), guidance_content);
+            round.cache_next_step(&mut self.base_req).await?;
+        }
+        round.close_round(&mut self.base_req)?;
+        for tag in potential_tags {
+            if not_applicable_tag_names.contains(&tag.tag_name()) {
+                continue;
             }
-        } else {
-            indoc::formatdoc! {"
-            List all relevant root classifications whose children classifications apply to the entity '{}'.
+            self.assigned_tags.add_tag(tag);
+        }
 
-            Criteria: 
-            '{}'
-     
-            Classifications:
-            ```
-            {}
-            ```
+        Ok(())
+    }
 
-            The entity is, '{}' and additional details are provided in the context text, '{}'. Are any of the child classifications of the root classifications applicable? If so, which? What are their parent classifications.
-            ",
-            self.entity,
-            self.criteria,
-            parent_tag.display_child_tag_descriptions(),
-            self.entity,
-            self.context_text,
-            }
+    async fn dummy_evaluate_exact_tags(&mut self, potential_tags: &Vec<Tag>) -> crate::Result<()> {
+        let round = self
+            .flow
+            .new_round(self.evaluate_exact_tags_prompt(&potential_tags));
+        round.open_round(&mut self.base_req)?;
+        round.step_separator = Some('\n');
+
+        let guidance_content = format!("Classification 'example' is applicable if '{}' meets the criteria the specific or general conditions.", self.context_text);
+        round.add_guidance_step(&StepConfig::default(), guidance_content);
+        round.cache_next_step(&mut self.base_req).await?;
+
+        let guidance_content = format!("Explicit aspects of '{}' applicable to 'example': A single sentence detailing the explicitly stated aspects of the entity that apply to the classification. Or, 'The classification is not applicable.'", self.entity);
+        round.add_guidance_step(&StepConfig::default(), guidance_content);
+        round.cache_next_step(&mut self.base_req).await?;
+
+        let guidance_content = format!("Applicability of classification 'example' to '{}: ': A single sentence reasoning why the classification applies to the entity, or 'The classification is not applicable.'", self.entity);
+        round.add_guidance_step(&StepConfig::default(), guidance_content);
+        round.cache_next_step(&mut self.base_req).await?;
+
+        let guidance_content = format!(
+            "In conclusion, 'example' is not applicable to '{}'.",
+            self.entity
+        );
+        round.add_guidance_step(&StepConfig::default(), guidance_content);
+        round.cache_next_step(&mut self.base_req).await?;
+
+        Ok(())
+    }
+
+    fn consider_potential_prompt(&self, root_tag: &Tag) -> String {
+        indoc::formatdoc! {"
+        Classification Categories:
+        {}
+        
+        Entity:
+        {}
+
+        Context Text:
+        {}
+
+        Criteria:
+        {}
+        Format: 'root::path::path::tag_name' for each category selection.
+        ",
+        root_tag.display_all_tags_with_paths(),
+        self.entity,
+        self.context_text,
+        self.criteria,
         }
     }
 
-    fn list_prompt(&self, parent_tag: &Tag) -> String {
-        if let Some(name) = &parent_tag.name {
-            indoc::formatdoc! {"
-                Build a newline seperated list of the most relevant classifications for the entity '{}'.
-                Use the child classifications of the '{name}' classification:
-                ```
-                {}
-                ```
-                Format:
-                \"
-                The applicable classifications are:
-                classification1
-                classification2
-                etc.
-                No additional classifications.
-                \"
+    fn list_potential_prompt(&self, _root_tag: &Tag) -> String {
+        indoc::formatdoc! {"
+        Entity:
+        {}
 
-                Or if none of the classifications apply:
-                \"
-                The applicable classifications are:
-                None of the above.
-                \"
-                ",
-                self.entity,
-                parent_tag.display_child_tags()
+        Context Text:
+        {}
+
+        Create a list of all classifications that apply to the entity. Say 'No additional classifications' when complete. List the best fitting classifications first.
+        Format: 'root::path::path::tag_name' for each classification.
+        ",
+
+        self.entity,
+        self.context_text,
+        }
+    }
+
+    fn list_additional_tags_prompt(&self, parent_tag: &Tag) -> String {
+        indoc::formatdoc! {"
+        '{}' Classification Child Categories:
+        {}
+        
+        Criteria:
+        {}
+
+        Entity:
+        {}
+
+        Context Text:
+        {}
+
+        Which, if any, child classifications of the '{}' classification category apply to the entity? Use the criteria to determine if the classification is applicable. The entity should directly relate to the classification or the context text should provide details that connect the entity to the classification. Return at least 1 or 'No additional classifications'.
+        Format: 'root::path::path::tag_name' for each classification.
+        ",
+        parent_tag.tag_name(),
+        parent_tag.display_all_tags_with_paths(),
+        parent_tag.format_tag_criteria(&self.entity),
+        self.entity,
+        self.context_text,
+        parent_tag.tag_name(),
+        }
+    }
+
+    fn evaluate_exact_tags_prompt(&self, potential_tags: &Vec<Tag>) -> String {
+        let mut potential_tag_names = String::new();
+        for tag in potential_tags {
+            potential_tag_names.push_str(&format!("'{}'\n", tag.tag_path()));
+        }
+        indoc::formatdoc! {"
+        Potential Classification Categories:
+        
+        {}
+        
+        What classifications should be applied to the entity, '{}'? What explicit detail in the context text, '{}', or specific aspect of the entity, directly connects it to those classifications? Evaulate each classification and determine if it or any of it's children meet the criteria.
+
+        Task Criteria:
+        
+        {}
+        ",
+        potential_tag_names,
+        self.entity,
+        self.context_text,
+        self.criteria,
+        }
+    }
+
+    fn deduplicate_tags(tags: Vec<Tag>) -> Vec<Tag> {
+        let mut deduplicated_tags: Vec<Tag> = Vec::new();
+        let mut seen_names: Vec<String> = Vec::new();
+        for tag in tags {
+            if seen_names.contains(&tag.tag_name()) {
+                continue;
             }
-        } else {
-            indoc::formatdoc! {"
-                Build a newline seperated list of the root classifications for the entity '{}'. Include root classifications whose child classifications apply.
-                Use the root classifications:
-                ```
-                {}
-                ```
-                Format:
-                \"
-                The applicable classifications are:
-                classification1
-                classification2
-                etc.
-                No additional classifications.
-                \"
-                
-                Or if none of the classifications apply:
-                \"
-                The applicable classifications are:
-                None of the above.
-                \"
-                ",
-                self.entity,
-                parent_tag.display_child_tags()
+            seen_names.push(tag.tag_name());
+            deduplicated_tags.push(tag);
+        }
+        deduplicated_tags
+    }
+
+    fn seperate_parent_and_exact_tags(
+        parent_tags: Vec<Tag>,
+        exact_tags: Vec<Tag>,
+    ) -> (Vec<Tag>, Vec<Tag>) {
+        let mut new_parent_tags: Vec<Tag> = Vec::new();
+        let mut new_exact_tags: Vec<Tag> = Vec::new();
+        for tag in parent_tags {
+            if tag.get_tags().len() > 0 {
+                new_parent_tags.push(tag);
+            } else {
+                new_exact_tags.push(tag);
             }
         }
+        for tag in exact_tags {
+            if tag.get_tags().len() > 0 {
+                new_parent_tags.push(tag);
+            } else {
+                new_exact_tags.push(tag);
+            }
+        }
+        (new_parent_tags, new_exact_tags)
     }
 }
 
@@ -267,22 +455,16 @@ mod test {
 
     fn criteria() -> String {
         indoc::formatdoc! {"
-            # Microbial Source Classification
-            We have a hierarchical classification system used to categorize, filter, and sort the where a microbial organism was collected from.
-            The 'entity' is the primary indicator of the collection source.
-            The 'context text' provides additional details like the environment, location, or other aspects of the collection source.
-            'Classifications' pertain to aspects of the collection source—what or where the microbial organism was collected from.
-            We are interested in the source of a microbial organism. Classifications should only apply to direct aspects of the source or any details specified in the context text. An entity can have multiple classifications.
+            Apply classification labels to the source of a microbial organism.
+            The entity is where or what the sample was collected from.
+            The context text provides additional details like the environment, location, or other aspects of the collection source.
             "}
     }
 
     #[tokio::test]
     #[ignore]
     pub async fn test_one() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp()
-            .mistral_nemo_instruct2407()
-            .init()
-            .await?;
+        let llm_client = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
 
         let subject = "Gryllus bimaculatus".to_owned();
         let context_text = "Edible insect Gryllus bimaculatus (Pet Feed Store)".to_owned();

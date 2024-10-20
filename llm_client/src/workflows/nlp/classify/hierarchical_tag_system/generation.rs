@@ -33,19 +33,19 @@ impl TagCollectionDescriber {
         Ok(())
     }
 
-    const DESCRIPTION_MIN_COUNT: u8 = 5;
-    const DESCRIPTION_MAX_COUNT: u8 = 7;
-    const SUMMARY_MIN_COUNT: u8 = 4;
+    const DESCRIPTION_MIN_COUNT: u8 = 3;
+    const DESCRIPTION_MAX_COUNT: u8 = 4;
+    const SUMMARY_MIN_COUNT: u8 = 3;
     const SUMMARY_MAX_COUNT: u8 = 5;
     fn describe_tag<'a>(
         &'a mut self,
         parent_tag: &'a mut Tag,
         level: u8,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<()>> + 'a>> {
-        let description_min_count = Self::DESCRIPTION_MIN_COUNT.saturating_sub(level).max(2);
-        let description_max_count = Self::DESCRIPTION_MAX_COUNT.saturating_sub(level).max(3);
-        let summary_min_count = Self::SUMMARY_MIN_COUNT.saturating_sub(level).max(1);
-        let summary_max_count = Self::SUMMARY_MAX_COUNT.saturating_sub(level).max(2);
+        let description_min_count = Self::DESCRIPTION_MIN_COUNT.saturating_sub(level).max(1);
+        let description_max_count = Self::DESCRIPTION_MAX_COUNT.saturating_sub(level).max(2);
+        let instructions_min_count = Self::SUMMARY_MIN_COUNT.saturating_sub(level).max(2);
+        let instructions_max_count = Self::SUMMARY_MAX_COUNT.saturating_sub(level).max(3);
         Box::pin(async move {
             if parent_tag.description.is_none() {
                 self.flow = CascadeFlow::new("TagDescription");
@@ -54,18 +54,24 @@ impl TagCollectionDescriber {
 
                 let round = self.flow.new_round(self.describe_prompt(&parent_tag));
                 round.open_round(&mut self.base_req)?;
-                let step_config = StepConfig {
-                    step_prefix: Some("The parent classification category ".to_owned()),
-                    grammar: SentencesPrimitive::default()
-                        .capitalize_first(false)
-                        .min_count(description_min_count)
-                        .max_count(description_max_count)
-                        .grammar(),
-                    ..StepConfig::default()
-                };
-                round.add_inference_step(&step_config);
-                round.run_next_step(&mut self.base_req).await?;
-                let description = round.last_step()?.display_step_outcome()?;
+                for child_tag in parent_tag.get_tag_names() {
+                    let step_config = StepConfig {
+                        step_prefix: Some(format!(
+                            "Immediate Child Classification: '{}' ",
+                            child_tag
+                        )),
+                        stop_word_done: "\n".to_owned(),
+                        grammar: SentencesPrimitive::default()
+                            .min_count(description_min_count)
+                            .max_count(description_max_count)
+                            .grammar(),
+                        ..StepConfig::default()
+                    };
+                    round.add_inference_step(&step_config);
+                    round.run_next_step(&mut self.base_req).await?;
+                    round.last_step()?.set_dynamic_suffix("\n");
+                }
+                let description = round.display_outcome()?;
                 round.close_round(&mut self.base_req)?;
 
                 let round = self.flow.new_round(self.instruction_prompt(&parent_tag));
@@ -73,8 +79,8 @@ impl TagCollectionDescriber {
                 let step_config = StepConfig {
                     step_prefix: Some("Classification criteria: ".to_owned()),
                     grammar: SentencesPrimitive::default()
-                        .min_count(summary_min_count)
-                        .max_count(summary_max_count)
+                        .min_count(instructions_min_count)
+                        .max_count(instructions_max_count)
                         .grammar(),
                     ..StepConfig::default()
                 };
@@ -86,14 +92,19 @@ impl TagCollectionDescriber {
                 let round = self.flow.new_round(self.is_applicable_prompt(&parent_tag));
                 round.open_round(&mut self.base_req)?;
                 let step_config = StepConfig {
-                    step_prefix: Some("This classification is applicable if: The ".to_owned()),
+                    step_prefix: Some(
+                        "This classification is applicable if: The entity ".to_owned(),
+                    ),
                     stop_word_done: "Therefore, it is ap".to_owned(),
                     grammar: TextPrimitive::default().text_token_length(300).grammar(),
                     ..StepConfig::default()
                 };
                 round.add_inference_step(&step_config);
                 round.run_next_step(&mut self.base_req).await?;
-                let is_applicable = round.last_step()?.display_step_outcome()?;
+                let is_applicable = round
+                    .last_step()?
+                    .primitive_result()
+                    .ok_or_else(|| anyhow::anyhow!("is_applicable was None"))?;
                 round.close_round(&mut self.base_req)?;
 
                 self.flow.close_cascade()?;
@@ -101,11 +112,13 @@ impl TagCollectionDescriber {
                     description,
                     instructions,
                     is_applicable,
+                    is_parent_tag: true,
                 });
             };
             for child_tag in parent_tag.tags.values_mut() {
                 if child_tag.tags.is_empty() {
-                    continue;
+                    child_tag.description = parent_tag.description.clone();
+                    child_tag.description.as_mut().unwrap().is_parent_tag = false;
                 }
                 self.describe_tag(child_tag, level + 1).await?;
             }
@@ -115,21 +128,24 @@ impl TagCollectionDescriber {
 
     fn describe_prompt(&self, tag: &Tag) -> String {
         indoc::formatdoc! {"
-        In a single paragraph, describe the parent classification category and it's relationship to it's child classifications.
+        Describe the parent classification category '{}' by examining its relationship to its immediate child classifications.
+
+        Parent Classification Category: '{}'
+
+        Immediate Child Classifications: {}
     
-        Parent Classification Category:
+        Using natural English, describe each immediate child classification in relation to the parent category, '{}'. For each immediate child classification, provide a single, newline seperated list item that explains its significance and how it relates to or specifies the parent category.
+
+        Nested classifications within immediate children:
 
         {}
-    
-        Child Classifications:
 
-        {}
-    
-        Use natural language to describe the following the relationship between the parent classification category, '{}', and the child classifications.
         ",
         tag.name.as_ref().unwrap(),
-        tag.display_all_tags(),
         tag.name.as_ref().unwrap(),
+        tag.display_child_tags_comma(),
+        tag.name.as_ref().unwrap(),
+        tag.display_all_tags_with_nested_paths(),
         }
     }
 
@@ -140,8 +156,8 @@ impl TagCollectionDescriber {
         Criteria:
 
         {}
-        
-        Reword the criteria so that it is specific instructions for applying the parent classification category, '{}' to an entity. If any of the child classifictions apply, then the parent classification category should be applied. The context text provides additional details to aspects of the entity.
+       
+        Reword the criteria into specific instructions for applying the parent classification category, '{}' to an 'entity'. Focus on the key characteristics or conditions that would make this classification appropriate. Distill the essence of the child classifications, expressing them as a general trait or set of traits that would lead to the application of the parent classification category. The 'context text' provides additional details to aspects of the 'entity'.
  
         This should be a brief, 1-3 sentence, criteria that will be used to determine if the parent classification category applies to the entity. Use natural language.
         ",
@@ -153,7 +169,7 @@ impl TagCollectionDescriber {
 
     fn is_applicable_prompt(&self, tag: &Tag) -> String {
         indoc::formatdoc! {"
-        Use the criteria to craft an 'is applicable if' sentence for the classification category '{}'. The statement should be a clear and concise sentence that explains the specific conditions under which this classification is applicable. Use natural language.
+        Use the criteria to craft an 'is applicable if' sentence for the classification category '{}'. The statement should be a clear and concise sentence that explains the specific conditions under which this classification is applicable. Generalize using English natural language.
     
         Criteria:
 
@@ -162,7 +178,7 @@ impl TagCollectionDescriber {
         Your statement should follow this format:
 
         ```
-        This classification is applicable if <specific conditions that meet the criteria>. Therefore, it is applicable.
+        This classification is applicable if <specific or general conditions that meet the criteria>. Therefore, it is applicable.
         ```
 
         ",
@@ -177,6 +193,7 @@ pub struct TagDescription {
     pub description: String,
     pub instructions: String,
     pub is_applicable: String,
+    pub is_parent_tag: bool,
 }
 
 #[cfg(test)]
@@ -216,7 +233,7 @@ mod tests {
         }
         // println!("{}", tags.display_all_tags());
         // println!("{}", tags.display_child_tags());
-        // println!("{}", tags.display_all_tags_with_paths());
+        // println!("{}", tags.display_all_tags_with_nested_paths());
         Ok(())
     }
 }

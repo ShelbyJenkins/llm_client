@@ -97,9 +97,9 @@ impl std::fmt::Display for ChatTemplatePrompt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f)?;
         writeln!(f, "ChatTemplatePrompt")?;
-        for message in self.messages.borrow().iter() {
-            writeln!(f, "{}", message)?;
-        }
+        // for message in self.messages.borrow().iter() {
+        //     writeln!(f, "{}", message)?;
+        // }
 
         match *self.built_prompt_string.borrow() {
             Some(ref prompt) => {
@@ -111,7 +111,7 @@ impl std::fmt::Display for ChatTemplatePrompt {
 
         match *self.total_prompt_tokens.borrow() {
             Some(ref prompt) => {
-                writeln!(f, "total_prompt_tokens:\n\n{}", prompt)?;
+                writeln!(f, "total_prompt_tokens: {}", prompt)?;
                 writeln!(f)?;
             }
             None => writeln!(f, "total_prompt_tokens: None")?,

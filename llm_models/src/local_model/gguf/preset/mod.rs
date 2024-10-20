@@ -203,6 +203,7 @@ macro_rules! generate_models {
 
 generate_models!(
     LlmPreset {
+        Llama3_1_70bNemotronInstruct => "llama/llama3_1_70b_nemotron_instruct",
         Llama3_1_8bInstruct => "llama/llama3_1_8b_instruct",
         Llama3_2_3bInstruct => "llama/llama3_2_3b_instruct",
         Llama3_2_1bInstruct => "llama/llama3_2_1b_instruct",
