@@ -290,8 +290,8 @@ mod tests {
             .load()?;
         let tags = tag_collection.get_root_tag()?;
 
-        println!("{}", tags.display_all_tags_with_paths());
-        println!("{}", tags.display_all_tags_with_nested_paths());
+        println!("{}", tags.display_immediate_child_descriptions("test"));
+
         assert!(tags.get_tag("host::arthropoda::tick").is_some());
         assert!(tags
             .get_tag("infection::patient::{blood-culture}")

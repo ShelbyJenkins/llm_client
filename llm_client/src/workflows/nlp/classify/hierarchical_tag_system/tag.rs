@@ -136,6 +136,49 @@ impl Tag {
         output
     }
 
+    pub fn get_immediate_child_paths(&self) -> Vec<String> {
+        let mut paths = Vec::new();
+        for tag in self.get_tags() {
+            paths.push(tag.tag_path());
+        }
+        paths
+    }
+
+    pub fn display_immediate_child_descriptions(&self, entity: &str) -> String {
+        let mut output = String::new();
+        for tag in self.get_tags() {
+            if !output.is_empty() {
+                output.push_str("\n");
+            }
+            // output.push_str(&tag.format_tag_criteria(entity));
+            if tag.display_child_tags().is_empty() {
+                output.push_str(&tag.format_tag_criteria(entity));
+            } else {
+                output.push_str(&indoc::formatdoc! {"
+                {}
+                '{}''s child tags:
+                {}
+                ",
+                tag.format_tag_criteria(entity),
+                tag.tag_name(),
+                tag.display_all_tags_with_nested_paths()
+                });
+            }
+        }
+        output
+    }
+
+    pub fn display_immediate_child_paths(&self) -> String {
+        let mut output = String::new();
+        for tag in self.get_tags() {
+            if !output.is_empty() {
+                output.push_str("\n");
+            }
+            output.push_str(&tag.tag_path());
+        }
+        output
+    }
+
     pub fn display_child_tags_comma(&self) -> String {
         let mut names = String::new();
         for child_tag in self.get_tags() {
@@ -155,21 +198,13 @@ impl Tag {
 
     pub fn format_tag_criteria(&self, entity: &str) -> String {
         if let Some(description) = &self.description {
-            if description.is_parent_tag {
-                indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {}",
-                self.tag_name(),
-                description.is_applicable.trim(),
-                }
-            } else {
-                indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {} Specifically, of type '{}'",
-                self.tag_name(),
-                description.is_applicable.trim(),
-                self.tag_name(),
-                }
+            indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {}",
+            self.tag_name(),
+            description.is_applicable.trim(),
             }
         } else {
             indoc::formatdoc! {"
-            Classification '{}' 
+            Classification '{}' is applicable if it applies to '{entity}'
             ",
             self.tag_name(),
             }
@@ -297,8 +332,7 @@ impl Tag {
 
 impl std::fmt::Display for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f)?;
-        crate::i_nln(f, format_args!("{}", self.display_all_tags_with_paths()))?;
+        crate::i_nln(f, format_args!("{}", self.tag_path()))?;
         Ok(())
     }
 }

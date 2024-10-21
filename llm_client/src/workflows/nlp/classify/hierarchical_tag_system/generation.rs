@@ -116,10 +116,10 @@ impl TagCollectionDescriber {
                 });
             };
             for child_tag in parent_tag.tags.values_mut() {
-                if child_tag.tags.is_empty() {
-                    child_tag.description = parent_tag.description.clone();
-                    child_tag.description.as_mut().unwrap().is_parent_tag = false;
-                }
+                // if child_tag.tags.is_empty() {
+                //     child_tag.description = parent_tag.description.clone();
+                //     child_tag.description.as_mut().unwrap().is_parent_tag = false;
+                // }
                 self.describe_tag(child_tag, level + 1).await?;
             }
             Ok(())
@@ -169,7 +169,7 @@ impl TagCollectionDescriber {
 
     fn is_applicable_prompt(&self, tag: &Tag) -> String {
         indoc::formatdoc! {"
-        Use the criteria to craft an 'is applicable if' sentence for the classification category '{}'. The statement should be a clear and concise sentence that explains the specific conditions under which this classification is applicable. Generalize using English natural language.
+        Use the criteria to craft an 'is applicable if' sentence for the classification category '{}'. The statement should be a clear and concise sentence that explains the specific conditions under which this classification is applicable. Generalize using English natural language. No yapping. Be as brief as possible.
     
         Criteria:
 
@@ -221,7 +221,7 @@ mod tests {
             .tag_path_seperator(":")
             .load()?;
         let llm_client = crate::LlmClient::llama_cpp()
-            .mistral_nemo_instruct2407()
+            .llama3_1_70b_nemotron_instruct()
             .init()
             .await?;
         tag_collection
