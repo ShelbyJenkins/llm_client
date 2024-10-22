@@ -11,6 +11,10 @@
         "q2": "Phi-3-mini-4k-instruct-Q2_K.gguf",
         "q1": "Phi-3-mini-4k-instruct-IQ1_M.gguf"
     },
-    "tokenizer_json_path": "phi/tokenizer.json",
-    "tokenizer_config_json_path": "phi/phi3_mini4k_instruct/tokenizer_config.json"
+    "tokenizer_preset_data": {
+        "local_path": "phi/tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "local_path": "phi/phi3_mini4k_instruct/tokenizer_config.json"
+    }
 }

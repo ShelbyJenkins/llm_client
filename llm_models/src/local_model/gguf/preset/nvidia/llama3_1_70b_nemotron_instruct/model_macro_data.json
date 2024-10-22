@@ -1,0 +1,19 @@
+{
+    "model_id": "Llama-3.1-Nemotron-70B-Instruct",
+    "gguf_repo_id": "bartowski/Llama-3.1-Nemotron-70B-Instruct-HF-GGUF",
+    "number_of_parameters": 70,
+    "f_name_for_q_bits": {
+        "q5": "Llama-3.1-Nemotron-70B-Instruct-HF-Q5_K_S.gguf",
+        "q4": "Llama-3.1-Nemotron-70B-Instruct-HF-Q4_K_M.gguf",
+        "q3": "Llama-3.1-Nemotron-70B-Instruct-HF-Q3_K_M.gguf",
+        "q2": "Llama-3.1-Nemotron-70B-Instruct-HF-Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+        "hf_filename": "tokenizer.json"
+    }
+}

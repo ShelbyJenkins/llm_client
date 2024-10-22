@@ -36,7 +36,7 @@ pub struct AttentionMetadata {
 
 #[derive(Clone)]
 pub struct RopeMetadata {
-    pub dimension_count: u64,
+    pub dimension_count: Option<u64>,
     pub freq_base: Option<f32>,
     pub scale: Option<f32>,
     pub scaling: RopeScalingMetadata,
@@ -64,11 +64,6 @@ impl LlamaMetadata {
         gguf: &crate::local_model::gguf::tools::gguf_file::GgufFile,
     ) -> crate::Result<Self> {
         let arch: String = gguf.get_value("general.architecture")?;
-        let arch = if arch == "qwen2" {
-            "llama".to_string()
-        } else {
-            arch
-        };
         let path_prefixes: &[&str] = &[&arch];
         Ok(Self {
             context_length: gguf

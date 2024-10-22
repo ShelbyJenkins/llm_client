@@ -53,12 +53,12 @@ impl LlmTokenizer {
         })
     }
 
-    pub fn new_from_tokenizer_json(tokenizer_json_path: &PathBuf) -> Result<Self> {
-        let tokenizer = HFTokenizer::from_file(tokenizer_json_path).map_err(|e| anyhow!(e))?;
+    pub fn new_from_tokenizer_json(local_path: &PathBuf) -> Result<Self> {
+        let tokenizer = HFTokenizer::from_file(local_path).map_err(|e| anyhow!(e))?;
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
-            tokenizer_path: Some(tokenizer_json_path.clone()),
+            tokenizer_path: Some(local_path.clone()),
             with_special_tokens: false,
             white_space_token_id,
         })
@@ -70,8 +70,8 @@ impl LlmTokenizer {
             *api.hf_token_mut() = Some(hf_token.to_owned());
         }
 
-        let tokenizer_json_path = api.load_file("tokenizer.json", repo_id)?;
-        LlmTokenizer::new_from_tokenizer_json(&tokenizer_json_path)
+        let local_path = api.load_file("tokenizer.json", repo_id)?;
+        LlmTokenizer::new_from_tokenizer_json(&local_path)
     }
 
     pub fn tokenize<T: AsRef<str>>(&self, str: T) -> Vec<u32> {

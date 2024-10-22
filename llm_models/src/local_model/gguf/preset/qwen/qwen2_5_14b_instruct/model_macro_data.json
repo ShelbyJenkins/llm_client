@@ -1,0 +1,21 @@
+{
+    "model_id": "Qwen2.5-14B-Instruct",
+    "gguf_repo_id": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "number_of_parameters": 14,
+    "f_name_for_q_bits": {
+        "q8": "Qwen2.5-14B-Instruct-Q8_0.gguf",
+        "q6": "Qwen2.5-14B-Instruct-Q6_K_M.gguf",
+        "q5": "Qwen2.5-14B-Instruct-Q5_K_M.gguf",
+        "q4": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+        "q3": "Qwen2.5-14B-Instruct-Q3_K_M.gguf",
+        "q2": "Qwen2.5-14B-Instruct-Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "Qwen/Qwen2.5-14B-Instruct",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "Qwen/Qwen2.5-14B-Instruct",
+        "hf_filename": "tokenizer_config.json"
+    }
+}

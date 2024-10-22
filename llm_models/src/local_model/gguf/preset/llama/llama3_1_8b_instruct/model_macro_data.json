@@ -11,6 +11,10 @@
         "q2": "Meta-Llama-3.1-8B-Instruct-Q2_K.gguf"
     },
     "base_generation_prefix": "<|start_header_id|>assistant<|end_header_id|>\n\n",
-    "tokenizer_json_path": "llama/llama3_1_8b_instruct/tokenizer.json",
-    "tokenizer_config_json_path": "llama/llama3_1_8b_instruct/tokenizer_config.json"
+    "tokenizer_preset_data": {
+        "local_path": "llama/llama3_1_8b_instruct/tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "local_path": "llama/llama3_1_8b_instruct/tokenizer_config.json"
+    }
 }

@@ -9,7 +9,7 @@ fn test_chat() -> crate::Result<()> {
     let model = LocalLlmModel::default();
     let prompt = LlmPrompt::new_chat_template_prompt(
         &model.chat_template.chat_template,
-        &model.chat_template.bos_token,
+        model.chat_template.bos_token.as_deref(),
         &model.chat_template.eos_token,
         model.chat_template.unk_token.as_deref(),
         model.chat_template.base_generation_prefix.as_deref(),
@@ -96,7 +96,7 @@ fn test_chat_templates() -> crate::Result<()> {
         let res = apply_chat_template(
             &messages,
             &chat_template.chat_template,
-            &chat_template.bos_token,
+            chat_template.bos_token.as_deref(),
             &chat_template.eos_token,
             chat_template.unk_token.as_deref(),
         );

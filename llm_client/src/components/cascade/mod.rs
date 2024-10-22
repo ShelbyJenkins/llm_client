@@ -58,6 +58,13 @@ impl CascadeFlow {
         }
     }
 
+    pub fn drop_last_round(&mut self) -> crate::Result<()> {
+        match self.rounds.pop() {
+            Some(..) => Ok(()),
+            None => crate::bail!("No rounds in cascade"),
+        }
+    }
+
     pub fn open_cascade(&mut self) {
         self.start_time = std::time::Instant::now();
     }

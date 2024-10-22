@@ -1,0 +1,21 @@
+{
+    "model_id": "SuperNova-Medius",
+    "gguf_repo_id": "arcee-ai/SuperNova-Medius-GGUF",
+    "number_of_parameters": 13,
+    "f_name_for_q_bits": {
+        "q8": "SuperNova-Medius-Q8_0.gguf",
+        "q6": "SuperNova-Medius-Q6_K.gguf",
+        "q5": "SuperNova-Medius-Q5_K_M.gguf",
+        "q4": "SuperNova-Medius-Q4_K_M.gguf",
+        "q3": "SuperNova-Medius-Q3_K_M.gguf",
+        "q2": "SuperNova-Medius-Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "arcee-ai/SuperNova-Medius",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "arcee-ai/SuperNova-Medius",
+        "hf_filename": "tokenizer_config.json"
+    }
+}

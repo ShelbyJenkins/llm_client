@@ -31,6 +31,7 @@ impl Default for GgufPresetLoader {
 
 impl GgufPresetLoader {
     pub fn load(&mut self, hf_loader: &HuggingFaceLoader) -> crate::Result<LocalLlmModel> {
+        println!("{}", self.llm_preset.model_id());
         let file_name = self.select_quant()?;
 
         let local_model_filename =
@@ -39,16 +40,18 @@ impl GgufPresetLoader {
         let local_model_path = HuggingFaceLoader::canonicalize_local_path(local_model_filename)?;
 
         let model_metadata = LocalLlmMetadata::from_gguf_path(&local_model_path)?;
-
         Ok(LocalLlmModel {
             model_base: crate::LlmModelBase {
                 model_id: self.llm_preset.model_id(),
                 model_ctx_size: model_metadata.context_length(),
                 inference_ctx_size: model_metadata.context_length(),
-                tokenizer: load_tokenizer(&self.llm_preset.tokenizer_path(), &model_metadata)?,
+                tokenizer: load_tokenizer(
+                    &Some(self.llm_preset.load_tokenizer(hf_loader)?),
+                    &model_metadata,
+                )?,
             },
             chat_template: load_chat_template(
-                &self.llm_preset.tokenizer_config_path(),
+                &Some(self.llm_preset.load_tokenizer_config(hf_loader)?),
                 &model_metadata,
             )?,
             model_metadata,

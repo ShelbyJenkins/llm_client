@@ -110,12 +110,12 @@ impl InferenceStep {
             &Some(self.step_config.stop_word_done.clone()),
             &self.step_config.stop_word_no_result,
         );
+        // Request grammar
         if let Some(stop_word_no_result) = &self.step_config.stop_word_no_result {
             self.step_config
                 .grammar
                 .set_stop_word_no_result(stop_word_no_result);
         }
-        // Request grammar
         self.step_config
             .grammar
             .set_stop_word_done(&self.step_config.stop_word_done);

@@ -6,7 +6,30 @@ use llm_models::local_model::{
 #[test]
 fn load_from_vram() {
     let model = GgufLoader::default()
+        .granite3_2b_instruct()
+        .preset_with_available_vram_gb(46)
+        .load()
+        .unwrap();
+
+    println!("{:#?}", model);
+
+    let model = GgufLoader::default()
+        .qwen2_5_3b_instruct()
+        .preset_with_available_vram_gb(46)
+        .load()
+        .unwrap();
+
+    println!("{:#?}", model);
+    let model = GgufLoader::default()
         .super_nova_medius13b()
+        .preset_with_available_vram_gb(46)
+        .load()
+        .unwrap();
+
+    println!("{:#?}", model);
+
+    let model = GgufLoader::default()
+        .mistral_nemo_minitron8b_instruct()
         .preset_with_available_vram_gb(46)
         .load()
         .unwrap();
@@ -76,6 +99,8 @@ fn load_from_q_level() {
 #[test]
 fn models_macros_test() {
     let variants = vec![
+        LlmPreset::Llama3_1_70bNemotronInstruct,
+        LlmPreset::MistralNemoMinitron8bInstruct,
         LlmPreset::Llama3_1_8bInstruct,
         LlmPreset::Mistral7bInstructV0_3,
         LlmPreset::Mixtral8x7bInstructV0_1,
@@ -84,6 +109,15 @@ fn models_macros_test() {
         LlmPreset::Phi3Medium4kInstruct,
         LlmPreset::Phi3Mini4kInstruct,
         LlmPreset::Phi3_5MiniInstruct,
+        LlmPreset::Llama3_2_1bInstruct,
+        LlmPreset::Llama3_2_3bInstruct,
+        LlmPreset::SuperNovaMedius13b,
+        LlmPreset::Granite3_2bInstruct,
+        LlmPreset::Granite3_8bInstruct,
+        LlmPreset::Qwen2_5_32bInstruct,
+        LlmPreset::Qwen2_5_14bInstruct,
+        LlmPreset::Qwen2_5_7bInstruct,
+        LlmPreset::Qwen2_5_3bInstruct,
     ];
     for variant in variants {
         println!("{:#?}", variant.model_id());
@@ -93,5 +127,6 @@ fn models_macros_test() {
         for i in 1..=8 {
             println!("{:#?}", variant.f_name_for_q_bits(i));
         }
+        println!("{:#?}", variant.get_data());
     }
 }

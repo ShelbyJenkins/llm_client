@@ -1,6 +1,7 @@
 use super::{PromptMessage, TextConcatenator};
 use crate::PromptTokenizer;
-use minijinja::{context, Environment, ErrorKind};
+use minijinja::value::{from_args, Value, ValueKind};
+use minijinja::{context, Environment, Error, ErrorKind};
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -13,7 +14,7 @@ pub struct ChatTemplatePrompt {
     pub generation_prefix: std::cell::RefCell<Option<String>>,
     pub tokenizer: std::sync::Arc<dyn PromptTokenizer>,
     chat_template: String,
-    bos_token: String,
+    bos_token: Option<String>,
     eos_token: String,
     unk_token: Option<String>,
     base_generation_prefix: Option<String>,
@@ -22,7 +23,7 @@ pub struct ChatTemplatePrompt {
 impl ChatTemplatePrompt {
     pub fn new(
         chat_template: &str,
-        bos_token: &str,
+        bos_token: Option<&str>,
         eos_token: &str,
         unk_token: Option<&str>,
         base_generation_prefix: Option<&str>,
@@ -37,7 +38,7 @@ impl ChatTemplatePrompt {
             generation_prefix: std::cell::RefCell::new(None),
             tokenizer,
             chat_template: chat_template.to_owned(),
-            bos_token: bos_token.to_owned(),
+            bos_token: bos_token.map(|s| s.to_owned()),
             eos_token: eos_token.to_owned(),
             unk_token: unk_token.map(|s| s.to_owned()),
             base_generation_prefix: base_generation_prefix.map(|s| s.to_owned()),
@@ -67,7 +68,7 @@ impl ChatTemplatePrompt {
         let mut built_prompt_string = apply_chat_template(
             &prompt_messages,
             &self.chat_template,
-            &self.bos_token,
+            self.bos_token.as_deref(),
             &self.eos_token,
             self.unk_token.as_deref(),
         );
@@ -134,7 +135,7 @@ impl std::fmt::Display for ChatTemplatePrompt {
 pub fn apply_chat_template(
     messages: &Vec<HashMap<String, String>>,
     chat_template: &str,
-    bos_token: &str,
+    bos_token: Option<&str>,
     eos_token: &str,
     unk_token: Option<&str>,
 ) -> String {
@@ -145,11 +146,27 @@ pub fn apply_chat_template(
         .expect("Failed to add template");
     env.add_function("raise_exception", raise_exception);
 
+    env.set_unknown_method_callback(|state, value, method, args| match (value.kind(), method) {
+        (ValueKind::String, "strip") => {
+            let _: () = from_args(args)?;
+            Ok(Value::from(value.as_str().unwrap_or("").trim()))
+        }
+        (ValueKind::Map, "items") => {
+            let _: () = from_args(args)?;
+            state.apply_filter("items", &[value.clone()])
+        }
+        _ => Err(Error::new(
+            ErrorKind::UnknownMethod,
+            format!("object has no method named {}", method),
+        )),
+    });
+
     let tmpl = env
         .get_template("chat_template")
         .expect("Failed to get template");
 
     let unk_token = unk_token.unwrap_or("");
+    let bos_token = bos_token.unwrap_or("");
 
     tmpl.render(context! {
         messages => messages,

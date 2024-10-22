@@ -61,7 +61,7 @@ impl LlmBackend {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(b) => LlmPrompt::new_chat_template_prompt(
                 &b.model.chat_template.chat_template,
-                &b.model.chat_template.bos_token,
+                b.model.chat_template.bos_token.as_deref(),
                 &b.model.chat_template.eos_token,
                 b.model.chat_template.unk_token.as_deref(),
                 b.model.chat_template.base_generation_prefix.as_deref(),
@@ -174,10 +174,10 @@ impl LlmBackend {
         Ok(())
     }
 
-    pub fn bos_token(&self) -> &str {
+    pub fn bos_token(&self) -> Option<&str> {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
-            LlmBackend::LlamaCpp(b) => &b.model.chat_template.bos_token,
+            LlmBackend::LlamaCpp(b) => b.model.chat_template.bos_token.as_deref(),
             #[cfg(feature = "mistral_rs_backend")]
             LlmBackend::MistralRs(b) => &b.model.chat_template.bos_token,
             _ => unimplemented!("Chat template not supported for this backend"),

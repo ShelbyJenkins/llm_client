@@ -1,0 +1,21 @@
+{
+    "model_id": "Mistral-NeMo-Minitron-8B-Instruct",
+    "gguf_repo_id": "bartowski/Mistral-NeMo-Minitron-8B-Instruct-GGUF",
+    "number_of_parameters": 8,
+    "f_name_for_q_bits": {
+        "q8": "Mistral-NeMo-Minitron-8B-Instruct-Q8_0.gguf",
+        "q6": "Mistral-NeMo-Minitron-8B-Instruct-Q6_K.gguf",
+        "q5": "Mistral-NeMo-Minitron-8B-Instruct-Q5_K_M.gguf",
+        "q4": "Mistral-NeMo-Minitron-8B-Instruct-Q4_K_M.gguf",
+        "q3": "Mistral-NeMo-Minitron-8B-Instruct-Q3_K_M.gguf",
+        "q2": "Mistral-NeMo-Minitron-8B-Instruct-Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "nvidia/Mistral-NeMo-Minitron-8B-Instruct",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "nvidia/Mistral-NeMo-Minitron-8B-Instruct",
+        "hf_filename": "tokenizer.json"
+    }
+}

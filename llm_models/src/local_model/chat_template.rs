@@ -7,15 +7,17 @@ use serde::Deserialize;
 #[derive(Deserialize, Clone, PartialEq)]
 pub struct LlmChatTemplate {
     pub chat_template: String,
-    pub bos_token: String,
+    pub bos_token: Option<String>,
     pub eos_token: String,
     pub unk_token: Option<String>,
     pub base_generation_prefix: Option<String>,
 }
 
 impl LlmChatTemplate {
-    pub fn from_local_path(tokenizer_config_json_path: &std::path::PathBuf) -> crate::Result<Self> {
-        let file = std::fs::File::open(tokenizer_config_json_path)?;
+    pub fn from_local_path(
+        tokenizer_config_local_path: &std::path::PathBuf,
+    ) -> crate::Result<Self> {
+        let file = std::fs::File::open(tokenizer_config_local_path)?;
         let reader = std::io::BufReader::new(file);
         let mut chat_template: LlmChatTemplate = serde_json::from_reader(reader)?;
         chat_template.set_generation_prefix()?;
@@ -59,7 +61,7 @@ impl LlmChatTemplate {
 
         let mut chat_template = LlmChatTemplate {
             chat_template: chat_template.to_owned(),
-            bos_token,
+            bos_token: Some(bos_token),
             eos_token,
             unk_token,
             base_generation_prefix: None,
@@ -84,7 +86,7 @@ impl LlmChatTemplate {
         let message_1 = llm_prompt::apply_chat_template(
             &vec![user_message_1.clone()],
             &self.chat_template,
-            &self.bos_token,
+            self.bos_token.as_deref(),
             &self.eos_token,
             self.unk_token.as_deref(),
         );
@@ -94,7 +96,7 @@ impl LlmChatTemplate {
         let message_2 = llm_prompt::apply_chat_template(
             &vec![user_message_1, assistant_message_1],
             &self.chat_template,
-            &self.bos_token,
+            self.bos_token.as_deref(),
             &self.eos_token,
             self.unk_token.as_deref(),
         );

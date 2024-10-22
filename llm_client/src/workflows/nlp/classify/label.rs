@@ -1,6 +1,9 @@
 use crate::components::cascade::step::StepConfig;
 use crate::components::cascade::CascadeFlow;
-use crate::components::grammar::{CustomGrammar, Grammar, NoneGrammar};
+use crate::components::grammar::text::text_list::TextListGrammar;
+use crate::components::grammar::{
+    CustomGrammar, ExactStringGrammar, Grammar, NoneGrammar, TextGrammar,
+};
 
 use llm_interface::requests::completion::CompletionRequest;
 
@@ -73,31 +76,74 @@ impl LabelEntity {
         Box::pin(async move {
             let mut exact_tags: Vec<Tag> = Vec::new();
             let mut potential_parent_tags: Vec<Tag> = Vec::new();
+            let prompt = if parent_tag.name.is_none() {
+                indoc::formatdoc! {"
+                List which aspects, characteristics, and details of the entity '{}' described in '{}' apply to the root categories.
+
+                Root Classification Categories:
+                {}
+                
+                Criteria:
+                {}
+
+                Discuss which root classification categories are relevant to the entity '{}' in a single paragraph. State which information from '{}' meets the classifications criteria.
+                ",
+                self.entity,
+                self.context_text,
+                parent_tag.display_immediate_child_descriptions(&self.entity),
+                self.criteria,
+                self.entity,
+                self.context_text,
+                }
+            } else {
+                indoc::formatdoc! {"
+                List which aspects, characteristics, and details of the entity '{}' described in '{}' apply to these child categories. Are there applicable categories?
+
+                '{}' Child Classification Categories:
+                {}
+
+                Criteria:
+                {}
+                
+                Discuss which, if any, categories are relevant to the entity '{}' in a single sentence. State which information from '{}' meets the classifications criteria. If after discussing the options, no categories apply, say 'There are no applicable categories.'.
+                ",
+                self.entity,
+                self.context_text,
+                parent_tag.tag_name(),
+                parent_tag.display_immediate_child_descriptions(&self.entity),
+                self.criteria,
+                self.entity,
+                self.context_text,
+                }
+            };
+
+            self.flow.new_round(prompt);
+            self.flow.last_round()?.open_round(&mut self.base_req)?;
+            let step_config = StepConfig {
+                grammar: TextListGrammar::default().wrap(),
+                ..StepConfig::default()
+            };
+            self.flow.last_round()?.add_inference_step(&step_config);
+            self.flow
+                .last_round()?
+                .run_next_step(&mut self.base_req)
+                .await?;
+            self.flow.last_round()?.close_round(&mut self.base_req)?;
+            match self.flow.last_round()?.last_step()?.primitive_result() {
+                Some(_) => {}
+                None => {
+                    return Ok(exact_tags);
+                }
+            };
+            // List
             let prompt = indoc::formatdoc! {"
-            Criteria:
-            {}
-            
             Classification Categories:
             {}
-            
-            Entity:
-            {}
-    
-            Context Text:
-            {}
-    
-            Given the criteria, which classification categories apply to the entity described in the context text? Discuss why each classification may apply.
 
-            1.  Classification '<category>' <reason why the category applies> 
-    
-            2.  Classification '<category>' <reason why the category applies> 
-    
-            3.  No additional classifications
+            Now, list the classification labels that apply to '{}'. When complete say, 'No additional classifications.' List all applicable categories.
             ",
-            self.criteria,
-            parent_tag.display_immediate_child_descriptions(&self.entity),
+            parent_tag.display_child_tags(),
             self.entity,
-            self.context_text,
             };
 
             self.flow.new_round(prompt);
@@ -105,11 +151,15 @@ impl LabelEntity {
 
             let mut immediate_child_tags = parent_tag.get_tags();
             for i in 1..parent_tag.tags.len() {
+                let stop_word = if i == 1 {
+                    None
+                } else {
+                    Some("No additional classifications".to_string())
+                };
                 let step_config = StepConfig {
-                    step_prefix: Some(format!("{i}. ",)),
-                    stop_word_done: format!("Classification",),
-                    stop_word_no_result: Some("No additional classifications".to_owned()),
-                    grammar: NoneGrammar::default().wrap(),
+                    stop_word_no_result: stop_word.clone(),
+                    stop_word_done: "\n".to_owned(),
+                    grammar: Self::list_grammar(&immediate_child_tags, stop_word),
                     ..StepConfig::default()
                 };
                 self.flow.last_round()?.add_inference_step(&step_config);
@@ -118,86 +168,47 @@ impl LabelEntity {
                     .run_next_step(&mut self.base_req)
                     .await?;
                 match self.flow.last_round()?.last_step()?.primitive_result() {
-                    Some(_) => (),
-                    None => {
-                        break;
-                    }
-                };
-                self.flow
-                    .last_round()?
-                    .last_step()?
-                    .set_dynamic_suffix("Classification");
-
-                let step_config = StepConfig {
-                    step_prefix: Some(format!("'",)),
-                    stop_word_done: format!("'",),
-                    grammar: Self::list_grammar(&immediate_child_tags),
-                    ..StepConfig::default()
-                };
-                self.flow.last_round()?.add_inference_step(&step_config);
-                self.flow
-                    .last_round()?
-                    .run_next_step(&mut self.base_req)
-                    .await?;
-                self.flow.last_round()?.last_step()?.set_dynamic_suffix("'");
-                let tag_name = match self.flow.last_round()?.last_step()?.primitive_result() {
-                    Some(result_string) => result_string,
-                    None => {
-                        break;
-                    }
-                };
-
-                let step_config = StepConfig {
-                    step_prefix: Some(format!("is",)),
-                    stop_word_no_result: Some("not applicable".to_owned()),
-                    stop_word_done: format!("\n",),
-                    grammar: NoneGrammar::default().wrap(),
-                    ..StepConfig::default()
-                };
-                self.flow.last_round()?.add_inference_step(&step_config);
-                self.flow
-                    .last_round()?
-                    .run_next_step(&mut self.base_req)
-                    .await?;
-
-                match self.flow.last_round()?.last_step()?.primitive_result() {
-                    Some(_) => {
-                        if let Some(tag) = parent_tag.get_tag(&tag_name) {
+                    Some(result_string) => {
+                        immediate_child_tags.retain(|x| x.tag_name() != result_string);
+                        if let Some(tag) = parent_tag.get_tag(&result_string) {
                             if tag.tags.is_empty() {
                                 exact_tags.push(tag.clone());
                             } else {
                                 potential_parent_tags.push(tag.clone());
                             }
-                            immediate_child_tags.retain(|x| x.tag_name() != tag.tag_name());
+                            self.flow
+                                .last_round()?
+                                .last_step()?
+                                .set_dynamic_suffix("\n");
                         } else {
-                            println!("{tag_name} not found")
+                            crate::bail!("Tag not found: {}", result_string);
                         }
-                        self.flow
-                            .last_round()?
-                            .last_step()?
-                            .set_dynamic_suffix("\n\n");
                     }
                     None => {
-                        self.flow
-                            .last_round()?
-                            .last_step()?
-                            .set_dynamic_suffix(".\n\n");
                         break;
                     }
                 };
             }
             self.flow.last_round()?.close_round(&mut self.base_req)?;
-            self.flow.rounds.clear();
-            self.base_req.reset_completion_request();
             for tag in potential_parent_tags {
+                let current_prompt = self.base_req.prompt.clone();
+                self.base_req.reset_completion_request();
                 let res = self.list_initial(&tag).await?;
+                for tag in &res {
+                    crate::info!("exact_tag: {}", tag.tag_path());
+                }
                 exact_tags.extend(res);
+                self.base_req.prompt = current_prompt;
             }
+
+            self.flow.drop_last_round()?;
+            self.base_req.reset_completion_request();
             Ok(exact_tags)
+            // Ok(potential_parent_tags)
         })
     }
 
-    fn list_grammar(child_tags: &Vec<&Tag>) -> Grammar {
+    fn list_grammar(child_tags: &Vec<&Tag>, stop_word: Option<String>) -> Grammar {
         let paths = child_tags
             .iter()
             .map(|tag| tag.tag_name())
@@ -211,9 +222,13 @@ impl LabelEntity {
             }
             range.push_str(&format!("\"{path}\""));
         }
-        range.push_str(&format!(" )"));
+        if let Some(stop_word) = stop_word {
+            range.push_str(&format!(" | \"{stop_word}\" )"));
+        } else {
+            range.push_str(" )");
+        }
         let list_grammar_string = indoc::formatdoc! {"
-        root ::= {range} \"'\"
+        root ::= {range} \"\n\"
         ",
         };
         CustomGrammar::default()
@@ -247,19 +262,19 @@ mod test {
 
     fn criteria() -> String {
         indoc::formatdoc! {"
-            Label the entity with classification categories.
-            The entity is where or what the sample was collected from.
-            The context text provides additional details like the environment, location, or other aspects of the collection source.
+            We have a classification system used to categorize, filter, and sort by where a microbial organism sample was collected from.
+            In the text, will be an 'entity'. The 'entity' is the collection source—the place or thing where the sample was collected from. Additional details like the environment, location, or other aspects of the collection source may also be mentioned.
+
+            A classification should apply to specifically mentioned details and direct aspects of the source 'entity'.   
+            
+            Apply classificaiton labels to the source of the sample.
             "}
     }
 
     #[tokio::test]
     #[ignore]
     pub async fn test_one() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp()
-            .llama3_1_70b_nemotron_instruct()
-            .init()
-            .await?;
+        let llm_client = LlmClient::llama_cpp().qwen2_5_14b_instruct().init().await?;
 
         let subject = "Gryllus bimaculatus".to_owned();
         let context_text = "Edible insect Gryllus bimaculatus (Pet Feed Store)".to_owned();
@@ -277,7 +292,7 @@ mod test {
             tag_collection.get_root_tag()?,
         );
         let entity = req.run().await?;
-        // println!("{}", entity.flow);
+        println!("{}", entity.flow);
         println!("{}", entity);
 
         Ok(())
@@ -344,10 +359,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_cases() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp()
-            .mistral_nemo_instruct2407()
-            .init()
-            .await?;
+        let llm_client = LlmClient::llama_cpp().phi3_5_mini_instruct().init().await?;
         let tag_collection = TagCollection::default()
             .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")
             .tag_path_seperator(":")

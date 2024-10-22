@@ -1,0 +1,21 @@
+{
+    "model_id": "granite-3.0-8b-instruct",
+    "gguf_repo_id": "bartowski/granite-3.0-8b-instruct-GGUF",
+    "number_of_parameters": 8,
+    "f_name_for_q_bits": {
+        "q8": "granite-3.0-8b-instruct-Q8_0.gguf",
+        "q6": "granite-3.0-8b-instruct-Q6_K_M.gguf",
+        "q5": "granite-3.0-8b-instruct-Q5_K_M.gguf",
+        "q4": "granite-3.0-8b-instruct-Q4_K_M.gguf",
+        "q3": "granite-3.0-8b-instruct-Q3_K_M.gguf",
+        "q2": "granite-3.0-8b-instruct-Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "ibm-granite/granite-3.0-8b-base",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "ibm-granite/granite-3.0-8b-instruct",
+        "hf_filename": "tokenizer_config.json"
+    }
+}

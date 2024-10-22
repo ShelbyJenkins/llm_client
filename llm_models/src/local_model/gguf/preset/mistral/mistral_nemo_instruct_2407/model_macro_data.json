@@ -10,6 +10,10 @@
         "q3": "Mistral-Nemo-Instruct-2407-Q3_K_M.gguf",
         "q2": "Mistral-Nemo-Instruct-2407-Q2_K.gguf"
     },
-    "tokenizer_json_path": "mistral/mistral_nemo_instruct_2407/tokenizer.json",
-    "tokenizer_config_json_path": "mistral/mistral_nemo_instruct_2407/tokenizer_config.json"
+    "tokenizer_preset_data": {
+        "local_path": "mistral/mistral_nemo_instruct_2407/tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "local_path": "mistral/mistral_nemo_instruct_2407/tokenizer_config.json"
+    }
 }

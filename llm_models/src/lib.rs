@@ -7,6 +7,9 @@ pub mod tokenizer;
 #[allow(unused_imports)]
 pub(crate) use anyhow::{anyhow, bail, Error, Result};
 
+#[allow(unused_imports)]
+pub(crate) use tracing::{debug, error, info, span, trace, warn, Level};
+
 #[derive(Clone)]
 pub struct LlmModelBase {
     pub model_id: String,

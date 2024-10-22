@@ -17,7 +17,7 @@ pub enum LlmPrompt {
 impl LlmPrompt {
     pub fn new_chat_template_prompt(
         chat_template: &str,
-        bos_token: &str,
+        bos_token: Option<&str>,
         eos_token: &str,
         unk_token: Option<&str>,
         base_generation_prefix: Option<&str>,

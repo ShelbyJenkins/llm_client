@@ -8,9 +8,18 @@
 //! 7. Add a test to llm_client/llm_models/tests/it/preset.rs for the new model
 //! 8. Add a test_base_generation_prefix test case to llm_client/llm_models/tests/it/metadata.rs for the new model
 use crate::local_model::{
-    gguf::loaders::preset::GgufPresetLoader, metadata::config_json::ConfigJson, GgufLoader,
-    LocalLlmModel,
+    gguf::loaders::preset::GgufPresetLoader, hf_loader::HuggingFaceLoader,
+    metadata::config_json::ConfigJson, GgufLoader, LocalLlmModel,
 };
+
+fn presets_path() -> std::path::PathBuf {
+    let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
+    std::path::PathBuf::from(cargo_manifest_dir)
+        .join("src")
+        .join("local_model")
+        .join("gguf")
+        .join("preset")
+}
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct LlmPresetData {
@@ -18,8 +27,61 @@ pub struct LlmPresetData {
     pub gguf_repo_id: String,
     pub number_of_parameters: u64,
     pub f_name_for_q_bits: QuantizationConfig,
-    pub tokenizer_json_path: Option<String>,
-    pub tokenizer_config_json_path: Option<String>,
+    pub tokenizer_preset_data: TokenizerPresetData,
+    pub tokenizer_config_preset_data: TokenizerConfigPresetData,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct TokenizerPresetData {
+    pub local_path: Option<String>,
+    pub hf_repo: Option<String>,
+    pub hf_filename: Option<String>,
+}
+impl TokenizerPresetData {
+    pub fn load(&self, hf_loader: &HuggingFaceLoader) -> crate::Result<std::path::PathBuf> {
+        if let Some(local_path) = self.local_path.clone() {
+            let path = presets_path().join(local_path);
+            match std::fs::File::open(&path) {
+                Ok(_) => Ok(path),
+                Err(_) => crate::bail!("Failed to open tokenizer.json at {}", path.display()),
+            }
+        } else {
+            if let (Some(hf_repo), Some(hf_filename)) =
+                (self.hf_repo.clone(), self.hf_filename.clone())
+            {
+                hf_loader.load_file(hf_filename, hf_repo)
+            } else {
+                crate::bail!("No local tokenizer.json, or hf_repo and hf_filename provided")
+            }
+        }
+    }
+}
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct TokenizerConfigPresetData {
+    pub local_path: Option<String>,
+    pub hf_repo: Option<String>,
+    pub hf_filename: Option<String>,
+}
+impl TokenizerConfigPresetData {
+    pub fn load(&self, hf_loader: &HuggingFaceLoader) -> crate::Result<std::path::PathBuf> {
+        if let Some(local_path) = self.local_path.clone() {
+            let path = presets_path().join(local_path);
+            match std::fs::File::open(&path) {
+                Ok(_) => Ok(path),
+                Err(_) => {
+                    crate::bail!("Failed to open tokenizer_config.json at {}", path.display())
+                }
+            }
+        } else {
+            if let (Some(hf_repo), Some(hf_filename)) =
+                (self.hf_repo.clone(), self.hf_filename.clone())
+            {
+                hf_loader.load_file(hf_filename, hf_repo)
+            } else {
+                crate::bail!("No local tokenizer_config.json, or hf_repo and hf_filename provided")
+            }
+        }
+    }
 }
 
 impl LlmPresetData {
@@ -62,7 +124,7 @@ macro_rules! generate_models {
         }
 
         impl $enum_name {
-            fn get_data(&self) -> &'static LlmPresetData {
+            pub fn get_data(&self) -> &'static LlmPresetData {
                 match self {
                     $(
                         Self::$variant => {
@@ -106,20 +168,13 @@ macro_rules! generate_models {
                 self.get_data().number_of_parameters as f64 * 1_000_000_000.0
             }
 
-            fn presets_path(&self) -> std::path::PathBuf {
-                let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
-                std::path::PathBuf::from(cargo_manifest_dir)
-                    .join("src")
-                    .join("local_model")
-                    .join("gguf")
-                    .join("preset")
-            }
+
 
             fn preset_dir_path(&self) -> std::path::PathBuf {
                 match self {
                     $(
                         Self::$variant => {
-                            self.presets_path()
+                            presets_path()
                                 .join($path)
                         }
                     ),*
@@ -131,29 +186,15 @@ macro_rules! generate_models {
                 preset_config_path.join("config.json")
             }
 
-            pub fn tokenizer_path(&self) -> Option<std::path::PathBuf> {
-                if let Some(tokenizer_json_path) = self.get_data().tokenizer_json_path.clone() {
-                    let path = self.presets_path().join(tokenizer_json_path);
-                    match std::fs::File::open(&path) {
-                        Ok(_) => Some(path),
-                        Err(_) => None,
-                    }
-                } else {
-                    None
-                }
+            pub fn load_tokenizer(&self,hf_loader: &HuggingFaceLoader) -> crate::Result<std::path::PathBuf> {
+                self.get_data().tokenizer_preset_data.load(hf_loader)
             }
 
-            pub fn tokenizer_config_path(&self) -> Option<std::path::PathBuf> {
-                if let Some(tokenizer_config_json_path) = self.get_data().tokenizer_config_json_path.clone() {
-                    let path = self.presets_path().join(tokenizer_config_json_path);
-                    match std::fs::File::open(&path) {
-                        Ok(_) => Some(path),
-                        Err(_) => None,
-                    }
-                } else {
-                    None
-                }
+            pub fn load_tokenizer_config(&self,hf_loader: &HuggingFaceLoader) -> crate::Result<std::path::PathBuf> {
+                self.get_data().tokenizer_config_preset_data.load(hf_loader)
             }
+
+
 
             pub fn load(&self) -> crate::Result<LocalLlmModel> {
                 let mut loader = GgufLoader::default();
@@ -202,8 +243,7 @@ macro_rules! generate_models {
 
 generate_models!(
     LlmPreset {
-        SuperNovaMedius13b => "llama/supernova_medius",
-        Llama3_1_70bNemotronInstruct => "llama/llama3_1_70b_nemotron_instruct",
+        SuperNovaMedius13b => "arcee/supernova_medius",
         Llama3_1_8bInstruct => "llama/llama3_1_8b_instruct",
         Llama3_2_3bInstruct => "llama/llama3_2_3b_instruct",
         Llama3_2_1bInstruct => "llama/llama3_2_1b_instruct",
@@ -214,6 +254,13 @@ generate_models!(
         Phi3Medium4kInstruct => "phi/phi3_medium4k_instruct",
         Phi3Mini4kInstruct => "phi/phi3_mini4k_instruct",
         Phi3_5MiniInstruct => "phi/phi3_5_mini_instruct",
-
+        Granite3_8bInstruct => "granite/granite3_8b_instruct",
+        Granite3_2bInstruct => "granite/granite3_2b_instruct",
+        Qwen2_5_32bInstruct => "qwen/qwen2_5_32b_instruct",
+        Qwen2_5_14bInstruct => "qwen/qwen2_5_14b_instruct",
+        Qwen2_5_7bInstruct => "qwen/qwen2_5_7b_instruct",
+        Qwen2_5_3bInstruct => "qwen/qwen2_5_3b_instruct",
+        Llama3_1_70bNemotronInstruct => "nvidia/llama3_1_70b_nemotron_instruct",
+        MistralNemoMinitron8bInstruct => "nvidia/mistral_nemo_minitron_8b_instruct",
     }
 );

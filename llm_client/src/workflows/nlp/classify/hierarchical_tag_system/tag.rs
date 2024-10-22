@@ -146,22 +146,23 @@ impl Tag {
 
     pub fn display_immediate_child_descriptions(&self, entity: &str) -> String {
         let mut output = String::new();
+
         for tag in self.get_tags() {
             if !output.is_empty() {
                 output.push_str("\n");
             }
-            // output.push_str(&tag.format_tag_criteria(entity));
-            if tag.display_child_tags().is_empty() {
+            if tag.tags.is_empty() {
                 output.push_str(&tag.format_tag_criteria(entity));
             } else {
                 output.push_str(&indoc::formatdoc! {"
-                {}
-                '{}''s child tags:
-                {}
-                ",
-                tag.format_tag_criteria(entity),
-                tag.tag_name(),
-                tag.display_all_tags_with_nested_paths()
+                 {}
+                 
+                 '{}' Child Classifications:
+                 {}
+                 ",
+                 tag.format_tag_criteria(entity),
+                 tag.tag_name(),
+                 tag.display_all_tags_with_nested_paths()
                 });
             }
         }
@@ -198,7 +199,7 @@ impl Tag {
 
     pub fn format_tag_criteria(&self, entity: &str) -> String {
         if let Some(description) = &self.description {
-            indoc::formatdoc! {"Classification '{}' is applicable if '{entity}' {}",
+            indoc::formatdoc! {"'{}' criteria: {}",
             self.tag_name(),
             description.is_applicable.trim(),
             }
@@ -241,29 +242,40 @@ impl Tag {
 
     pub fn display_all_tags_with_nested_paths(&self) -> String {
         let mut result = String::new();
-        self.collect_tags_with_nested_paths(&mut result, vec!["root".to_string()]);
+        self.collect_tags_with_nested_paths(&mut result, true);
         result.trim_end().to_string()
     }
 
-    fn collect_tags_with_nested_paths(&self, result: &mut String, mut current_path: Vec<String>) {
-        if let Some(name) = &self.name {
-            current_path.push(name.clone());
-        }
+    fn collect_tags_with_nested_paths(&self, result: &mut String, is_root: bool) {
         let mut leaf_tags = Vec::new();
+        let mut nested_tags = Vec::new();
+
         for (_, child_tag) in &self.tags {
             if child_tag.tags.is_empty() {
                 if let Some(name) = &child_tag.name {
                     leaf_tags.push(name.clone());
                 }
             } else {
-                child_tag.collect_tags_with_nested_paths(result, current_path.clone());
+                nested_tags.push(child_tag);
             }
         }
+
         if !leaf_tags.is_empty() {
-            result.push_str(&current_path.join("::"));
-            result.push_str("::{");
-            result.push_str(&leaf_tags.join(", "));
-            result.push_str("}\n");
+            if let Some(full_path) = &self.full_path {
+                let display_path = if is_root {
+                    format!("root::{}", full_path)
+                } else {
+                    format!("root::{}", full_path)
+                };
+                result.push_str(&display_path);
+                result.push_str("::{");
+                result.push_str(&leaf_tags.join(", "));
+                result.push_str("}\n");
+            }
+        }
+
+        for nested_tag in nested_tags {
+            nested_tag.collect_tags_with_nested_paths(result, false);
         }
     }
 

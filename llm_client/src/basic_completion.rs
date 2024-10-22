@@ -47,13 +47,17 @@ impl BasicCompletion {
                 "parse_response error: content.is_empty()"
             ));
         }
-        let bos = self.base_req.backend.bos_token();
+
         let eos = self.base_req.backend.eos_token();
-        let content = content
-            .strip_prefix(&format!("{}\n\n", bos))
-            .or_else(|| content.strip_prefix(&format!("{}\n", bos)))
-            .or_else(|| content.strip_prefix(bos))
-            .unwrap_or(content);
+        let content = if let Some(bos) = self.base_req.backend.bos_token() {
+            content
+                .strip_prefix(&format!("{}\n\n", bos))
+                .or_else(|| content.strip_prefix(&format!("{}\n", bos)))
+                .or_else(|| content.strip_prefix(bos))
+                .unwrap_or(content)
+        } else {
+            content
+        };
 
         let content = content
             .strip_prefix("assistant\n\n")

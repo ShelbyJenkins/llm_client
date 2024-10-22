@@ -10,6 +10,14 @@
         "q3": "Phi-3.5-mini-instruct-Q3_K_M.gguf",
         "q2": "Phi-3.5-mini-instruct-Q2_K.gguf"
     },
-    "tokenizer_json_path": "phi/tokenizer.json",
-    "tokenizer_config_json_path": "phi/phi3_5_mini_instruct/tokenizer_config.json"
+    "tokenizer_preset_data": {
+        "local_path": "phi/tokenizer.json",
+        "hf_repo": "microsoft/Phi-3.5-mini-instruct",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "local_path": "phi/phi3_5_mini_instruct/tokenizer_config.json",
+        "hf_repo": "microsoft/Phi-3.5-mini-instruct",
+        "hf_filename": "tokenizer.json"
+    }
 }
