@@ -1,4 +1,3 @@
-pub mod classify;
 pub mod extract;
 
 use extract::Extract;
@@ -17,9 +16,5 @@ impl Nlp {
 
     pub fn extract(self) -> Extract {
         Extract::new(self.base_req)
-    }
-
-    pub fn classify(self) -> classify::Classify {
-        classify::Classify::new(self.base_req)
     }
 }

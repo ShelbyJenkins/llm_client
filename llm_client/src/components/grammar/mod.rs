@@ -1,4 +1,3 @@
-use text::text_list::TextListGrammar;
 use thiserror::Error;
 pub mod basic_url;
 pub mod boolean;
@@ -18,6 +17,7 @@ pub use integer::IntegerGrammar;
 pub use none::NoneGrammar;
 pub use text::sentences::SentencesGrammar;
 pub use text::text::TextGrammar;
+pub use text::text_list::TextListGrammar;
 pub use text::words::WordsGrammar;
 
 #[derive(Clone, PartialEq)]
@@ -31,7 +31,7 @@ pub enum Grammar {
     BasicUrl(BasicUrlGrammar),
     ExactString(ExactStringGrammar),
     FauxUrl(FauxUrlGrammar),
-    None(NoneGrammar),
+    NoneGrammar(NoneGrammar),
     Custom(CustomGrammar),
 }
 
@@ -102,7 +102,7 @@ grammar_default! {
         BasicUrl => basic_url: BasicUrlGrammar,
         ExactString => exact_string: ExactStringGrammar,
         FauxUrl => faux_url: FauxUrlGrammar,
-        None => none: NoneGrammar,
+        NoneGrammar => none: NoneGrammar,
         Custom => custom: CustomGrammar,
     }
 }

@@ -14,7 +14,7 @@ impl Architecture {
     ) -> crate::Result<Self> {
         let arch: String = gguf.get_value("general.architecture")?;
         match arch.as_str() {
-            "llama" | "phi3" | "qwen2" | "granite" => {
+            "llama" | "phi3" | "qwen2" | "granite" | "stablelm" => {
                 Ok(Self::Llama(LlamaMetadata::from_gguf(gguf)?))
             }
             _ => crate::bail!("Unknown architecture: {}", arch),

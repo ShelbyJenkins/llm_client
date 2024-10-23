@@ -67,17 +67,19 @@ impl Tag {
     }
 
     pub fn get_tag(&self, tag_path: &str) -> Option<&Tag> {
-        // Remove 'root::' prefix if present
-        let tag_path = tag_path.strip_prefix("root::").unwrap_or(tag_path);
-        // Extract the actual tag path by splitting on whitespace and taking the first part
-        let actual_path = tag_path.split_whitespace().next().unwrap_or(tag_path);
-        // Split the path
-        let parts: Vec<&str> = actual_path.split("::").collect();
+        // Try the various parts of the tag path
+        let potential_parts: Vec<&str> = tag_path.split_whitespace().collect();
+        for part in potential_parts {
+            let part_attempt = part.strip_prefix("root::").unwrap_or(part);
 
-        for i in (0..parts.len()).rev() {
-            // println!("trying: {:?}", &parts[..=i]);
-            if let Some(tag) = self.get_tag_recursive(&parts[..=i]) {
-                return Some(tag);
+            // Split the path
+            let tag_paths: Vec<&str> = part_attempt.split("::").collect();
+
+            for i in (0..tag_paths.len()).rev() {
+                // println!("trying: {:?}", &parts[..=i]);
+                if let Some(tag) = self.get_tag_recursive(&tag_paths[..=i]) {
+                    return Some(tag);
+                }
             }
         }
 
@@ -199,7 +201,7 @@ impl Tag {
 
     pub fn format_tag_criteria(&self, entity: &str) -> String {
         if let Some(description) = &self.description {
-            indoc::formatdoc! {"'{}' criteria: {}",
+            indoc::formatdoc! {"'{}' is applicable if: '{entity}' {}",
             self.tag_name(),
             description.is_applicable.trim(),
             }

@@ -17,7 +17,7 @@ impl Default for NoneGrammar {
 
 impl NoneGrammar {
     pub fn wrap(self) -> Grammar {
-        Grammar::None(self)
+        Grammar::NoneGrammar(self)
     }
 
     pub fn grammar_string(&self) -> String {

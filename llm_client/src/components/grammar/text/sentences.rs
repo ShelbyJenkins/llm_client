@@ -25,7 +25,7 @@ impl Default for SentencesGrammar {
         Self {
             min_count: 1,
             max_count: 1,
-            sentence_token_length: 33,
+            sentence_token_length: 50,
             capitalize_first: true,
             stop_word_done: None,
             stop_word_no_result: None,

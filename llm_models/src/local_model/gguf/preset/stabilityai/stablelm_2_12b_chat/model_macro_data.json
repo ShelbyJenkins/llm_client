@@ -1,0 +1,21 @@
+{
+    "model_id": "stablelm-2-12b-chat",
+    "gguf_repo_id": "second-state/stablelm-2-12b-chat-GGUF",
+    "number_of_parameters": 12,
+    "f_name_for_q_bits": {
+        "q8": "stablelm-2-12b-chat-Q8_0.gguf",
+        "q6": "stablelm-2-12b-chat.Q6_K.gguf",
+        "q5": "stablelm-2-12b-chat.Q5_K_M.gguf",
+        "q4": "stablelm-2-12b-chat.Q4_K_M.gguf",
+        "q3": "stablelm-2-12b-chat.Q3_K_M.gguf",
+        "q2": "stablelm-2-12b-chat.Q2_K.gguf"
+    },
+    "tokenizer_preset_data": {
+        "hf_repo": "stabilityai/stablelm-2-12b-chat",
+        "hf_filename": "tokenizer.json"
+    },
+    "tokenizer_config_preset_data": {
+        "hf_repo": "stabilityai/stablelm-2-12b-chat",
+        "hf_filename": "tokenizer_config.json"
+    }
+}

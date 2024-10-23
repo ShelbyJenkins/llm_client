@@ -235,7 +235,7 @@ mod test {
             "turtle",
         ),
     ];
-    use crate::prelude::*;
+    use crate::{prelude::*, workflows::classify::subject_of_text::ClassifySubjectOfText};
 
     #[tokio::test]
     #[ignore]
@@ -243,7 +243,10 @@ mod test {
         let llm_client = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
 
         for (case, answer) in CASES {
-            let entity = llm_client.nlp().classify().entity(case);
+            let entity = ClassifySubjectOfText::new(
+                CompletionRequest::new(llm_client.backend.clone()),
+                case,
+            );
             let entity = entity.run().await?;
             println!("{}", entity.flow);
             println!("{}", entity);

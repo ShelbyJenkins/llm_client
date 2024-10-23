@@ -119,7 +119,7 @@ impl InferenceStep {
         self.step_config
             .grammar
             .set_stop_word_done(&self.step_config.stop_word_done);
-        if !matches!(self.step_config.grammar, Grammar::None(_)) {
+        if !matches!(self.step_config.grammar, Grammar::NoneGrammar(_)) {
             base_req.grammar_string = Some(self.step_config.grammar.grammar_string());
             base_req.stop_sequences.required = true;
         } else {

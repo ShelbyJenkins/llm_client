@@ -262,5 +262,6 @@ generate_models!(
         Qwen2_5_3bInstruct => "qwen/qwen2_5_3b_instruct",
         Llama3_1_70bNemotronInstruct => "nvidia/llama3_1_70b_nemotron_instruct",
         MistralNemoMinitron8bInstruct => "nvidia/mistral_nemo_minitron_8b_instruct",
+        StableLm2_12bChat => "stabilityai/stablelm_2_12b_chat",
     }
 );

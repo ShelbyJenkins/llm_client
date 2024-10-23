@@ -6,6 +6,14 @@ use llm_models::local_model::{
 #[test]
 fn load_from_vram() {
     let model = GgufLoader::default()
+        .stable_lm2_12b_chat()
+        .preset_with_available_vram_gb(46)
+        .load()
+        .unwrap();
+
+    println!("{:#?}", model);
+
+    let model = GgufLoader::default()
         .granite3_2b_instruct()
         .preset_with_available_vram_gb(46)
         .load()
@@ -118,6 +126,7 @@ fn models_macros_test() {
         LlmPreset::Qwen2_5_14bInstruct,
         LlmPreset::Qwen2_5_7bInstruct,
         LlmPreset::Qwen2_5_3bInstruct,
+        LlmPreset::StableLm2_12bChat,
     ];
     for variant in variants {
         println!("{:#?}", variant.model_id());

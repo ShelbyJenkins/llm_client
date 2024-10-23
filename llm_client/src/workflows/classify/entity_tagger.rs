@@ -9,17 +9,17 @@ use llm_interface::requests::completion::CompletionRequest;
 
 use super::hierarchical_tag_system::Tag;
 
-pub struct LabelEntity {
+pub struct EntityTagger {
     pub base_req: CompletionRequest,
     pub entity: String,
     pub context_text: String,
     pub tags: Tag,
-    pub assigned_tags: Vec<Tag>,
+    pub assigned_terminal_tags: Vec<Tag>,
     pub flow: CascadeFlow,
     pub criteria: String,
 }
 
-impl LabelEntity {
+impl EntityTagger {
     pub fn new(
         base_req: CompletionRequest,
         entity: String,
@@ -33,8 +33,8 @@ impl LabelEntity {
             context_text,
             criteria,
             tags,
-            assigned_tags: Vec::new(),
-            flow: CascadeFlow::new("LabelEntity"),
+            assigned_terminal_tags: Vec::new(),
+            flow: CascadeFlow::new("EntityTagger"),
         }
     }
 
@@ -49,7 +49,7 @@ impl LabelEntity {
         //             self.base_req.reset_completion_request();
         //             self.tags = initial_tags.clone();
         //             self.assigned_tags = Tag::new();
-        //             self.flow = CascadeFlow::new("LabelEntity");
+        //             self.flow = CascadeFlow::new("EntityTagger");
         //             count += 1;
         //             if count == self.base_req.config.retry_after_fail_n_times {
         //                 crate::bail!("Failed to classify entity after {} attempts: {}", count, e);
@@ -64,7 +64,7 @@ impl LabelEntity {
         self.flow.open_cascade();
         let inital_test = self.list_initial(&self.tags.clone()).await?;
 
-        self.assigned_tags = inital_test;
+        self.assigned_terminal_tags = inital_test;
         self.flow.close_cascade()?;
         Ok(())
     }
@@ -74,7 +74,7 @@ impl LabelEntity {
         parent_tag: &'a Tag,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<Vec<Tag>>> + 'a>> {
         Box::pin(async move {
-            let mut exact_tags: Vec<Tag> = Vec::new();
+            let mut terminal_tags: Vec<Tag> = Vec::new();
             let mut potential_parent_tags: Vec<Tag> = Vec::new();
             let prompt = if parent_tag.name.is_none() {
                 indoc::formatdoc! {"
@@ -132,7 +132,7 @@ impl LabelEntity {
             match self.flow.last_round()?.last_step()?.primitive_result() {
                 Some(_) => {}
                 None => {
-                    return Ok(exact_tags);
+                    return Ok(terminal_tags);
                 }
             };
             // List
@@ -172,7 +172,7 @@ impl LabelEntity {
                         immediate_child_tags.retain(|x| x.tag_name() != result_string);
                         if let Some(tag) = parent_tag.get_tag(&result_string) {
                             if tag.tags.is_empty() {
-                                exact_tags.push(tag.clone());
+                                terminal_tags.push(tag.clone());
                             } else {
                                 potential_parent_tags.push(tag.clone());
                             }
@@ -197,13 +197,13 @@ impl LabelEntity {
                 for tag in &res {
                     crate::info!("exact_tag: {}", tag.tag_path());
                 }
-                exact_tags.extend(res);
+                terminal_tags.extend(res);
                 self.base_req.prompt = current_prompt;
             }
 
             self.flow.drop_last_round()?;
             self.base_req.reset_completion_request();
-            Ok(exact_tags)
+            Ok(terminal_tags)
             // Ok(potential_parent_tags)
         })
     }
@@ -237,14 +237,14 @@ impl LabelEntity {
     }
 }
 
-impl std::fmt::Display for LabelEntity {
+impl std::fmt::Display for EntityTagger {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f)?;
-        writeln!(f, "LabelEntity:")?;
+        writeln!(f, "EntityTagger:")?;
         crate::i_nln(f, format_args!("entity: {}", self.entity))?;
         crate::i_nln(f, format_args!("context_text: {}", self.context_text))?;
         crate::i_nln(f, format_args!("duration: {:?}", self.flow.duration))?;
-        for tag in &self.assigned_tags {
+        for tag in &self.assigned_terminal_tags {
             crate::i_ln(f, format_args!("{}", tag))?;
         }
         Ok(())
@@ -253,9 +253,9 @@ impl std::fmt::Display for LabelEntity {
 
 #[cfg(test)]
 mod test {
-    use workflows::nlp::classify::subject_of_text::ClassifySubjectOfText;
+    use workflows::classify::subject_of_text::ClassifySubjectOfText;
 
-    use crate::workflows::nlp::classify::hierarchical_tag_system::TagCollection;
+    use crate::workflows::classify::hierarchical_tag_system::TagCollection;
 
     use super::*;
     use crate::*;
@@ -284,7 +284,7 @@ mod test {
             .load()
             .unwrap();
 
-        let req = LabelEntity::new(
+        let req = EntityTagger::new(
             CompletionRequest::new(llm_client.backend.clone()),
             subject,
             context_text,
@@ -326,7 +326,7 @@ mod test {
         let entity = entity_classification.subject.unwrap().to_owned();
         let context_text = entity_classification.content.to_owned();
 
-        let req = LabelEntity::new(
+        let req = EntityTagger::new(
             CompletionRequest::new(llm_client.backend.clone()),
             entity,
             context_text,
@@ -366,11 +366,16 @@ mod test {
             .load()
             .unwrap();
         for (case, _) in CASES {
-            let entity = llm_client.nlp().classify().entity(case).run().await?;
+            let entity = ClassifySubjectOfText::new(
+                CompletionRequest::new(llm_client.backend.clone()),
+                case,
+            )
+            .run()
+            .await?;
             let subject = entity.subject.as_ref().unwrap().to_owned();
             let context_text = entity.content.to_owned();
 
-            let req = LabelEntity::new(
+            let req = EntityTagger::new(
                 entity.base_req.clone(),
                 subject,
                 context_text,
