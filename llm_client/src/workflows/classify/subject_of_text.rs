@@ -16,7 +16,7 @@ pub struct ClassifySubjectOfText {
 }
 
 impl ClassifySubjectOfText {
-    pub fn new(base_req: CompletionRequest, content: &str) -> Self {
+    pub fn new<T: AsRef<str>>(base_req: CompletionRequest, content: T) -> Self {
         let mut grammar: SentencesPrimitive = SentencesPrimitive::default();
         grammar
             .min_count(1)
@@ -30,7 +30,7 @@ impl ClassifySubjectOfText {
 
         Self {
             base_req,
-            content: content.to_owned(),
+            content: content.as_ref().to_owned(),
             flow: CascadeFlow::new("ClassifySubjectOfText"),
             content_strings: Vec::new(),
             subject: None,

@@ -1,9 +1,5 @@
-pub mod generation;
-pub mod tag;
-
-use generation::TagCollectionDescriber;
+use super::{tag::Tag, tag_describer::TagCollectionDescriber};
 use serde::{Deserialize, Serialize};
-pub use tag::Tag;
 
 const OUTPUT_DIR: &str = "generations";
 const DEFAULT_COLLECTION_NAME: &str = "default_collection";
@@ -16,7 +12,7 @@ pub struct TagCollection {
     pub output_dir_path: std::path::PathBuf,
     pub tag_path_seperator: String,
     contents: String,
-    root_tag: Option<Tag>,
+    pub root_tag: Option<Tag>,
 }
 
 impl Default for TagCollection {
@@ -275,7 +271,6 @@ mod tests {
         for tag in tags.get_tags() {
             println!("{}", tag.display_child_tags());
         }
-        println!("{}", tags.display_all_tags());
         println!("{}", tags.display_child_tags());
         println!("{}", tags.display_all_tags_with_nested_paths());
         Ok(())
@@ -289,8 +284,6 @@ mod tests {
             .tag_path_seperator(":")
             .load()?;
         let tags = tag_collection.get_root_tag()?;
-
-        println!("{}", tags.display_immediate_child_descriptions("test"));
 
         assert!(tags.get_tag("host::arthropoda::tick").is_some());
         assert!(tags

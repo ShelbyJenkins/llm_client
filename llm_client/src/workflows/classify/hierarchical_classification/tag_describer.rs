@@ -3,11 +3,10 @@ use crate::components::cascade::CascadeFlow;
 use crate::components::grammar::NoneGrammar;
 use crate::LlmClient;
 
-use anyhow::Ok;
 use llm_interface::requests::completion::CompletionRequest;
 use serde::{Deserialize, Serialize};
 
-use super::{Tag, TagCollection};
+use super::{tag::Tag, tag_collection::TagCollection};
 
 pub struct TagCollectionDescriber {
     pub base_req: CompletionRequest,
@@ -103,9 +102,9 @@ impl TagCollectionDescriber {
                     is_applicable,
                 });
             }
-            for child_tag in parent_tag.tags.values_mut() {
-                self.describe_tag(child_tag).await?;
-            }
+            // for child_tag in parent_tag.tags.values_mut() {
+            //     self.describe_tag(child_tag).await?;
+            // }
 
             Ok(())
         })
@@ -171,39 +170,4 @@ pub struct TagDescription {
     pub description: Option<String>,
     pub instructions: String,
     pub is_applicable: String,
-}
-
-#[cfg(test)]
-mod tests {
-    use llm_models::local_model::GgufPresetTrait;
-
-    use super::*;
-
-    fn criteria() -> String {
-        indoc::formatdoc! {"
-            We have a classification system used to categorize, filter, and sort by where a microbial organism sample was collected from.
-            In the text, will be an 'entity'. The 'entity' is the collection source—the place or thing where the sample was collected from. Additional details like the environment, location, or other aspects of the collection source may also be mentioned.
-
-            A classification should apply to details specified about what or where the microbial organism was collected from and direct aspects of the source 'entity'. 
-            
-            Apply classificaiton labels to the source of the sample.
-            "}
-    }
-
-    #[tokio::test]
-    #[ignore]
-    async fn test_tag_with_descriptions() -> crate::Result<()> {
-        let mut tag_collection = TagCollection::default()
-            .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")
-            .tag_path_seperator(":")
-            .load()?;
-        let llm_client = crate::LlmClient::llama_cpp()
-            .mistral_nemo_minitron8b_instruct()
-            .init()
-            .await?;
-        tag_collection
-            .populate_descriptions(&llm_client, &criteria())
-            .await?;
-        Ok(())
-    }
 }

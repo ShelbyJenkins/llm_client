@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::generation::TagDescription;
+use super::tag_describer::TagDescription;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Tag {
@@ -27,18 +27,6 @@ impl Tag {
         }
     }
 
-    pub fn clear_tags(&mut self) {
-        self.tags.clear();
-    }
-
-    pub fn remove_tag(&mut self, name: &str) -> crate::Result<Tag> {
-        let tag = match self.tags.remove(name) {
-            Some(tag) => tag,
-            None => crate::bail!("Tag not found."),
-        };
-        Ok(tag)
-    }
-
     pub fn tag_name(&self) -> String {
         self.name.as_ref().unwrap().to_owned()
     }
@@ -60,12 +48,6 @@ impl Tag {
         tags
     }
 
-    pub fn get_tag_names(&self) -> Vec<String> {
-        let mut names: Vec<String> = self.tags.keys().cloned().collect();
-        names.sort();
-        names
-    }
-
     pub fn get_tag(&self, tag_path: &str) -> Option<&Tag> {
         // Try the various parts of the tag path
         let potential_parts: Vec<&str> = tag_path.split_whitespace().collect();
@@ -84,6 +66,100 @@ impl Tag {
         }
 
         None
+    }
+
+    pub fn display_child_tags(&self) -> String {
+        let mut output = String::new();
+        for child_tag in self.get_tags() {
+            output.push_str(&child_tag.tag_name());
+            output.push('\n');
+        }
+        output
+    }
+
+    pub fn display_immediate_child_paths(&self) -> String {
+        let mut output = String::new();
+        for tag in self.get_tags() {
+            if !output.is_empty() {
+                output.push_str("\n");
+            }
+            output.push_str(&tag.tag_path());
+        }
+        output
+    }
+
+    pub fn display_tag_criteria(&self, entity: &str) -> String {
+        if let Some(description) = &self.description {
+            indoc::formatdoc! {"'{}' is applicable if: '{entity}' {}",
+            self.tag_name(),
+            description.is_applicable.trim(),
+            }
+        } else {
+            indoc::formatdoc! {"
+            Classification '{}' is applicable if it applies to '{entity}'
+            ",
+            self.tag_name(),
+            }
+        }
+    }
+
+    pub fn display_all_tags_with_paths(&self) -> String {
+        let mut result = String::new();
+        self.collect_tags_with_paths(&mut result);
+        result.trim_end().to_string()
+    }
+
+    pub fn display_all_tags_with_nested_paths(&self) -> String {
+        let mut result = String::new();
+        self.collect_tags_with_nested_paths(&mut result, true);
+        result.trim_end().to_string()
+    }
+
+    fn collect_tags_with_paths(&self, result: &mut String) {
+        if let Some(full_path) = &self.full_path {
+            // Convert single ":" to "::" and prepend "root"
+            let formatted_path = format!("root::{}", full_path.replace(":", "::"));
+            result.push_str(&formatted_path);
+            result.push('\n');
+        }
+
+        // Recursively process child tags
+        for (_, child_tag) in &self.tags {
+            child_tag.collect_tags_with_paths(result);
+        }
+    }
+
+    fn collect_tags_with_nested_paths(&self, result: &mut String, is_root: bool) {
+        let mut leaf_tags = Vec::new();
+        let mut nested_tags = Vec::new();
+
+        for (_, child_tag) in &self.tags {
+            if child_tag.tags.is_empty() {
+                if let Some(name) = &child_tag.name {
+                    leaf_tags.push(name.clone());
+                }
+            } else {
+                nested_tags.push(child_tag);
+            }
+        }
+
+        if !leaf_tags.is_empty() {
+            if let Some(full_path) = &self.full_path {
+                let display_path = if is_root {
+                    format!("root::{}", full_path)
+                } else {
+                    format!("root::{}", full_path)
+                };
+                result.push_str(&display_path);
+                result.push_str("::{");
+                result.push_str(&leaf_tags.join(", "));
+                result.push_str("}\n");
+            }
+        }
+
+        for nested_tag in nested_tags {
+            nested_tag.collect_tags_with_nested_paths(result, false);
+        }
     }
 
     fn get_tag_recursive(&self, path_parts: &[&str]) -> Option<&Tag> {
@@ -129,158 +205,6 @@ impl Tag {
         None
     }
 
-    pub fn display_child_tags(&self) -> String {
-        let mut output = String::new();
-        for child_tag in self.get_tags() {
-            output.push_str(&child_tag.tag_name());
-            output.push('\n');
-        }
-        output
-    }
-
-    pub fn get_immediate_child_paths(&self) -> Vec<String> {
-        let mut paths = Vec::new();
-        for tag in self.get_tags() {
-            paths.push(tag.tag_path());
-        }
-        paths
-    }
-
-    pub fn display_immediate_child_descriptions(&self, entity: &str) -> String {
-        let mut output = String::new();
-
-        for tag in self.get_tags() {
-            if !output.is_empty() {
-                output.push_str("\n");
-            }
-            if tag.tags.is_empty() {
-                output.push_str(&tag.format_tag_criteria(entity));
-            } else {
-                output.push_str(&indoc::formatdoc! {"
-                 {}
-                 
-                 '{}' Child Classifications:
-                 {}
-                 ",
-                 tag.format_tag_criteria(entity),
-                 tag.tag_name(),
-                 tag.display_all_tags_with_nested_paths()
-                });
-            }
-        }
-        output
-    }
-
-    pub fn display_immediate_child_paths(&self) -> String {
-        let mut output = String::new();
-        for tag in self.get_tags() {
-            if !output.is_empty() {
-                output.push_str("\n");
-            }
-            output.push_str(&tag.tag_path());
-        }
-        output
-    }
-
-    pub fn display_child_tags_comma(&self) -> String {
-        let mut names = String::new();
-        for child_tag in self.get_tags() {
-            names.push_str(&format!("'{}', ", child_tag.tag_name()));
-        }
-        names
-    }
-
-    pub fn display_child_tag_descriptions(&self, entity: &str) -> String {
-        let mut output = String::new();
-        for child_tag in self.get_tags() {
-            output.push_str(&child_tag.format_tag_criteria(entity));
-            output.push('\n');
-        }
-        output
-    }
-
-    pub fn format_tag_criteria(&self, entity: &str) -> String {
-        if let Some(description) = &self.description {
-            indoc::formatdoc! {"'{}' is applicable if: '{entity}' {}",
-            self.tag_name(),
-            description.is_applicable.trim(),
-            }
-        } else {
-            indoc::formatdoc! {"
-            Classification '{}' is applicable if it applies to '{entity}'
-            ",
-            self.tag_name(),
-            }
-        }
-    }
-
-    pub fn display_all_tags(&self) -> String {
-        let mut output = String::new();
-        for child_tag in self.get_tags() {
-            child_tag.format_tag_for_llm(&mut output, 0);
-        }
-        output
-    }
-
-    pub fn display_all_tags_with_paths(&self) -> String {
-        let mut result = String::new();
-        self.collect_tags_with_paths(&mut result);
-        result.trim_end().to_string()
-    }
-
-    fn collect_tags_with_paths(&self, result: &mut String) {
-        if let Some(full_path) = &self.full_path {
-            // Convert single ":" to "::" and prepend "root"
-            let formatted_path = format!("root::{}", full_path.replace(":", "::"));
-            result.push_str(&formatted_path);
-            result.push('\n');
-        }
-
-        // Recursively process child tags
-        for (_, child_tag) in &self.tags {
-            child_tag.collect_tags_with_paths(result);
-        }
-    }
-
-    pub fn display_all_tags_with_nested_paths(&self) -> String {
-        let mut result = String::new();
-        self.collect_tags_with_nested_paths(&mut result, true);
-        result.trim_end().to_string()
-    }
-
-    fn collect_tags_with_nested_paths(&self, result: &mut String, is_root: bool) {
-        let mut leaf_tags = Vec::new();
-        let mut nested_tags = Vec::new();
-
-        for (_, child_tag) in &self.tags {
-            if child_tag.tags.is_empty() {
-                if let Some(name) = &child_tag.name {
-                    leaf_tags.push(name.clone());
-                }
-            } else {
-                nested_tags.push(child_tag);
-            }
-        }
-
-        if !leaf_tags.is_empty() {
-            if let Some(full_path) = &self.full_path {
-                let display_path = if is_root {
-                    format!("root::{}", full_path)
-                } else {
-                    format!("root::{}", full_path)
-                };
-                result.push_str(&display_path);
-                result.push_str("::{");
-                result.push_str(&leaf_tags.join(", "));
-                result.push_str("}\n");
-            }
-        }
-
-        for nested_tag in nested_tags {
-            nested_tag.collect_tags_with_nested_paths(result, false);
-        }
-    }
-
     pub(super) fn add_tag_recursive(&mut self, parts: &[&str], depth: usize, path_sep: &str) {
         if depth < parts.len() {
             let current_path = parts[..=depth].join(path_sep);
@@ -323,24 +247,6 @@ impl Tag {
         };
 
         self.tags.entry(tag.tag_name()).or_insert_with(|| tag)
-    }
-
-    fn format_tag_for_llm(&self, output: &mut String, depth: usize) {
-        for _ in 0..depth {
-            output.push_str("  ");
-        }
-        output.push_str(&self.tag_name());
-        if self.tags.is_empty() && !output.is_empty() {
-            output.push(';');
-            output.push('\n');
-        }
-        if !self.get_tags().is_empty() {
-            output.push(':');
-            output.push('\n');
-            for child_tag in self.get_tags() {
-                child_tag.format_tag_for_llm(output, depth + 1);
-            }
-        }
     }
 }
 
