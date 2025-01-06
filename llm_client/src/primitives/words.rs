@@ -1,6 +1,6 @@
 use super::PrimitiveTrait;
-use anyhow::Result;
 use crate::components::grammar::{Grammar, WordsGrammar};
+use anyhow::Result;
 pub struct WordsPrimitive {
     pub min_count: u8,
     pub max_count: u8,

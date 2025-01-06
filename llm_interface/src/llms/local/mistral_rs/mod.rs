@@ -7,9 +7,9 @@ use devices::mistral_rs_device_map;
 use llm_devices::logging::LoggingConfig;
 use llm_models::local_model::{gguf::GgufLoader, LocalLlmModel};
 use mistralrs::{
-    DefaultSchedulerMethod,  GGUFLoaderBuilder, GGUFSpecificConfig, MemoryGpuConfig, MistralRs, MistralRsBuilder, ModelDType,  PagedAttentionConfig,  Response, SchedulerConfig, TokenSource
+    DefaultSchedulerMethod, GGUFLoaderBuilder, GGUFSpecificConfig, MemoryGpuConfig, MistralRs,
+    MistralRsBuilder, ModelDType, PagedAttentionConfig, Response, SchedulerConfig, TokenSource,
 };
-
 
 pub mod builder;
 pub mod completion;
@@ -44,7 +44,6 @@ impl MistralRsBackend {
             Some(NonZeroUsize::new(local_config.batch_size.try_into().unwrap()).unwrap())
         } else {
             anyhow::bail!("`prompt_batchsize` must be a strictly positive integer, got 0.",)
-
         };
 
         let cache_config = Some(PagedAttentionConfig::new(
@@ -55,8 +54,16 @@ impl MistralRsBackend {
 
         let (device, mapper) = mistral_rs_device_map(&local_config.device_config)?;
 
-        let directory = model.local_model_path.parent().and_then(|p| p.to_str()).expect("Model path must have a parent directory");
-        let filename = model.local_model_path.file_name().and_then(|s| s.to_str()).expect("Model path must have a filename");
+        let directory = model
+            .local_model_path
+            .parent()
+            .and_then(|p| p.to_str())
+            .expect("Model path must have a parent directory");
+        let filename = model
+            .local_model_path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .expect("Model path must have a filename");
 
         let loader = GGUFLoaderBuilder::new(
             None,
@@ -90,40 +97,29 @@ impl MistralRsBackend {
                 }
             } else {
                 SchedulerConfig::DefaultScheduler {
-                    method: DefaultSchedulerMethod::Fixed(
-                        (1)
-                            .try_into()
-                            .unwrap(),
-                    ),
+                    method: DefaultSchedulerMethod::Fixed((1).try_into().unwrap()),
                 }
             }
         } else {
             SchedulerConfig::DefaultScheduler {
-                method: DefaultSchedulerMethod::Fixed(
-                    (5)
-                        .try_into()
-                        .unwrap(),
-                ),
+                method: DefaultSchedulerMethod::Fixed((5).try_into().unwrap()),
             }
         };
-        Ok(MistralRsBuilder::new(
-            pipeline,
-            scheduler_config,
-        )
-        .with_throughput_logging()
-        .build())
+        Ok(MistralRsBuilder::new(pipeline, scheduler_config)
+            .with_throughput_logging()
+            .build())
     }
 
     pub async fn completion_request(
         &self,
         request: &CompletionRequest,
     ) -> crate::Result<CompletionResponse, CompletionError> {
-
         let (tx, mut rx) = tokio::sync::mpsc::channel(1);
         let id = 0;
         let mistral_request = completion::new(request, tx, id)?;
 
-       let sender = self.client
+        let sender = self
+            .client
             .get_sender()
             .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?;
         sender
@@ -133,16 +129,19 @@ impl MistralRsBackend {
 
         let response = match rx.recv().await {
             Some(response) => response,
-            None => return Err(CompletionError::LocalClientError("MistralRsBackend request error: Response is None".to_string()))
+            None => {
+                return Err(CompletionError::LocalClientError(
+                    "MistralRsBackend request error: Response is None".to_string(),
+                ))
+            }
         };
-    
+
         match response {
             Response::InternalError(e) | Response::ValidationError(e) => {
                 Err(CompletionError::LocalClientError(e.to_string()))
             }
             Response::Chunk(_) | Response::Done(_) | Response::CompletionChunk(_) => {
                 Err(CompletionError::LocalClientError("MistralRsBackend request error: Response::Chunk(_) | Response::Done(_) | Response::CompletionChunk(_)".to_string()))
-                
             }
             Response::ModelError(e, _) | Response::CompletionModelError(e, _) => {
                 Err(CompletionError::LocalClientError(e.to_string()))
@@ -155,9 +154,7 @@ impl MistralRsBackend {
                 Err(CompletionError::LocalClientError("MistralRsBackend request error: Response::ImageGeneration(_)".to_string()))
             }
         }
-        
     }
-
 }
 
 #[derive(Clone, Debug)]

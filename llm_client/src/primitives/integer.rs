@@ -1,7 +1,7 @@
 use super::PrimitiveTrait;
+use crate::components::grammar::{Grammar, IntegerGrammar};
 use crate::workflows::reason::ReasonTrait;
 use anyhow::Result;
-use crate::components::grammar::{Grammar, IntegerGrammar};
 
 pub struct IntegerPrimitive {
     pub lower_bound: u32,

@@ -25,7 +25,7 @@ impl<C: ApiConfigTrait> ApiClient<C> {
     }
 
     /// Make a POST request to {path} and deserialize the response body
-    pub(crate) async fn post<I, O>(&self, path: &str, request: I) -> Result<O, ClientError>
+    pub async fn post<I, O>(&self, path: &str, request: I) -> Result<O, ClientError>
     where
         I: Serialize + std::fmt::Debug,
         O: DeserializeOwned,
@@ -49,7 +49,7 @@ impl<C: ApiConfigTrait> ApiClient<C> {
     }
 
     /// Make a GET request to {path} and deserialize the response body
-    pub(crate) async fn get<O>(&self, path: &str) -> Result<O, ClientError>
+    pub async fn get<O>(&self, path: &str) -> Result<O, ClientError>
     where
         O: DeserializeOwned,
     {

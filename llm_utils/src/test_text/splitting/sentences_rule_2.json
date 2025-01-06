@@ -1,0 +1,12 @@
+{
+    "content": "In computer science, Backus–Naur form (/ˌbækəs ˈnaʊər/) (BNF or Backus normal form) is a notation used to describe the syntax of programming languages or other formal languages. It was developed by John Backus and Peter Naur. BNF can be described as a metasyntax notation for context-free grammars. Backus–Naur form is applied wherever exact descriptions of languages are needed, such as in official language specifications, in manuals, and in textbooks on programming language theory. BNF can be used to describe document formats, instruction sets, and communication protocols. Over time, many extensions and variants of the original Backus–Naur notation have been created; some are exactly defined, including extended Backus–Naur form (EBNF) and augmented Backus–Naur form (ABNF). Invented in 1976.",
+    "cases": [
+        "In computer science, Backus–Naur form (/ˌbækəs ˈnaʊər/) (BNF or Backus normal form) is a notation used to describe the syntax of programming languages or other formal languages.",
+        "It was developed by John Backus and Peter Naur.",
+        "BNF can be described as a metasyntax notation for context-free grammars.",
+        "Backus–Naur form is applied wherever exact descriptions of languages are needed, such as in official language specifications, in manuals, and in textbooks on programming language theory.",
+        "BNF can be used to describe document formats, instruction sets, and communication protocols.",
+        "Over time, many extensions and variants of the original Backus–Naur notation have been created; some are exactly defined, including extended Backus–Naur form (EBNF) and augmented Backus–Naur form (ABNF).",
+        "Invented in 1976."
+    ]
+}

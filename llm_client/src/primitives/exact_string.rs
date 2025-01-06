@@ -1,7 +1,7 @@
 use super::PrimitiveTrait;
+use crate::components::grammar::{ExactStringGrammar, Grammar};
 use crate::workflows::reason::ReasonTrait;
 use anyhow::Result;
-use crate::components::grammar::{ExactStringGrammar, Grammar};
 
 #[derive(Default, Debug, Clone)]
 pub struct ExactStringPrimitive {

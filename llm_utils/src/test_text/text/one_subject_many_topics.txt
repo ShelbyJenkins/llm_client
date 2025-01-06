@@ -1,0 +1,190 @@
+When you ask ChatGPT a question, several steps happen:
+
+ 1. Input. We take your text from the text input.
+
+ 2. Tokenization. We chunk it into tokens. A token roughly maps to a couple of unicode characters. You can think of it as a word. 
+
+ 3. Create embeddings. We turn each token into a vector of numbers. These are called embeddings. 
+
+ 4. Multiply embeddings by model weights. We then multiply these embeddings by hundreds of billions of model weights.
+
+ 5. Sample a prediction. At the end of this multiplication, the vector of numbers represents the probability of the next most likely token. That next most likely token are the next few characters that spit out of ChatGPT.
+
+Let’s visualize these steps. The first two are straightforward:
+
+Steps 1 and 2 of what happens when you ask ChatGPT a question
+Note that tokenization doesn’t necessarily mean splitting text into words; tokens can be subsets of words as well. 
+
+Embeddings are at the heart of large language models (LLM), and we create them from tokens in the next step:
+
+Step 3 of what happens when you ask ChatGPT a question. Embeddings represent tokens as vectors. The values in the above embedding are examples
+An embedding is a multi-dimensional representation of a token. We explicitly train some of our models to explicitly allow the capture of semantic meanings and relationships between words or phrases. For example, the embedding for “dog” and “puppy” are closer together in several dimensions than “dog” and “computer” are. These multi-dimensional embeddings help machines understand human language more efficiently.
+
+Model weights are used to calculate a weighted embedding matrix, which is used to predict the next likely token. For this step, we need to use OpenAI’s weight matrix, which consists of hundreds of billions of weights, and multiply it by a matrix we construct from the embeddings. This is a compute-intensive multiplication.
+
+Step 4 of what happens when you ask ChatGPT a question. The weight matrix contains hundreds of billions of model weights
+Sampling a prediction is done after we do billions of multiplications. The final vector represents the probability of the next most likely token. Sampling is when we choose the next most likely token and send it back to the user. Each word that spits out of ChatGPT is this same process repeated over and over again many times per second.
+
+Step 5. We end up with the probability of the next most likely token (roughly a word). We sample the next most probable word, based on pre-trained data, the prompt, and the text generated so far. Image source: What is ChatGPT doing and why does it work? by Stehen Wolfram
+Pretraining and inference
+
+How do we generate this complex set of model weights, whose values encode most of human knowledge? We do it through a process called pretraining. The goal is to build a model that can predict the next token (which you can think of as a word), for all words on the internet. 
+
+During pretraining, the weights are gradually updated via gradient descent, which is is a mathematical optimization method. An analogy of gradient descent is a hiker stuck up a mountain, who’s trying to get down. However, they don’t have a full view of the mountain due to heavy fog which limits their view to a small area around them. Gradient descent would mean to look at the steepness of the incline from the hiker’s current position, and proceed in the direction of the steepest descent. We can assume steepness is not obvious from simple observation, but luckily, this hiker has an instrument to measure steepness. However, it takes time to do a single measurement and they want to get down before sunset. So, this hiker needs to decide how frequently to stop and measure the steepness, so they still can get down before sunset.
+
+Once we have our model we can run inference on it, which is when we prompt the model with text. For example, the prompt could be: “write a guest post for the Pragmatic Engineer.” This prompt then asks the model to predict the next most likely token (word). It makes this prediction based on past input, and it happens repeatedly, token by token, word by word, until it spits out your post! 
+
+Note from Gergely: just to say, not this post or any other I publish are made by ChatGPT! But it’s a fun experiment to learn how the tech works. Here’s what ChatGPT generates in response to this command, by always generating the next most likely token (word.) For more detail on this prediction technique, check out What is ChatGPT doing and why does it work? by Stehen Wolfram.
+
+Scalability challenge from self-attention
+
+Under the hood, we use the Transformer architecture, a key characteristic of which is that each token is aware of every other token. This approach is known as self-attention. A consequence is that the longer your text is – or context – the more math is needed.
+
+Unfortunately, self attention scales quadratically. If you want the model to predict the 100th token, it needs to do about 10,000 operations. If you want the model to predict the 1,000th token, it needs to do about 1 million operations.
+
+At first, this sounds like bad news. However, there are clever workarounds we can use to circumvent the quadratic scale problem. Before we get into how we solve it, we need to talk about the infrastructure powering ChatGPT.
+
+3. Importance of GPUs
+
+GPUs (Graphics Processing Units) are the lifeblood of ChatGPT and the APIs it’s built on. The extremely short supply of GPUs, their quirks, and cost, dominate how we operate and scale.
+
+To set the stage, let me introduce you to one of the GPUs we use.
+
+The NVIDIA H100. Image source: NVIDIA
+This is the NVIDIA H100. It has a special High Bandwidth Memory (HBM) memory attached to each GPU. The GPUs can talk to each other with a high bandwidth interconnect called NVLink, and they can talk to the outside world with a special ethernet alternative called Infiniband. We pack 8 of these in a single node. Nvidia sells a similar configuration called the DGX H100.
+
+For us, every bit of added compute or bandwidth directly impacts the ChatGPT user experience.
+
+4. Five scaling challenges
+
+There's a lot to talk about with scaling challenges from GPUs. We focus on:
+
+ • #1: GPU RAM and KV Cache
+
+ • #2: Batch size, ops:bytes, and arithmetic intensity
+
+ • #3: The right metrics to measure
+
+ • #4: Finding GPUs, wherever they are
+
+ • #5: Autoscaling; lack thereof
+
+Understanding these was critical while we scaled ChatGPT. Let’s get into them!
+
+Challenge #1: KV cache & GPU RAM
+
+Our big challenge is that self-attention scales quadratically, meaning that the more tokens we generate, we need quadratically more operations (about ~10,000 operations for the 100th token, but about 1,000,000 for the 1,000th.) How can we improve performance?
+
+An initial workaround is to cache the math we did for all prior tokens; the KV cache. We use the attention mechanism in our machine learning (ML) model. With this model, we use three vectors:
+
+ • Q: related to what we include
+
+ • K: related to what we use as input to output
+
+ • V: learned vector; the output of the calculations
+
+We can cache both K and V, hence the name “KV cache.” However, we cannot cache Q because this vector changes every time.
+
+We have to store KV Cache in GPU RAM. This is because moving data in GPU RAM has a speed of around 3TB/sec, when we use High Bandwidth Memory (HBM). However, if we push data across a PCIe bus (PCI Express: a high-speed bus standard, common on motherboards to transfer data,) we get about 30GB/sec. Using HBM is around two orders of magnitude faster (around 100 times) than PCIe!
+
+Why is HBM so fast? It’s physically bonded to the GPUs in stacked layers, with thousands of pins for massively parallel data throughput.
+
+This GPU HBM RAM is very expensive and quite limited. Most HBM RAM is also spent holding the model weights. As with any cache, when it fills up, we free up space by “expiring” the oldest data.
+
+“Cache misses” are expensive for our use case. A cache miss is not locating a cached value needed for our calculation; typically because we had to “expire” this value, and kick it out of our HBM memory to free up space. If there’s a cache miss, we need to recompute a whole ChatGPT conversation again! And we’re at the 1,000th character, so that could be closer to 1 million operations! 
+
+Our infrastructure shares GPU RAM across users. What this means is that as a user, your conversation may get evicted from the system (the GPU cache) if it has been idle for too long because we need to free up space for other conversations.
+
+This caching approach has several implications:
+
+ • GPU RAM is a most valuable commodity. In practice, GPU RAM, not compute resource, is the most frequent bottleneck for LLM operations.
+
+ • Cache miss rates are very important! Cache miss refers to events when the system tries to retrieve data from the cache – like the KV cache – but nothing is cached. Cache misses have massive, nonlinear influence on how much work the GPUs do. The higher the cache miss rate, the more that the GPUs need to work quadratically, not linearly.
+
+This means that when scaling ChatGPT, there wasn't some simple CPU utilization metric to look at. We had to look at KV Cache utilization, and how to maximize GPU RAM.
+
+Challenge #2: Optimizing batch size
+
+Batch size is a second metric to balance when scaling ChatGPT. Roughly speaking, batch size is the number of concurrent requests we run through a GPU.
+
+An H100 GPU can move 3.35TB of RAM per second into its registers, at most. GPU registers are the fast on-chip memories which store operands for the operations that the computing core will then execute.
+
+In the same second that the data is moved into the registers, the H100 can multiply 1.98 quadrillion 8-bit floating point numbers. Let’s divide this 1.98 quadrillion operations by the 3.35TB of data moved; the H100 can do 591 floating point operations in the time it takes to move 1 byte. 
+
+The H100 has a 591:1 ops:bytes ratio. If you're going to spend time moving around 1GB, you should do at least 591 billion floating-point operations per second (FLOPs.) Doing fewer than this means wasting GPU FLOPS. However, if you do more, you're waiting on memory bandwidth.
+
+In our models, the amount of memory we move around is relatively fixed at roughly the size of our model weights.
+
+We get some control over the process by adjusting our batch size, which changes the volume of mathematical calculations involved.
+
+When scaling ChatGPT, we needed to fully “saturate” GPUs, meaning to monitor our batch sizes so we had the right FLOPS, so the GPUs weren’t under-utilized for compute, but also not over-utilized so as to wait on memory bandwidth.
+
+In reality, it's effectively impossible to truly sustain the flop numbers printed on the box. We can use the math to get close, but a lot of experimentation in prod was required to fine tune everything.
+
+Challenge #3: The right metrics to measure
+
+The combination of batch size and KV cache utilization was the primary metric we focused on. These are two numbers we used to determine how loaded our servers were. We didn’t get to this metric from the start; it took time to figure out it works best for us.
+
+Initially, we had a simpler gpu utilization metric, similar to standard cpu utilization metrics. However, it turned out to be misleading, as simple utilization only said whether or not the gpu was doing math in a time period. It didn’t tell us:
+
+ • Whether we had saturated arithmetic intensity; the ratio of floating point operations to total data movement: FLOPs/byte. Basically, GPU utilization didn’t tell us if we were under-utilizing compute, or being starved of memory.
+
+ • Whether we were running out of KV cache. This is a problem because with KV cache misses, the GPU needs to do quadratically more computation to calculate uncached results.
+
+Other bottlenecks, too. KV cache and batch size were not the only bottlenecks we found. In the real world, we’ve had bottlenecks from:
+
+ • Memory bandwidth
+
+ • Network bandwidth between GPUs
+
+ • Network bandwidth between nodes (machines)
+
+ • …to name just three!
+
+To make it more complicated, the locations of bottlenecks change frequently. For example, asking ChatGPT to summarize an essay has vastly different performance characteristics from asking it to write one. We are constantly tweaking specific details on the LLM transformer model architecture and these changes affect where bottlenecks occur.
+
+There’s an unexpectedly wide variability in the constraints you run up against in the LLMs’ problem space. This makes it hard for us to solve, and for chip manufacturers to design chips that achieve the optimal balance. 
+
+For example, NVidia's new H100 chip is the generation after the A100 chip. The H100 increases compute (aka FLOPs) by about 6x, while memory size stays constant and memory bandwidth increases only 1.6x. Since we're frequently bottlenecked by memory, the dramatic increase in FLOPs (and cost) tends to go underutilized.
+
+The reality is that a top-of-the-line chip today like the NVIDIA H100 has a design locked in years ago. NVIDIA had no way to know of discoveries on the importance of memory back when the H100 chip was designed, as future architectures are hard to predict. The recently announced H200 chip has increased memory; however it took the industry a while to better understand these unique bottlenecks to running LLMs at scale.
+
+Challenge #4: Finding GPUs wherever they are
+
+Another challenge with GPUs was where to find them! Our company – and the AI space in general – has grown much faster than suppliers like NVIDIA, or the complete TSMC supply chain, can produce GPUs. With a supply chain as complex as semiconductors and data centers, bottlenecks happen in many places.
+
+One solution was to get GPUs from wherever we could. We use Microsoft Azure as our cloud provider, which has GPUs in many different geographic regions and data centers. As a result, we quickly found ourselves in many regions all over the world.
+
+From day one, our tiny team was forced to go multi-region, multi-cluster, and globally distributed. Our kubernetes clusters very quickly went from being treated like pets, to more like cattle.
+
+A well-balanced GPU fleet became more of a priority than allocating nearby GPUs. For ChatGPT, the biggest bottleneck in response time is how quickly GPUs can stream out one token at a time. This means that GPUs geographically closer to end users is less of a priority because the round-trip time a network request takes matters less, than GPUs being “ready to go.” My career has taught me the importance of computing at the edge for latency reasons. This ended up being less relevant for these workloads, especially when GPUs are so constrained.
+
+Challenge #5: Inability to autoscale
+
+A final, dominant challenge was the inability to scale up our GPU fleet. There are simply no more GPUs to buy or rent, and therefore no GPUs to autoscale into. The difficulty of acquiring GPUs continues to this day and shows no signs of easing up. The exponent on demand currently appears larger than the exponent on supply. Not only are there more users, but larger models require ever-more compute, and new techniques like agents take substantially more compute per user. 
+
+Note from Gergely: we recently covered Meta’s commitment to spend $7-9B on 350,000 NVIDIA H100 GPUs by the end of 2024 – around 15% of global supply!
+
+So, if you ever saw the "We are at capacity" message from ChatGPT, this was a correct statement! It meant we had nowhere to scale into, as we’d utilized all our GPUs at that time. 
+
+Unfortunately, models like GPT-4 take so much compute that GPUs are our only option right now, in order to offer our service at scale. Plain CPUs would be orders of magnitude slower.
+
+5. Lesson Learned
+
+Scaling ChatGPT is certainly not your average software engineering scaling problem. However, it has been a crash course in engineering scaling, with plenty of learnings to apply in other situations. Here are key lessons we learned.
+
+In early scaling, both the forest AND the trees are important. Low level details (trees,) like KV cache optimization and CUDA kernels, were as important as higher level system details (forest,) such as the global data center strategy. Our team's ability to jump across the stack – from the lowest levels of the GPUs, all the way to product decisions – was critical.
+
+Take your system’s constraints into account in an adaptive way. Before joining OpenAI, I was used to doing things like:
+
+ • Tweaking systems to achieve around 80% CPU utilization metrics – generally considered “good.” Once this metric is hit, sit back while the metric stays constant.
+
+ • Autoscale into an “infinitely big” cloud; meaning more machines can always be provisioned.
+
+ • Prioritize edge computing: move it very close to where users are, to reduce latency of roundtrip requests, and improve user experience.
+
+At OpenAI, none of these practices applied! We needed to come up with new approaches that were both practical to measure and scale. 
+
+And just when we’d figure out something that worked, a model architecture would shift, or a new inference idea would be proposed, or product decisions would change usage of the system. So, we needed to adapt, again and again.
+
+Dive deep. In the problem space in which we operate, the lowest-level implementation details really matter. It’s tempting to think of ChatGPT as a “black box” that takes text as input, and spits out slightly smarter text at the other end. However, the more people dove into the smallest details of how exactly the “black box” works, the better we became as a team and product.

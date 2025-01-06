@@ -1,41 +1,40 @@
 [package]
-categories=["api-bindings", "asynchronous"]
-description="The Easiest Rust Interface for Local LLMs, and an Interface for Deterministic Signals from Probabilistic LLM Vibes"
-edition.workspace=true
-homepage.workspace=true
-keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
-license.workspace=true
-name="llm_client"
-readme="README.md"
-repository.workspace=true
-version="0.0.6"
+categories = ["api-bindings", "asynchronous"]
+description = "The Easiest Rust Interface for Local LLMs, and an Interface for Deterministic Signals from Probabilistic LLM Vibes"
+edition.workspace = true
+homepage.workspace = true
+keywords = ["anthropic", "gguf", "llama-cpp", "llm", "openai"]
+license.workspace = true
+name = "llm_client"
+readme = "README.md"
+repository.workspace = true
+version = "0.1.0"
 
 [dependencies]
-anyhow.workspace=true
-colorful.workspace=true
-indenter.workspace=true
-indoc="2.0.5"
-llm_devices.workspace=true
-llm_interface.workspace=true
-llm_models.workspace=true
-llm_prompt.workspace=true
-llm_utils.workspace=true
-serde.workspace=true
-serde_json.workspace=true
-thiserror.workspace=true
-tokio.workspace=true
-tracing.workspace=true
-url.workspace=true
+anyhow.workspace = true
+colorful.workspace = true
+indenter.workspace = true
+indoc = "2.0.5"
+llm_devices.workspace = true
+llm_interface.workspace = true
+llm_models.workspace = true
+llm_prompt.workspace = true
+llm_utils.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+url.workspace = true
 
 [features]
-all=["llama_cpp_backend", "mistral_rs_backend"]
-default=["llama_cpp_backend"]
-llama_cpp_backend=["llm_interface/llama_cpp_backend"]
-mistral_rs_backend=["llm_interface/mistral_rs_backend"]
+all = ["llama_cpp_backend", "mistral_rs_backend"]
+default = []
+llama_cpp_backend = ["llm_interface/llama_cpp_backend"]
+mistral_rs_backend = ["llm_interface/mistral_rs_backend"]
 
 [dev-dependencies]
-llm_testing={path="../llm_testing"}
-serde.workspace=true
-serde_json.workspace=true
-serial_test.workspace=true
-tokio={workspace=true, features=["macros", "test-util"]}
+serde.workspace = true
+serde_json.workspace = true
+serial_test.workspace = true
+tokio = { workspace = true, features = ["macros", "test-util"] }

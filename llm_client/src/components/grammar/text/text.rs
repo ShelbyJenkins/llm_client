@@ -99,14 +99,13 @@ pub fn text_grammar(
         (Some(stop_word_done), Some(stop_word_no_result)) => {
             format!(
                 "root ::= ( item{{1,{}}} | \"{stop_word_no_result}\" ) \" {stop_word_done}\"\nitem ::= {disallowed}",
-                (item_token_length as f32 * 4.5).floor() as u32, 
+                (item_token_length as f32 * 4.5).floor() as u32,
             )
         }
         (Some(stop_word_done), None) => {
             format!(
                 "root ::= item{{1,{}}} \" {stop_word_done}\"\nitem ::= {disallowed}",
                 (item_token_length as f32 * 4.5).floor() as u32,
-      
             )
         }
         (None, Some(stop_word_no_result)) => {

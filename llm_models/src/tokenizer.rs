@@ -1,4 +1,3 @@
-use super::local_model::hf_loader::{HfTokenTrait, HuggingFaceLoader};
 use anyhow::{anyhow, Result};
 use llm_prompt::PromptTokenizer;
 use std::{fmt, path::PathBuf};
@@ -62,16 +61,6 @@ impl LlmTokenizer {
             with_special_tokens: false,
             white_space_token_id,
         })
-    }
-
-    pub fn new_from_hf_repo(hf_token: Option<&str>, repo_id: &str) -> Result<Self> {
-        let mut api: HuggingFaceLoader = HuggingFaceLoader::new();
-        if let Some(hf_token) = hf_token {
-            *api.hf_token_mut() = Some(hf_token.to_owned());
-        }
-
-        let local_path = api.load_file("tokenizer.json", repo_id)?;
-        LlmTokenizer::new_from_tokenizer_json(&local_path)
     }
 
     pub fn tokenize<T: AsRef<str>>(&self, str: T) -> Vec<u32> {

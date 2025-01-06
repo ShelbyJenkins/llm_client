@@ -41,7 +41,7 @@ impl BasicCompletion {
         Ok(res)
     }
 
-    fn parse_response(&self, content: &str) -> crate::Result<String> {
+    pub fn parse_response(&self, content: &str) -> crate::Result<String> {
         if content.is_empty() {
             return Err(anyhow::format_err!(
                 "parse_response error: content.is_empty()"

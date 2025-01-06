@@ -1,43 +1,45 @@
 [package]
-description="The Backend for the llm_client Crate"
-edition.workspace=true
-homepage.workspace=true
-license.workspace=true
-name="llm_interface"
-readme="README.md"
-repository.workspace=true
-version="0.0.2"
+description = "The Backend for the llm_client Crate"
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+name = "llm_interface"
+readme = "README.md"
+repository.workspace = true
+version = "0.1.0"
 
 [dependencies]
-anyhow.workspace=true
-backoff={version="0.4.0", features=["tokio"]}
-bytes="1.7.2"
-clap={version="4.5.17", optional=true}
-colorful.workspace=true
-dotenvy.workspace=true
-indenter.workspace=true
-llm_devices.workspace=true
-llm_models.workspace=true
-llm_prompt.workspace=true
-reqwest="0.12.7"
-secrecy="0.8.0"
-serde.workspace=true
-serde_json.workspace=true
-sysinfo={version="0.31.4", optional=true, default-features=false, features=["system"]}
-thiserror.workspace=true
-tokio.workspace=true
-tracing.workspace=true
-url="2.5.2"
+anyhow.workspace = true
+backoff = { version = "0.4.0", features = ["tokio"] }
+bytes = "1.7.2"
+clap = { version = "4.5.17", optional = true }
+colorful.workspace = true
+dotenvy.workspace = true
+indenter.workspace = true
+llm_devices.workspace = true
+llm_models.workspace = true
+llm_prompt.workspace = true
+reqwest = "0.12.7"
+secrecy = "0.8.0"
+serde.workspace = true
+serde_json.workspace = true
+sysinfo = { version = "0.31.4", optional = true, default-features = false, features = [
+    "system",
+] }
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+url = "2.5.2"
 
 [features]
-all=["llama_cpp_backend", "mistral_rs_backend"]
-default=["llama_cpp_backend"]
-llama_cpp_backend=["clap", "sysinfo"]
-mistral_rs_backend=["sysinfo"]
+all = ["llama_cpp_backend", "mistral_rs_backend"]
+default = []
+llama_cpp_backend = ["clap", "sysinfo"]
+mistral_rs_backend = ["sysinfo"]
 
 [dev-dependencies]
-serial_test.workspace=true
-tokio={workspace=true, features=["macros", "test-util"]}
+serial_test.workspace = true
+tokio = { workspace = true, features = ["macros", "test-util"] }
 
 # [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 # mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", rev="776c11664f36f690937db53cd1809614e64127d4", features=["cuda", "cudnn"]}
@@ -46,14 +48,14 @@ tokio={workspace=true, features=["macros", "test-util"]}
 # mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", rev="776c11664f36f690937db53cd1809614e64127d4", features=["metal"]}
 
 [build-dependencies]
-cargo_metadata="0.18.1"
-llm_devices.workspace=true
+cargo_metadata = "0.18.1"
+llm_devices.workspace = true
 
 [[bin]]
-name="server_runner"
-path="src/llms/local/llama_cpp/bin/server_runner.rs"
-required-features=["llama_cpp_backend"]
+name = "server_runner"
+path = "src/llms/local/llama_cpp/bin/server_runner.rs"
+required-features = ["llama_cpp_backend"]
 
 [package.metadata.llama_cpp_backend]
-repo="https://github.com/ggerganov/llama.cpp"
-tag="b3943"
+repo = "https://github.com/ggerganov/llama.cpp"
+tag = "b3943"

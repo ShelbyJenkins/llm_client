@@ -1,19 +1,20 @@
 [package]
-description="LLM Prompting"
-edition.workspace=true
-homepage.workspace=true
-license.workspace=true
-name="llm_prompt"
-readme="README.md"
-repository.workspace=true
-version="0.0.1"
+description = "LLM Prompting"
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+name = "llm_prompt"
+readme = "README.md"
+repository.workspace = true
+version = "0.1.0"
 
 [dependencies]
-anyhow.workspace=true
-colorful.workspace=true
-indenter.workspace=true
-minijinja="2.0.1"
-thiserror.workspace=true
+anyhow.workspace = true
+colorful.workspace = true
+indenter.workspace = true
+thiserror.workspace = true
+
+minijinja = "2.0.1"
 
 [dev-dependencies]
-llm_models={path="../llm_models"}
+llm_models.workspace = true

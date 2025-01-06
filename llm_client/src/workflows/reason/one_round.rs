@@ -1,9 +1,5 @@
 use super::{
-    decision::DecisionTrait,
-    PrimitiveTrait,
-    ReasonResult,
-    ReasonTrait,
-    SentencesPrimitive,
+    decision::DecisionTrait, PrimitiveTrait, ReasonResult, ReasonTrait, SentencesPrimitive,
 };
 use crate::components::{
     cascade::{step::StepConfig, CascadeFlow},

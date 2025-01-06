@@ -1,7 +1,5 @@
-#![feature(f16)]
 use crate::tokenizer::LlmTokenizer;
 pub mod api_model;
-pub mod local_model;
 pub mod tokenizer;
 
 #[allow(unused_imports)]

@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-pub(crate) use anyhow::{Error, anyhow, bail, Result};
+pub(crate) use anyhow::{anyhow, bail, Error, Result};
 #[allow(unused_imports)]
 pub(crate) use tracing::{debug, error, info, span, trace, warn, Level};
 

@@ -1,0 +1,32 @@
+[package]
+authors = ["Shelby Jenkins"]
+categories = ["multimedia::encoding", "science"]
+description = "The best possible text chunker and text splitter and other text tools"
+edition = "2021"
+homepage = "https://github.com/shelbyJenkins/llm_utils"
+keywords = ["llm", "nlp"]
+license = "MIT"
+name = "llm_utils"
+readme = "README.md"
+repository = "https://github.com/shelbyJenkins/llm_utils"
+version = "0.1.0"
+
+[dependencies]
+llm_models.workspace = true
+
+anyhow = "1.0.86"
+html2text = "0.12.6"
+linkify = "0.10.0"
+rayon = "1.10.0"
+readability = "0.3.0"
+regex = "1.11.0"
+serde = { version = "1.0.202" }
+serde_json = "1.0.117"
+thiserror = "1.0.64"
+unicode-properties = "0.1.3"
+unicode-segmentation = "1.11.0"
+url = "2.5.2"
+
+[dev-dependencies]
+text-splitter = { version = "0.14.0", features = ["tiktoken-rs"] }
+tiktoken-rs = "0.5.9"

@@ -98,7 +98,7 @@ Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find 
 
 ### Dependencies 
 
-* [llm_utils](https://github.com/shelbyJenkins/llm_utils) is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
+* [llm_utils](./llm_utils/) is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
 * [llm_interface](./llm_interface) is a sub-crate of llm_client. It is the backend for LLM inference.
 * [llm_devices](./llm_devices) is a sub-crate of llm_client. It contains device and build managment behavior.
 * [llama.cpp](https://github.com/ggerganov/llama.cpp) is used in server mode for LLM inference as the current default.

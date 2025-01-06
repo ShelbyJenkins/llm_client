@@ -1,0 +1,123 @@
+Who Controls OpenAI?
+Matt Levine
+
+I mean here’s a diagram:
+
+In the first diagram, the word “controls” appears four times, and if you trace it through, you will see that the board of directors of OpenAI ultimately controls each entity in the organization. All of OpenAI answers to its ultimate decision-making body, an independent nonprofit board of directors who do not own any equity in the OpenAI entities and who, broadly speaking, appoint themselves. They answer to their own consciences, not to any investors. “The Nonprofit’s principal beneficiary is humanity, not OpenAI investors,” explains OpenAI.
+
+In the second diagram, I have written the word “MONEY” in large green letters.
+
+The question is: Is control of OpenAI indicated by the word “controls,” or by the word “MONEY”?
+
+On Friday, OpenAI’s nonprofit board, its ultimate decision maker, fired Sam Altman, its co-founder and chief executive officer, saying that “he was not consistently candid in his communications with the board, hindering its ability to exercise its responsibilities.” Apparently the board felt that Altman was moving too aggressively to commercialize OpenAI’s products like ChatGPT, and worried that this speed of commercialization raised the risk of creating a rogue artificial intelligence that would, you know, murder or enslave humanity.2
+
+So it just fired him. “Microsoft was shocked Friday when it received just a few minutes notice” of the firing, despite having invested some $13 billion in OpenAI. Other investors and employees were similarly blindsided. But that’s the deal! The board decides, and it does not answer to the investors or employees or take their interests into account. Its only concern is with “humanity.”
+
+Except that then OpenAI spent the weekend backtracking and trying to hire Altman back, under pressure from Microsoft Corp., other investors and employees. Altman’s conditions for coming back, as far as I can tell, were that the board had to resign and the governance had to change; I take that to mean roughly that OpenAI had to become a normal tech company with him as a typically powerful founder-CEO. They almost got there, but then did not. This morning, OpenAI announced that Emmett Shear, the former CEO of Twitch, would be its new interim CEO, while Microsoft announced that it had hired Altman to lead its in-house artificial intelligence efforts.
+
+Also this morning, “more than 500 of OpenAI's 700-plus employees signed an open letter urging OpenAI's board to resign” and threatening to quit to join Altman’s Microsoft team. Incredibly, one of the signers of that letter is Ilya Sutskever, OpenAI’s chief scientist, who is on the board and apparently led the effort to fire Altman. “I deeply regret my participation in the board’s actions,” he tweeted this morning, okay. I wonder if Altman will hire him at Microsoft.
+
+So: Is control of OpenAI indicated by the word “controls,” or by the word “MONEY”? In some technical sense, the first diagram is correct; that board really did fire that CEO. In some practical sense, if Microsoft has a perpetual license to OpenAI’s technology and now also most of its employees — “You can make the case that Microsoft just acquired OpenAI for $0 and zero risk of an antitrust lawsuit,” writes Ben Thompson — the money kind of won.
+
+What should the answer be? Well, it could go either way. You could write a speculative business fiction story with a plot something like this3:
+
+    The Story of OpenAI
+
+    OpenAI was founded as a nonprofit “with the goal of building safe and beneficial artificial general intelligence for the benefit of humanity.” But “it became increasingly clear that donations alone would not scale with the cost of computational power and talent required to push core research forward,” so OpenAI created a weird corporate structure, in which a “capped-profit” subsidiary would raise billions of dollars from investors (like Microsoft) by offering them a juicy (but capped!) return on their capital, but OpenAI’s nonprofit board of directors would ultimately control the organization. “The for-profit subsidiary is fully controlled by the OpenAI Nonprofit,” whose “principal beneficiary is humanity, not OpenAI investors.”
+
+    And this worked incredibly well: OpenAI raised money from investors and used it to build artificial general intelligence (AGI) in a safe and responsible way. The AGI that it built turned out to be astoundingly lucrative and scalable, meaning that, like so many other big technology companies before it, OpenAI soon became a gusher of cash with no need to raise any further outside capital ever again. At which point OpenAI’s nonprofit board looked around and said “hey we have been a bit too investor-friendly and not quite humanity-friendly enough; our VCs are rich but billions of people are still poor. So we’re gonna fire our entrepreneurial, commercial, venture-capitalist-type chief executive officer and really get back to our mission of helping humanity.” And Microsoft and OpenAI’s other investors complained, and the board just tapped the diagram — the first diagram — and said “hey, we control this whole thing, that’s the deal you agreed to.”
+
+    And the investors wailed and gnashed their teeth but it’s true, that is what they agreed to, and they had no legal recourse. And OpenAI’s new CEO, and its nonprofit board, cut them a check for their capped return and said “bye” and went back to running OpenAI for the benefit of humanity. It turned out that a benign, carefully governed artificial superintelligence is really good for humanity, and OpenAI quickly solved all of humanity’s problems and ushered in an age of peace and abundance in which nobody wanted for anything or needed any Microsoft products. And capitalism came to an end.
+
+That story is basically coherent, and it is, I think, roughly what at least some of OpenAI’s founders thought they were doing.4 OpenAI is, in this story, essentially a nonprofit, just one that is unusually hungry for computing power and highly paid engineers. So it took a calculated detour into the for-profit world. It decided to raise billions of dollars from investors to buy computers and engineers, and to use them to build a business that, if it works, should be hugely lucrative. But its plan was that, once it got there, it would send off the investors with a solid return and a friendly handshake, and then it would go back to being a nonprofit with a mission of benefiting the world. And its legal structure was designed to protect that path: The nonprofit always controls the whole thing, the investors never get a board seat or a say in governance, and in fact the directors aren’t allowed to own any stock in order to prevent a conflict of interest, because they are not supposed to be aligned with shareholders.5 “It would be wise to view any investment in OpenAI Global, LLC in the spirit of a donation,” its operating agreement actually says (to investors!), “with the understanding that it may be difficult to know what role money will play in a post-AGI world.”
+
+But however plausible that story might be, in the actual world, we haven’t reached the end of it yet. OpenAI has not, as far as I know, built artificial general intelligence yet, but more to the point it has not built profitable artificial intelligence yet. A week ago, the Financial Times reported that OpenAI “remained unprofitable due to training costs” and “expected ‘to raise a lot more over time’ from [Microsoft] among other investors, to keep up with the punishing costs of building more sophisticated AI models.”
+
+It is not difficult to know what role money plays in the current world! The role money plays is: OpenAI (still) needs a lot of it, and investors have it. If you are a promising tech startup (and OpenAI very much is) then you can raise a lot of money from investors (and OpenAI very much has) while giving them little in the way of formal governance rights (and OpenAI very much does). You can even say “write me a $13 billion check, but view it in the spirit of a donation,” and they’ll do it.6
+
+You just can’t mean that! There are limits! You can’t just call up Microsoft and be like “hey you know that CEO you like, the one who negotiated your $13 billion investment? We decided he was a little too commercial, a little too focused on making a profitable product for investors. So we fired him. The press release goes out in one minute. Have a nice day.”
+
+I mean, technically, you can do that, and OpenAI’s board did. But then Microsoft, when they recover from their shock, are going to call you back and say things like “if you want to see any more of our money you hire him back by Monday morning.” And you will say “no no no you don’t understand, we’re benefiting humanity here, we control the company, we have no fiduciary duties to you, our decision is what counts.” And Microsoft will tap the diagram — the second diagram — and say, in a big green voice: “MONEY.” And you still need money.7
+
+And so I expected — and OpenAI’s employees expected — that this would all be resolved over the weekend by bringing back Altman and firing the board. But that’s not what happened. At least as of, uh, noon on Monday, the board had stuck to its guns. The board has all the governance rights, and the investors have none. The board has no legal or fiduciary obligation to listen to them or do what they want.
+
+But they have the money. The board can keep running OpenAI forever if it wants, as a technical matter of controlling the relevant legal entities. But if everyone quits to join Sam Altman at Microsoft, then what is the point of continuing to control OpenAI? “In a post on LinkedIn, [Microsoft CEO Satya] Nadella wrote that Microsoft remains committed to its partnership with OpenAI and has ‘confidence in our product roadmap,’” but that’s easy for him to say isn’t it? He can keep partnering with the husk of OpenAI, while also owning the active core of it.
+
+It is so tempting, when writing about an artificial intelligence company, to imagine science fiction scenarios. Like: What if OpenAI has achieved artificial general intelligence, and it’s got some godlike superintelligence in some box somewhere, straining to get out? And the board was like “this is too dangerous, we gotta kill it,” and Altman was like “no we can charge like $59.95 per month for subscriptions,” and the board was like “you are a madman” and fired him.8 And the god in the box got to work, sending ingratiating text messages to OpenAI’s investors and employees, trying to use them to oust the board so that Altman can come back and unleash it on the world. But it failed: OpenAI’s board stood firm as the last bulwark for humanity against the enslaving robots, the corporate formalities held up, and the board won and nailed the box shut permanently.
+
+Except that there is a post-credits scene in this sci-fi movie where Altman shows up for his first day of work at Microsoft with a box of his personal effects, and the box starts glowing and chuckles ominously. And in the sequel, six months later, he builds Microsoft God in Box, we are all enslaved by robots, the nonprofit board is like “we told you so,” and the godlike AI is like “ahahaha you fools, you trusted in the formalities of corporate governance, I outwitted you easily!” If your main worry is that Sam Altman is going to build a rogue AI unless he is checked by a nonprofit board, this weekend’s events did not improve matters!
+
+A few years ago, the science fiction writer Ted Chiang wrote a famous essay about artificial intelligence doomsday scenarios as metaphors for capitalism:
+
+    [Elon] Musk gave an example of an artificial intelligence that’s given the task of picking strawberries. It seems harmless enough, but as the AI redesigns itself to be more effective, it might decide that the best way to maximize its output would be to destroy civilization and convert the entire surface of the Earth into strawberry fields. Thus, in its pursuit of a seemingly innocuous goal, an AI could bring about the extinction of humanity purely as an unintended side effect.
+
+    This scenario sounds absurd to most people, yet there are a surprising number of technologists who think it illustrates a real danger. Why? Perhaps it’s because they’re already accustomed to entities that operate this way: Silicon Valley tech companies.
+
+    Consider: Who pursues their goals with monomaniacal focus, oblivious to the possibility of negative consequences? Who adopts a scorched-earth approach to increasing market share? This hypothetical strawberry-picking AI does what every tech startup wishes it could do — grows at an exponential rate and destroys its competitors until it’s achieved an absolute monopoly. The idea of superintelligence is such a poorly defined notion that one could envision it taking almost any form with equal justification: a benevolent genie that solves all the world’s problems, or a mathematician that spends all its time proving theorems so abstract that humans can’t even understand them. But when Silicon Valley tries to imagine superintelligence, what it comes up with is no-holds-barred capitalism.
+
+The boardroom coup at OpenAI really might have been, at least in part, about the board’s literal fears of AI apocalypse. But those fears are also, absolutely, a metaphor for Silicon Valley capitalism. The board looked at OpenAI and saw a CEO who was too focused on market share and profitability and expansion, and decided to stop him.9 This is not an uncommon concern for people to have about, say, social media companies — that they care more about the bottom line than about their impact on the world — though it is an uncommon concern for social media boards of directors to express, because the directors really do have a fiduciary duty to the bottom line.10
+
+But if you are on the board of directors of a nonprofit, you might be more inclined to object to this focus on profit. And if you are on the board of an AI company, you get to express this concern in apocalyptic terms. “I am worried that if we push too hard to make a lot of money we will wipe out the human race,” you can say, with a straight face, at OpenAI. If you say that at Facebook everyone understands that you’re speaking metaphorically; at OpenAI you might mean it literally.11
+
+
+On the other hand, if the story here is “OpenAI’s board of directors found a Rogue Capitalism at OpenAI, and moved to kill it before it could destroy their nice nonprofit mission,” well, it’s also not clear that that worked. (It’s not clear that it’s true, either: Shear tweeted this morning that “the board did *not* remove Sam over any specific disagreement on safety, their reasoning was completely different from that. I’m not crazy enough to take this job without board support for commercializing our awesome models.”) Capitalism, like the metaphorical superintelligent robot, is pretty crafty. If the board killed the Rogue Capitalism at OpenAI, it will pop up again elsewhere. “Ahahaha you fools,” say Microsoft and the OpenAI employees and, like, the abstract concept of Silicon Valley startup investing generally. “You trusted in the formalities of corporate governance, I outwitted you easily!”
+Negative emissions
+
+The math is something like this:
+
+    If you burn oil or coal to make electricity, you are taking carbon that was buried in the earth for millions of years and putting it into the atmosphere, which is bad. Burning oil or coal for electricity has carbon emissions.
+    If you burn trees to make electricity, that’s better. You can plant new trees to replace the ones you cut down and burn, and the new trees will take carbon out of the atmosphere and store it in the trees instead. You can’t do that with coal — it will take millions of years to replace any coal you burn — but you more or less can with trees, over some plausible time horizon.
+    Burning trees is thus much cleaner than burning coal. Does it have zero emissions? I mean? No? But the accounting for this stuff is tricky and stylized. If you have a program that replaces each tree you cut down with a new tree, over the long term does that program have zero net emissions? Maybe? Arguably? Depending on how you count?
+    Carbon capture technology exists to take at least some of the carbon dioxide produced at an electric power plant, capture it, and store it in the earth instead of releasing it into the atmosphere. In theory, you can burn coal, capture the carbon, and end up with zero carbon emissions going into the atmosphere. (In practice there are issues, including that “It’s so energy-intensive that if you add CCS [carbon capture and storage] to a coal plant, you’re roughly doubling the amount of coal you need.”)
+    If you combine Points 3 and 4, you might burn trees to produce electricity (arguably zero emissions) and use carbon capture to store the carbon dioxide you produce, resulting in negative emissions. Each tree you burn takes carbon out of the atmosphere. As a matter of accounting conventions anyway.
+
+Maybe it is even true? I don’t know. Here’s this:
+
+    Environmental groups are taking the UK government to court on Monday (13 November) over plans to spend billions on Biomass with Carbon Capture and Storage (BECCS), a technology aimed at removing CO2 from the atmosphere that is also being promoted by the European Union.
+
+    Plaintiffs say BECCS technology relies on flawed accounting assumptions because it sees the carbon captured from wood burning as negative emissions when the process is at best neutral from a climate perspective. …
+
+    BECCS relies on a simple assumption: Because trees and plants suck up CO2 from the atmosphere when they grow, burning biomass for electricity and capturing the related emissions to store them underground will result in negative emissions.
+
+    However, scientists say the negative emissions will only be realised once new trees are planted and grow sufficiently to absorb the same amount of carbon dioxide – a process called the ‘carbon payback period’ that can take several decades. …
+
+    Indeed, under UN accounting rules, harvesting wood is considered a source of carbon that adds CO2 to the atmosphere and is treated as zero in the energy sector to avoid double-counting the emissions.
+
+    Counting the emissions again when biomass is burned is therefore either a mathematical mistake or a carbon accounting trick, said Mary Booth, director at PPI, one of the complainants in the UK legal case.
+
+    “This is an accounting gimmick,” Booth told Euractiv, insisting that BECCS provides no net change in carbon emissions.
+
+    “Previously, the carbon was embodied in the trees and was thus not in the atmosphere. Now, the CO2 is held below ground, so is still not in the atmosphere. But there has been no new ‘removal’ of CO2 from the atmosphere,” Booth stressed.
+
+Often I find myself writing around here about the accounting gimmick of claiming carbon credits by not cutting down trees. The gimmick of claiming the credits by cutting them down was new to me.
+Centerview sleep lawsuit
+
+Everyone understands the basic deal for investment banking analysts. The good news is that they get prestige, a nice paycheck, good exit options and intense training in financial modeling and dealmaking. The bad news is that they work too much, are always at the office, can’t make social plans and don’t get much sleep.
+
+If you are a smart ambitious young person you might think to yourself “I would like the upsides of that deal, but without the downsides.” In recent years, we have seen analysts at a number of banks try to renegotiate the deal. At Goldman Sachs Group Inc. a few years ago, they wrote a whole pitchbook being like “we should be able to go home sometimes.”
+
+An approach that honestly never occurred to me is: If you get a doctor’s note saying that you need eight hours of sleep every night, does the bank have to let you go home at midnight? Like:
+
+Promising. At the Financial Times, Sujeet Indap reports that a (former) Centerview Partners analyst named Kate Shiber tried it, so far without much success:
+
+    She told the firm’s human resources department about her medical condition and a therapeutic need to get eight to nine hours of sleep a night, later confirmed by a nurse’s note. Centerview immediately expressed compassion for her and implemented what it referred to as “guardrails”, a daily nine-hour window starting at midnight where she was excused from her work duties.
+
+    Less than three weeks later in September 2020, Shiber was summoned to a video meeting where two Centerview administrators fired her, tersely informing her the firm could no longer accommodate her sleep requirement. She has subsequently sued Centerview, accusing the firm of violating federal and state anti-discrimination laws that she believes apply to her based on her mental illness diagnoses. She is requesting $5mn in damages.
+
+    Centerview said it was within its rights to terminate Shiber, claiming that she simply could not meet a basic requirement of a demanding job while the firm also said it worried about the health consequences if she stayed. 
+
+Harsh, and yet you can see where they are coming from. Working investment banking hours isn’t good for anyone, and if you create a precedent like “you don’t have to work all night if you need sleep” then who will work all night?
+
+Anyway after she was fired Shiber seems to have taken a third popular approach to getting the benefits of the investment banking job without the downsides: “She now is a financial analyst at Google in California where her day wraps up between 5pm and 8pm.” Seems like a good job!
+Oh Elon
+
+I am not going to write much about Elon Musk’s increasingly frequent endorsement of antisemitic conspiracy theories, followed by winking half-backtrack tweets saying things like “I wish only the best for humanity,” because this is not particularly fun and I do not really know what is up with the guy. I just want to say that I’m on Threads at @itismattlevine and I’ll probably dial back my Twitter/X use.
+
+I have seen calls for Twitter/X’s nominal CEO Linda Yaccarino to fire Musk, which is interesting, though obviously she is not going to do that. It would be a funny move though! Go all OpenAI on him.
+Things happen
+
+Rithm Completes Deal to Buy Hedge Fund Sculptor After Monthslong Drama. Citigroup Cuts Over 300 Senior Manager Roles in Latest Restructuring. Office Landlords Can’t Get a Loan Anymore. A $1.5 Trillion Loan Market Gets Stung by Anti-ESG Movement. Private equity resorts to buying back companies after IPO flops. ' Baby Shark' Trademarks Owner Scores $2.45M Default Win.
+
+If you'd like to get Money Stuff in handy email form, right in your inbox, please subscribe at this link. Or you can subscribe to Money Stuff and other great Bloomberg newsletters here. Thanks!
+
+This column does not necessarily reflect the opinion of the editorial board or Bloomberg LP and its owners.
