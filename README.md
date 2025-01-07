@@ -15,20 +15,9 @@
 
 # LazAI LLM Client: The Easiest Rust Interface for Remote and Local LLMs
 
-```toml
-# For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
+```shell
+// For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
 cargo add llm_client --git https://github.com/lazai-labs/llm_client
-```
-
-This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
-
-```rust
-use Llmclient::prelude::*;
-// Loads the largest quant available based on your VRAM or system memory
-let llm_client = LlmClient::llama_cpp()
-    .mistral7b_instruct_v0_3() // Uses a preset model
-    .init() // Downloads model from hugging face and starts the inference interface
-    .await?;
 ```
 
 Several of the most common models are available as presets. Loading from local models is also fully supported. See [models.md](./docs/models.md) for more information.
@@ -108,7 +97,6 @@ Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find 
 ## Contact
 
 Shelby Jenkins - Here or Linkedin 
-
 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/ShelbyJenkins/llm_client.svg?style=for-the-badge
