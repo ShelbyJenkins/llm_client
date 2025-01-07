@@ -7,7 +7,7 @@ use bytes::Bytes;
 use serde::{de::DeserializeOwned, Serialize};
 
 #[derive(Debug, Clone)]
-pub(crate) struct ApiClient<C: ApiConfigTrait> {
+pub struct ApiClient<C: ApiConfigTrait> {
     http_client: reqwest::Client,
     pub config: C,
     pub backoff: backoff::ExponentialBackoff,

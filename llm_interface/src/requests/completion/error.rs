@@ -29,4 +29,7 @@ pub enum CompletionError {
         "NonMatchingStopSequence: One of the sequences is required, but response's stop sequence was: {0}."
     )]
     NonMatchingStopSequence(String),
+    /// Json serialization or deserialization errors
+    #[error("JsonError: {0}")]
+    JsonError(#[from] serde_json::Error),
 }

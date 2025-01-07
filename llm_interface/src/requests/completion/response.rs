@@ -3,6 +3,8 @@ use crate::requests::{
     stop_sequence::StoppingSequence,
 };
 
+use super::tool::ToolCall;
+
 pub struct CompletionResponse {
     /// A unique identifier for the chat completion.
     pub id: String,
@@ -17,6 +19,7 @@ pub struct CompletionResponse {
     pub generation_settings: GenerationSettings,
     pub timing_usage: TimingUsage,
     pub token_usage: TokenUsage,
+    pub tool_calls: Option<Vec<ToolCall>>,
 }
 
 impl std::fmt::Display for CompletionResponse {
@@ -41,6 +44,8 @@ pub enum CompletionFinishReason {
     NonMatchingStoppingSequence(Option<String>),
     /// The completion finished because the model reached the maximum token limit.
     StopLimit,
+    /// The completion finished because the model use the tool
+    ToolsCall,
 }
 
 impl std::fmt::Display for CompletionFinishReason {
@@ -54,6 +59,7 @@ impl std::fmt::Display for CompletionFinishReason {
                 write!(f, "NonMatchingStoppingSequence({:?})", seq)
             }
             CompletionFinishReason::StopLimit => write!(f, "StopLimit"),
+            CompletionFinishReason::ToolsCall => write!(f, "ToolsCall"),
         }
     }
 }

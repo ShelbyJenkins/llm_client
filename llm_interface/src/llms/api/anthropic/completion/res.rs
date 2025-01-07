@@ -1,5 +1,6 @@
 use crate::requests::completion::*;
 use serde::{Deserialize, Serialize};
+use tool::{Function, ToolCall};
 
 impl CompletionResponse {
     pub fn new_from_anthropic(
@@ -42,7 +43,7 @@ impl CompletionResponse {
             .content
             .first()
             .ok_or_else(|| CompletionError::ReponseContentEmpty)?
-            .text
+            .text()
             .to_owned();
 
         Ok(Self {
@@ -55,6 +56,22 @@ impl CompletionResponse {
             generation_settings: GenerationSettings::new_from_anthropic(req, &res),
             timing_usage: TimingUsage::new_from_generic(req.start_time),
             token_usage: TokenUsage::new_from_anthropic(&res),
+            tool_calls: match res.content.as_slice() {
+                [CompletionContent::ToolUse {
+                    name,
+                    input,
+                    id,
+                    r#type,
+                }, ..] => Some(vec![ToolCall {
+                    id: id.to_owned(),
+                    r#type: r#type.to_owned(),
+                    function: Function {
+                        name: name.to_owned(),
+                        arguments: serde_json::to_string(input)?,
+                    },
+                }]),
+                _ => None,
+            },
         })
     }
 }
@@ -95,9 +112,32 @@ pub struct AnthropicCompletionResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-pub struct CompletionContent {
+#[serde(untagged)]
+pub enum CompletionContent {
     /// The single text content.
-    pub text: String,
+    String(String),
+    Text {
+        r#type: String,
+        text: String,
+    },
+    ToolUse {
+        r#type: String,
+        id: String,
+        name: String,
+        input: serde_json::Value,
+    },
+}
+
+impl CompletionContent {
+    pub fn text(&self) -> String {
+        match self {
+            CompletionContent::String(text) => text.to_string(),
+            CompletionContent::Text {
+                r#type: _, text, ..
+            } => text.to_string(),
+            CompletionContent::ToolUse { .. } => "".to_string(),
+        }
+    }
 }
 
 /// Usage statistics for the completion request.

@@ -1,7 +1,9 @@
-use crate::requests::completion::{error::CompletionError, request::CompletionRequest};
+use crate::requests::completion::{
+    error::CompletionError, request::CompletionRequest, ToolChoice, ToolDefinition,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Default, Debug, Deserialize)]
 pub struct AnthropicCompletionRequest {
     /// ID of the model to use.
     ///
@@ -48,6 +50,14 @@ pub struct AnthropicCompletionRequest {
     /// min: 0.0, max: 1.0, default: None
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
+
+    /// The tools for the request, default: None
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<ToolDefinition>>,
+
+    /// The tool choice for the request, default: None
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<ToolChoice>,
 }
 
 impl AnthropicCompletionRequest {
@@ -98,6 +108,16 @@ impl AnthropicCompletionRequest {
             system: system_prompt,
             temperature: temperature(req.config.temperature)?,
             top_p: top_p(req.config.top_p)?,
+            tools: if !req.tools.is_empty() {
+                Some(req.tools.clone())
+            } else {
+                None
+            },
+            tool_choice: if !req.tools.is_empty() {
+                Some(req.tool_choice.clone())
+            } else {
+                None
+            },
         })
     }
 }

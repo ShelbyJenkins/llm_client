@@ -25,20 +25,20 @@ impl BasicCompletion {
     }
 
     pub async fn run(&mut self) -> crate::Result<CompletionResponse> {
-        let mut res = self.base_req.request().await?;
+        let mut _res = self.base_req.request().await?;
 
         match *self.base_req.backend {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(_) => {
-                res.content = self.parse_response(&res.content)?;
+                _res.content = self.parse_response(&_res.content)?;
             }
             #[cfg(feature = "mistral_rs_backend")]
             LlmBackend::MistralRs(_) => {
-                res.content = self.parse_response(&res.content)?;
+                _res.content = self.parse_response(&_res.content)?;
             }
             _ => (),
         }
-        Ok(res)
+        Ok(_res)
     }
 
     pub fn parse_response(&self, content: &str) -> crate::Result<String> {

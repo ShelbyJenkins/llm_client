@@ -12,6 +12,12 @@ pub use prelude::*;
 #[allow(unused_imports)]
 pub(crate) use tracing::{debug, error, info, span, trace, warn, Level};
 
+pub use llm_devices as devices;
+pub use llm_interface as interface;
+pub use llm_models as models;
+pub use llm_prompt as prompt;
+pub use llm_utils as utils;
+
 pub struct LlmClient {
     pub backend: std::sync::Arc<llm_interface::llms::LlmBackend>,
 }
