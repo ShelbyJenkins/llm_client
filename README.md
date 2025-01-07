@@ -13,11 +13,11 @@
 [![MIT License][license-shield]][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-# The Easiest Rust Interface for Local LLMs
+# LazAI LLM Client: The Easiest Rust Interface for Remote and Local LLMs
 
 ```toml
 # For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
-llm_client="*"
+cargo add llm_client --git https://github.com/lazai-labs/llm_client
 ```
 
 This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
