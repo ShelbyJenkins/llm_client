@@ -2,7 +2,7 @@ use crate::requests::{completion::*, stop_sequence::StopSequences};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Default, Debug, Deserialize)]
 pub struct OpenAiCompletionRequest {
     /// ID of the model to use.
     /// See the [model endpoint compatibility](https://platform.openai.com/docs/models/model-endpoint-compatibility) table for details on which models work with the Chat API.
@@ -57,6 +57,14 @@ pub struct OpenAiCompletionRequest {
     /// min: 0.0, max: 1.0, default: None
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
+
+    /// The tools for the request, default: None
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<ToolDefinition>>,
+
+    /// The tool choice for the request, default: None
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<String>,
 }
 
 impl OpenAiCompletionRequest {
@@ -83,6 +91,16 @@ impl OpenAiCompletionRequest {
             stop: Stop::new(&req.stop_sequences)?,
             temperature: Some(req.config.temperature),
             top_p: req.config.top_p,
+            tools: if !req.tools.is_empty() {
+                Some(req.tools.clone())
+            } else {
+                None
+            },
+            tool_choice: if !req.tools.is_empty() {
+                Some("auto".to_string())
+            } else {
+                None
+            },
         })
     }
 }

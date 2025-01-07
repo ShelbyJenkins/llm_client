@@ -7,6 +7,7 @@ use std::{collections::HashMap, sync::Arc};
 #[derive(Clone, Default)]
 pub struct LogitBias {
     pub base_logit_bias: Option<HashMap<u32, f32>>,
+    #[cfg(feature = "llama_cpp_backend")]
     pub built_llama_cpp_bias: LlamaCppLogitBias,
     pub built_openai_bias: OpenAiLogitBias,
     from_token_ids: FromTokenIds,
@@ -59,6 +60,7 @@ impl LogitBias {
         self
     }
 
+    #[cfg(feature = "llama_cpp_backend")]
     pub(crate) fn build_llama(&mut self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<()> {
         if !self.built_llama_cpp_bias.is_none() {
             return Ok(());
@@ -89,6 +91,7 @@ impl LogitBias {
         self.built_openai_bias.get()
     }
 
+    #[cfg(feature = "llama_cpp_backend")]
     pub(crate) fn get_llama_cpp(&self) -> Option<Vec<Vec<serde_json::Value>>> {
         self.built_llama_cpp_bias.get()
     }
@@ -131,6 +134,7 @@ impl LogitBias {
 
     fn clear_built(&mut self) -> &mut Self {
         self.base_logit_bias = None;
+        #[cfg(feature = "llama_cpp_backend")]
         self.built_llama_cpp_bias.clear();
         self.built_openai_bias.clear();
         self
@@ -381,11 +385,13 @@ impl OpenAiLogitBias {
     }
 }
 
+#[cfg(feature = "llama_cpp_backend")]
 #[derive(Clone, Default)]
 pub struct LlamaCppLogitBias {
     pub built_logit_bias: Option<Vec<Vec<serde_json::Value>>>,
 }
 
+#[cfg(feature = "llama_cpp_backend")]
 impl LlamaCppLogitBias {
     fn is_none(&self) -> bool {
         self.built_logit_bias.is_none()
@@ -413,6 +419,7 @@ impl LlamaCppLogitBias {
     }
 }
 
+#[cfg(feature = "llama_cpp_backend")]
 impl std::fmt::Display for LogitBias {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f)?;

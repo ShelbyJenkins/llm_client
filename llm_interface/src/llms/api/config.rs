@@ -73,7 +73,7 @@ pub trait LlmApiConfigTrait {
     }
 }
 
-pub(crate) trait ApiConfigTrait {
+pub trait ApiConfigTrait {
     fn headers(&self) -> HeaderMap;
 
     fn url(&self, path: &str) -> String;

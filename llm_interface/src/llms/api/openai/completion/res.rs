@@ -1,3 +1,4 @@
+use crate::requests::completion::tool::ToolCall;
 use crate::requests::completion::*;
 use serde::{Deserialize, Serialize};
 
@@ -14,11 +15,7 @@ impl CompletionResponse {
         let finish_reason = match choice.finish_reason {
             Some(FinishReason::Stop) => CompletionFinishReason::Eos,
             Some(FinishReason::Length) => CompletionFinishReason::StopLimit,
-            Some(FinishReason::ToolCalls) => {
-                return Err(CompletionError::StopReasonUnsupported(
-                    "FinishReason::ToolCalls is not supported".to_owned(),
-                ))
-            }
+            Some(FinishReason::ToolCalls) => CompletionFinishReason::ToolsCall,
             Some(FinishReason::ContentFilter) => {
                 return Err(CompletionError::StopReasonUnsupported(
                     "FinishReason::ContentFilter is not supported".to_owned(),
@@ -41,6 +38,7 @@ impl CompletionResponse {
             generation_settings: GenerationSettings::new_from_openai(req, &res),
             timing_usage: TimingUsage::new_from_generic(req.start_time),
             token_usage: TokenUsage::new_from_generic(&res),
+            tool_calls: choice.message.tool_calls.clone(),
         })
     }
 }
@@ -89,9 +87,11 @@ pub struct CompletionUsage {
 pub struct ChatCompletionResponseMessage {
     /// The contents of the message.
     pub content: Option<String>,
-
     /// The role of the author of this message.
     pub role: Role,
+    /// The tool calls.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<Vec<ToolCall>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]

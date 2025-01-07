@@ -1,4 +1,4 @@
-use super::{error::CompletionError, response::CompletionResponse};
+use super::{error::CompletionError, response::CompletionResponse, ToolChoice, ToolDefinition};
 use crate::{
     llms::LlmBackend,
     requests::{
@@ -17,6 +17,8 @@ pub struct CompletionRequest {
     pub config: RequestConfig,
     pub backend: std::sync::Arc<LlmBackend>,
     pub llm_interface_errors: Vec<CompletionError>,
+    pub tools: Vec<ToolDefinition>,
+    pub tool_choice: ToolChoice,
 }
 
 impl Clone for CompletionRequest {
@@ -30,6 +32,8 @@ impl Clone for CompletionRequest {
             config: self.config.clone(),
             backend: std::sync::Arc::clone(&self.backend),
             llm_interface_errors: Vec::new(),
+            tools: Vec::new(),
+            tool_choice: ToolChoice::Auto,
         }
     }
 }
@@ -45,6 +49,8 @@ impl CompletionRequest {
             grammar_string: None,
             backend: std::sync::Arc::clone(&backend),
             llm_interface_errors: Vec::new(),
+            tools: Vec::new(),
+            tool_choice: ToolChoice::default(),
         }
     }
 
@@ -143,7 +149,9 @@ impl CompletionRequest {
                             }
                             return Ok(res);
                         }
-                        CompletionFinishReason::Eos => return Ok(res),
+                        CompletionFinishReason::Eos | CompletionFinishReason::ToolsCall => {
+                            return Ok(res)
+                        }
                     }
                 }
             };
@@ -183,6 +191,7 @@ impl std::fmt::Display for CompletionRequest {
 
         writeln!(f, "  prompt: {}", self.prompt)?;
         writeln!(f, "  stop_sequences: {:?}", self.stop_sequences.to_vec())?;
+        #[cfg(feature = "llama_cpp_backend")]
         if let Some(logit_bias) = &self.logit_bias {
             writeln!(f, "  logit_bias: {}", logit_bias)?;
         }
