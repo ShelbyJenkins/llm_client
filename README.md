@@ -35,6 +35,8 @@ Several of the most common models are available as presets. Loading from local m
 In addition to basic LLM inference, llm_client is primarily designed for controlled generation using step based cascade workflows. This prompting system runs pre-defined workflows that control and constrain both the overall structure of generation and individual tokens during inference. This allows the implementation of specialized workflows for specific tasks, shaping LLM outputs towards intended, reproducible outcomes. 
 
 ```rust
+use llm_client::LlmClient;
+let llm_client = LlmClient::openai().init()?;
 let response: u32 = llm_client.reason().integer()
     .instructions()
     .set_content("Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?")
@@ -52,7 +54,6 @@ This method significantly improves the reliability of LLM use cases. For example
 I have a full breakdown of this in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."  
 
 Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find out how to use them.
-
 
 ## Examples
 

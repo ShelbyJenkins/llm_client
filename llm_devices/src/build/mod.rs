@@ -66,11 +66,11 @@ fn check(
     executable_name: &str,
 ) -> crate::Result<(bool, bool)> {
     let local_repo_requires_update =
-        git::local_repo_requires_update(&local_repo_path, repo_url, repo_tag)?;
+        git::local_repo_requires_update(local_repo_path, repo_url, repo_tag)?;
     let local_repo_requires_build = if local_repo_requires_update {
         true
     } else {
-        make::local_repo_requires_build(&local_repo_path, executable_name)
+        make::local_repo_requires_build(local_repo_path, executable_name)
     };
 
     Ok((local_repo_requires_update, local_repo_requires_build))

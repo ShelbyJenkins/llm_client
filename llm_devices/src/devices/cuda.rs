@@ -4,7 +4,7 @@ use nvml_wrapper::Nvml;
 // See https://gist.github.com/jrruethe/8974d2c8b4ece242a071d1a1526aa763#file-vram-rb-L64
 pub const CUDA_OVERHEAD: u64 = 500 * 1024 * 1024;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CudaConfig {
     /// The main GPU device ordinal. Defaults to the largest VRAM device.
     pub main_gpu: Option<u32>,
@@ -12,17 +12,6 @@ pub struct CudaConfig {
     pub use_cuda_devices: Vec<u32>,
     pub(crate) cuda_devices: Vec<CudaDevice>,
     pub(crate) total_vram_bytes: u64,
-}
-
-impl Default for CudaConfig {
-    fn default() -> Self {
-        Self {
-            main_gpu: None,
-            use_cuda_devices: Vec::new(),
-            cuda_devices: Vec::new(),
-            total_vram_bytes: 0,
-        }
-    }
 }
 
 impl CudaConfig {
@@ -146,7 +135,7 @@ pub fn get_all_cuda_devices(nvml: Option<&Nvml>) -> crate::Result<Vec<CudaDevice
     let mut cuda_devices: Vec<CudaDevice> = Vec::new();
     let mut ordinal = 0;
     while cuda_devices.len() < device_count as usize {
-        if let Ok(nvml_device) = CudaDevice::new(ordinal, Some(&nvml)) {
+        if let Ok(nvml_device) = CudaDevice::new(ordinal, Some(nvml)) {
             cuda_devices.push(nvml_device);
         }
         if ordinal > 100 {
@@ -157,7 +146,7 @@ pub fn get_all_cuda_devices(nvml: Option<&Nvml>) -> crate::Result<Vec<CudaDevice
         }
         ordinal += 1;
     }
-    if cuda_devices.len() == 0 {
+    if cuda_devices.is_empty() {
         crate::bail!("No CUDA devices found");
     }
     Ok(cuda_devices)
@@ -203,7 +192,7 @@ impl CudaDevice {
                         (None, None)
                     };
                     let cuda_device = CudaDevice {
-                        ordinal: ordinal,
+                        ordinal,
                         available_vram_bytes: memory_info.total - CUDA_OVERHEAD,
                         name,
                         power_limit,

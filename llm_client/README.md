@@ -80,14 +80,16 @@ Uses the same process as above N number of times where N is the number of times 
 - By default `dynamic_temperture` is enabled, and each 'vote' increases across a gradient
 
 ```rust
-    // An integer decision request
-    let decision_request = llm_client.reason().integer().decision();
-    decision_request.best_of_n_votes(5); 
-    decision_request
-        .instructions()
-        .set_content("How many fingers do you have?");
-    let response = decision_request.return_primitive().await.unwrap();
-    assert_eq!(response, 5);
+use llm_client::LlmClient;
+let llm_client = LlmClient::openai().init()?;
+// An integer decision request
+let request = llm_client.reason().integer().decision();
+request.best_of_n_votes(5); 
+request
+    .instructions()
+    .set_content("How many fingers do you have?");
+let response = request.return_primitive().await.unwrap();
+assert_eq!(response, 5);
 ```
 
 See [the decision example for more](./examples/decision.rs)

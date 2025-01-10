@@ -52,7 +52,7 @@ pub fn check_and_get_max_tokens(
         available_tokens
     };
 
-    if total_prompt_tokens as u64 + requested_tokens as u64 >= ctx_size {
+    if total_prompt_tokens + requested_tokens as u64 >= ctx_size {
         panic!(
             "total_prompt_tokens ({total_prompt_tokens}) + requested_tokens ({requested_tokens}) >= ctx_size ({ctx_size}). This should never happen.",
         );
@@ -68,7 +68,7 @@ fn available_tokens(
 ) -> Result<u64, RequestTokenLimitError> {
     let safety_tokens = safety_tokens.unwrap_or(DEFAULT_SAFETY_TOKENS);
 
-    if total_prompt_tokens as u64 >= ctx_size - safety_tokens {
+    if total_prompt_tokens >= ctx_size - safety_tokens {
         return Err(RequestTokenLimitError::PromptTokensExceeds {
             total_prompt_tokens,
             ctx_size: ctx_size - safety_tokens,

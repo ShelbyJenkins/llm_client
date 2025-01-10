@@ -5,8 +5,8 @@ use tiktoken_rs::{get_bpe_from_model, CoreBPE};
 use tokenizers::Tokenizer as HFTokenizer;
 
 pub enum TokenizerBackend {
-    HuggingFacesTokenizer(HFTokenizer),
-    Tiktoken(CoreBPE),
+    HuggingFacesTokenizer(Box<HFTokenizer>),
+    Tiktoken(Box<CoreBPE>),
 }
 
 impl fmt::Debug for TokenizerBackend {
@@ -35,7 +35,7 @@ impl LlmTokenizer {
         let tokenizer = get_bpe_from_model(model_id.as_ref())?;
         let white_space_token_id = u32::try_from(tokenizer.encode_ordinary(" ").remove(0))?;
         Ok(Self {
-            tokenizer: TokenizerBackend::Tiktoken(tokenizer),
+            tokenizer: TokenizerBackend::Tiktoken(Box::new(tokenizer)),
             tokenizer_path: None,
             with_special_tokens: false,
             white_space_token_id,
@@ -45,7 +45,7 @@ impl LlmTokenizer {
     pub fn new_from_tokenizer(tokenizer: HFTokenizer) -> Result<Self> {
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
-            tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
+            tokenizer: TokenizerBackend::HuggingFacesTokenizer(Box::new(tokenizer)),
             tokenizer_path: None,
             with_special_tokens: false,
             white_space_token_id,
@@ -56,7 +56,7 @@ impl LlmTokenizer {
         let tokenizer = HFTokenizer::from_file(local_path).map_err(|e| anyhow!(e))?;
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
-            tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
+            tokenizer: TokenizerBackend::HuggingFacesTokenizer(Box::new(tokenizer)),
             tokenizer_path: Some(local_path.clone()),
             with_special_tokens: false,
             white_space_token_id,
