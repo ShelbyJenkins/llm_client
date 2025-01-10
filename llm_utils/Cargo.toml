@@ -1,5 +1,5 @@
 [package]
-authors = ["Shelby Jenkins"]
+authors.workspace = true
 categories = ["multimedia::encoding", "science"]
 description = "The best possible text chunker and text splitter and other text tools"
 edition = "2021"
@@ -9,7 +9,7 @@ license = "MIT"
 name = "llm_utils"
 readme = "README.md"
 repository = "https://github.com/shelbyJenkins/llm_utils"
-version = "0.1.0"
+version.workspace = true
 
 [dependencies]
 llm_models.workspace = true
