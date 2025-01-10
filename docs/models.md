@@ -13,7 +13,8 @@ Optionally, you can choose the max context size you want to use as it's an impor
 The llm_utils crate then calculates the largest quant you can use, and downloads the model from a list of GGUF quants on Hugging Face.The presets include config files and tokenizers from the original repos, so you do not have to login to Hugging Face and get Meta's or Mistral's approval to access the original model's repo. I've done some work in accessing the tokenizer from the GGUF file themselves, but this is not fully tested. I do retrieve the chat template from the GGUF though.
 
 ```rust
-use Llmclient::prelude::*;
+use llm_client::prelude::*;
+
 let llm_client = LlmClient::llama_cpp()
     .mistral7b_instruct_v0_3() // Uses a preset model
     .init() // Downloads model from hugging face and starts the inference interface
@@ -30,6 +31,8 @@ let llm_client = LlmClient::llama_cpp()
 # Loading Models from Local
 
 ```rust
+use llm_client::prelude::*;
+
 let llm_client = LlmClient::llama_cpp()
     .local_quant_file_path("/root/.cache/huggingface/hub/models--bartowski--Meta-Llama-3.1-8B-Instruct-GGUF/blobs/9da71c45c90a821809821244d4971e5e5dfad7eb091f0b8ff0546392393b6283")
     .init().await?;
@@ -38,6 +41,8 @@ let llm_client = LlmClient::llama_cpp()
 # Loading Models from Hugging Face
 
 ```rust
+use llm_client::prelude::*;
+
 let llm_client = LlmClient::llama_cpp()
     .hf_quant_file_url("https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/blob/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
     .init().await?;

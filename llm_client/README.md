@@ -8,7 +8,8 @@ llm_client="*"
 This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
 
 ```rust
-use Llmclient::prelude::*;
+use llm_client::prelude::*;
+
 let llm_client = LlmClient::llama_cpp()
     .mistral7b_instruct_v0_3() // Uses a preset model
     .init() // Downloads model from hugging face and starts the inference interface

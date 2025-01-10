@@ -1,15 +1,10 @@
 use llm_client::prelude::*;
 
 /// Extracts URLs from a given text based on the given instructions.
-
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {
     // Using a preset model from Hugging Face
-    let llm_client = LlmClient::llama_cpp()
-        .mistral_nemo_instruct2407()
-        .init()
-        .await
-        .unwrap();
+    let llm_client = LlmClient::anthropic().claude_3_haiku().init().unwrap();
 
     let response = llm_client.nlp().extract().urls()
         .set_instructions("Which of these is URLs would someone find useful documentation for working with the library and it's APIs? Things such as examples, guides, and the README.")

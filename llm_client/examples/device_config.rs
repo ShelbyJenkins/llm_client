@@ -1,5 +1,6 @@
 use llm_client::prelude::*;
 
+#[cfg(feature = "llama_cpp_backend")]
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {

@@ -5,11 +5,7 @@ use llm_client::prelude::*;
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {
     // Using a preset model from Hugging Face
-    let llm_client = LlmClient::llama_cpp()
-        .mistral7b_instruct_v0_3()
-        .init()
-        .await
-        .unwrap();
+    let llm_client = LlmClient::anthropic().claude_3_haiku().init().unwrap();
 
     // A request constrained to N sentences
     let mut reason_request = llm_client.basic_primitive().sentences();

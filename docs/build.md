@@ -26,4 +26,3 @@ The current default feature is `llama_cpp_backend`. Llama.cpp is pulled from the
 # Mistral.rs Backend
 
 Only available for testing. Requires the `mistral_rs_backend` feature flag. Also, I have it commented out in the [llm_interface/Cargo.toml](../llm_interface/Cargo.toml) to keep the large candle dependency from compiling.
-
