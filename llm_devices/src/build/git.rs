@@ -79,7 +79,7 @@ pub(super) fn update_local_repo(
         .arg(format!("--branch={}", repo_tag))
         .arg("--recursive")
         .arg(repo_url)
-        .arg(&local_repo_path)
+        .arg(local_repo_path)
         .status()?;
     crate::trace!("Successfully cloned {repo_url}  at tag {repo_tag}");
     Ok(())
