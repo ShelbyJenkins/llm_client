@@ -62,7 +62,12 @@ pub struct OpenAiCompletionRequest {
 impl OpenAiCompletionRequest {
     pub fn new(req: &CompletionRequest) -> crate::Result<Self, CompletionError> {
         let mut messages = Vec::new();
-        match &req.prompt.get_built_prompt_hashmap() {
+        match &req
+            .prompt
+            .api_prompt()
+            .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?
+            .get_built_prompt()
+        {
             Ok(prompt_message) => {
                 for m in prompt_message {
                     messages.push(CompletionRequestMessage::new(m).unwrap());

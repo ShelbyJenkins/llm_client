@@ -61,9 +61,10 @@ impl CompletionRequest {
         self.backend
             .build_logit_bias(&mut self.logit_bias)
             .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?;
+
         let total_prompt_tokens = self
-            .prompt
-            .get_total_prompt_tokens()
+            .backend
+            .get_total_prompt_tokens(&self.prompt)
             .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?;
 
         self.config

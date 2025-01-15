@@ -59,13 +59,13 @@ impl LlmBackend {
     pub fn new_prompt(&self) -> LlmPrompt {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
-            LlmBackend::LlamaCpp(b) => LlmPrompt::new_chat_template_prompt(
+            LlmBackend::LlamaCpp(b) => LlmPrompt::new_local_prompt(
+                self.prompt_tokenizer(),
                 &b.model.chat_template.chat_template,
                 b.model.chat_template.bos_token.as_deref(),
                 &b.model.chat_template.eos_token,
                 b.model.chat_template.unk_token.as_deref(),
                 b.model.chat_template.base_generation_prefix.as_deref(),
-                self.prompt_tokenizer(),
             ),
             #[cfg(feature = "mistral_rs_backend")]
             LlmBackend::MistralRs(b) => LlmPrompt::new_chat_template_prompt(
@@ -76,21 +76,33 @@ impl LlmBackend {
                 &b.model.chat_template.base_generation_prefix,
                 self.prompt_tokenizer(),
             ),
-            LlmBackend::OpenAi(b) => LlmPrompt::new_openai_prompt(
+            LlmBackend::OpenAi(b) => LlmPrompt::new_api_prompt(
+                self.prompt_tokenizer(),
                 Some(b.model.tokens_per_message),
                 b.model.tokens_per_name,
-                self.prompt_tokenizer(),
             ),
-            LlmBackend::Anthropic(b) => LlmPrompt::new_openai_prompt(
+            LlmBackend::Anthropic(b) => LlmPrompt::new_api_prompt(
+                self.prompt_tokenizer(),
                 Some(b.model.tokens_per_message),
                 b.model.tokens_per_name,
-                self.prompt_tokenizer(),
             ),
-            LlmBackend::GenericApi(b) => LlmPrompt::new_openai_prompt(
+            LlmBackend::GenericApi(b) => LlmPrompt::new_api_prompt(
+                self.prompt_tokenizer(),
                 Some(b.model.tokens_per_message),
                 b.model.tokens_per_name,
-                self.prompt_tokenizer(),
             ),
+        }
+    }
+
+    pub fn get_total_prompt_tokens(&self, prompt: &LlmPrompt) -> crate::Result<u64> {
+        match self {
+            #[cfg(feature = "llama_cpp_backend")]
+            LlmBackend::LlamaCpp(_) => prompt.local_prompt()?.get_total_prompt_tokens(),
+            #[cfg(feature = "mistral_rs_backend")]
+            LlmBackend::MistralRs(_) => prompt.get_total_prompt_tokens(),
+            LlmBackend::OpenAi(_) => prompt.api_prompt()?.get_total_prompt_tokens(),
+            LlmBackend::Anthropic(_) => prompt.api_prompt()?.get_total_prompt_tokens(),
+            LlmBackend::GenericApi(_) => prompt.api_prompt()?.get_total_prompt_tokens(),
         }
     }
 

@@ -58,7 +58,10 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_full_workflow() -> crate::Result<()> {
-        let llm_client: LlmClient = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
+        let llm_client: LlmClient = LlmClient::llama_cpp()
+            .llama3_1_70b_nemotron_instruct()
+            .init()
+            .await?;
 
         let input_text = "Edible insect Gryllus bimaculatus (Pet Feed Store)";
         let mut tag_collection = TagCollection::default()

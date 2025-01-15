@@ -17,3 +17,5 @@ It's functionality includes:
 * Logging tools.
 
 See the [build documentation](../docs/build.md) for more notes.
+
+[API Docs](https://docs.rs/llm_devices/latest/llm_devices/)

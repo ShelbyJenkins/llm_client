@@ -28,31 +28,23 @@ impl InstructPrompt {
         self.supporting_material = None;
     }
 
-    pub fn build_instructions(&mut self) -> Option<String> {
-        if let Some(instructions) = &mut self.instructions {
-            instructions.concatenator = self.concatenator.clone();
-            if instructions.requires_build() {
-                instructions.build();
-            };
-            instructions.get_built_message_string()
+    pub fn build_instructions(&self) -> Option<String> {
+        if let Some(instructions) = &self.instructions {
+            instructions.get_built_prompt_message().ok()
         } else {
             None
         }
     }
 
-    pub fn build_supporting_material(&mut self) -> Option<String> {
-        if let Some(supporting_material) = &mut self.supporting_material {
-            supporting_material.concatenator = self.concatenator.clone();
-            if supporting_material.requires_build() {
-                supporting_material.build();
-            };
-            supporting_material.get_built_message_string()
+    pub fn build_supporting_material(&self) -> Option<String> {
+        if let Some(supporting_material) = &self.supporting_material {
+            supporting_material.get_built_prompt_message().ok()
         } else {
             None
         }
     }
 
-    pub fn build_instruct_prompt(&mut self, supporting_material_first: bool) -> Result<String> {
+    pub fn build_instruct_prompt(&self, supporting_material_first: bool) -> Result<String> {
         Ok(
             match (self.build_instructions(), self.build_supporting_material()) {
                 (Some(instructions), Some(supporting_material)) => {

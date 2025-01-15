@@ -197,7 +197,7 @@ mod tests {
             .set_stop_word_no_result("null");
 
         let expected =
-            "root ::= ( item{1} ( item | \"done\" ){0,4} | \"null\" ) \" done\"\n\nitem ::= [^\n\u{b}\u{c}\r\u{85}\u{2028}\u{2029}]{1,225} \"\\n\"";
+            "root ::= ( item{1} ( item | \"done\" ){0,4} | \"null\" ) \" done\"\n\nitem ::= \"• \" [^\n\r•]{1,225} \"\\n\"";
         assert_eq!(grammar.grammar_string(), expected);
     }
 
@@ -205,7 +205,8 @@ mod tests {
     fn test_grammar_string_with_stop_word_no_result() {
         let grammar = TextListGrammar::default().set_stop_word_no_result("null");
 
-        let expected = "root ::= ( item{1,225} | \"null\" )\n\nitem ::= [^\n\u{b}\u{c}\r\u{85}\u{2028}\u{2029}] \"\\n\"";
+        let expected =
+            "root ::= ( item{1} item{0,4} | \"null\" )\n\nitem ::= \"• \" [^\n\r•]{1,225} \"\\n\"";
         assert_eq!(grammar.grammar_string(), expected);
     }
 
@@ -213,7 +214,7 @@ mod tests {
     fn test_grammar_string_with_stop_word_done() {
         let grammar = TextListGrammar::default().set_stop_word_done("done");
 
-        let expected = "root ::= item{1,225} \" done\"\n\nitem ::= [^\n\u{b}\u{c}\r\u{85}\u{2028}\u{2029}] \"\\n\"";
+        let expected = "root ::= item{1} ( item | \"done\" ){0,4} \" done\"\n\nitem ::= \"• \" [^\n\r•]{1,225} \"\\n\"";
         assert_eq!(grammar.grammar_string(), expected);
     }
 
@@ -221,8 +222,7 @@ mod tests {
     fn test_grammar_string_without_stop_sequences() {
         let grammar = TextListGrammar::default();
 
-        let expected =
-            "root ::= item{0,225}\n\nitem ::= [^\n\u{b}\u{c}\r\u{85}\u{2028}\u{2029}] \"\\n\"";
+        let expected = "root ::= item{1} item{0,4}\n\nitem ::= \"• \" [^\n\r•]{1,225} \"\\n\"";
         assert_eq!(grammar.grammar_string(), expected);
     }
 
@@ -234,7 +234,7 @@ mod tests {
             .item_prefix("Test");
 
         let expected =
-        "root ::= ( item{1} ( item | \"done\" ){0,1} | \"null\" ) \" done\"\nitem ::= \"Test: \" [A-Z] [^\n\u{b}\u{c}\r\u{85}\u{2028}\u{2029}]+  \"\\n\"";
+        "root ::= ( item{1} ( item | \"done\" ){0,4} | \"null\" ) \" done\"\n\nitem ::= \"• \" \"Test\" [^\n\r•]{1,225} \"\\n\"";
         assert_eq!(grammar.grammar_string(), expected);
     }
 

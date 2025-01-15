@@ -54,7 +54,12 @@ impl AnthropicCompletionRequest {
     pub fn new(req: &CompletionRequest) -> crate::Result<Self, CompletionError> {
         let mut messages = Vec::new();
         let mut system_prompt = None;
-        match req.prompt.get_built_prompt_hashmap() {
+        match &req
+            .prompt
+            .api_prompt()
+            .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?
+            .get_built_prompt()
+        {
             Ok(prompt_message) => {
                 for m in prompt_message {
                     let role = m.get("role").ok_or_else(|| {

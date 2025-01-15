@@ -1,11 +1,24 @@
-use super::local_content::load_content_path;
-use super::TextConcatenator;
-use std::{collections::HashMap, path::PathBuf};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq)]
+use super::TextConcatenator;
+use std::sync::{Arc, Mutex, MutexGuard};
+
+/// Represents the type of message in a prompt sequence.
+///
+/// Message types follow standard LLM conventions, supporting system-level instructions,
+/// user inputs, and assistant responses. The ordering and placement of these types
+/// is validated during prompt construction.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PromptMessageType {
+    /// A system-level instruction that guides model behavior.
+    /// Must be the first message if present.
     System,
+
+    /// A user input message. Cannot follow another user message directly.
     User,
+
+    /// A response from the assistant. Cannot be the first message or
+    /// follow another assistant message.
     Assistant,
 }
 
@@ -19,11 +32,52 @@ impl PromptMessageType {
     }
 }
 
-#[derive(Debug, Clone)]
+/// A collection of prompt messages with thread-safe mutability.
+///
+/// Manages an ordered sequence of messages while ensuring thread safety through
+/// mutex protection. The collection maintains message ordering rules and
+/// provides access to the underlying messages.
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct PromptMessages(Mutex<Vec<Arc<PromptMessage>>>);
+
+impl PromptMessages {
+    pub(crate) fn messages(&self) -> MutexGuard<'_, Vec<Arc<PromptMessage>>> {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| panic!("PromptMessages Error - messages not available: {:?}", e))
+    }
+}
+
+impl Clone for PromptMessages {
+    fn clone(&self) -> Self {
+        let cloned_messages: Vec<Arc<PromptMessage>> = self
+            .messages()
+            .iter()
+            .map(|message| Arc::new((**message).clone()))
+            .collect();
+        Self(cloned_messages.into())
+    }
+}
+
+impl std::fmt::Display for PromptMessages {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let messages = self.messages();
+        for message in messages.iter() {
+            writeln!(f, "{}", message)?;
+        }
+        Ok(())
+    }
+}
+
+/// An individual message within a prompt sequence.
+///
+/// Represents a single message with its content, type, and concatenation rules.
+/// Maintains thread-safe interior mutability for content manipulation and
+/// provides methods for building and accessing the message content.
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PromptMessage {
-    content: std::cell::RefCell<Vec<String>>,
-    pub built_message_hashmap: std::cell::RefCell<HashMap<String, String>>,
-    pub built_message_string: std::cell::RefCell<Option<String>>,
+    pub content: Mutex<Vec<String>>,
+    pub built_prompt_message: Mutex<Option<String>>,
     pub message_type: PromptMessageType,
     pub concatenator: TextConcatenator,
 }
@@ -32,185 +86,174 @@ impl PromptMessage {
     pub fn new(message_type: PromptMessageType, concatenator: &TextConcatenator) -> Self {
         Self {
             content: Vec::new().into(),
-            built_message_hashmap: HashMap::new().into(),
-            built_message_string: None.into(),
+            built_prompt_message: None.into(),
             message_type,
             concatenator: concatenator.clone(),
         }
     }
-    // Setter functions
+
+    // Setter methods
+    //
+
+    /// Sets the primary content of the message, replacing any existing content.
+    ///
+    /// If the provided content is empty, the message remains unchanged. Otherwise,
+    /// replaces all existing content with the new content and rebuilds the message.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The new content to set for the message
+    ///
+    /// # Returns
+    ///
+    /// A reference to self for method chaining
     pub fn set_content<T: AsRef<str>>(&self, content: T) -> &Self {
         if content.as_ref().is_empty() {
             return self;
         }
 
-        if self
-            .content_ref()
+        let mut content_guard = self.content();
+        let should_update = content_guard
             .first()
-            .map_or(true, |first| first != content.as_ref())
-        {
-            self.built_message_hashmap_mut().clear();
-            *self.built_message_string_mut() = None;
-            *self.content_mut() = vec![content.as_ref().to_owned()];
+            .map_or(true, |first| first != content.as_ref());
+
+        if should_update {
+            *content_guard = vec![content.as_ref().to_owned()];
+            self.build(content_guard);
         }
 
         self
     }
 
-    pub fn set_content_from_path(&self, content_path: &PathBuf) -> &Self {
-        self.set_content(load_content_path(content_path))
-    }
-
+    /// Adds content to the beginning of the message.
+    ///
+    /// If the provided content is empty, the message remains unchanged. Otherwise,
+    /// inserts the new content at the start of the existing content and rebuilds
+    /// the message.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The content to prepend to the message
+    ///
+    /// # Returns
+    ///
+    /// A reference to self for method chaining
     pub fn prepend_content<T: AsRef<str>>(&self, content: T) -> &Self {
         if content.as_ref().is_empty() {
             return self;
         }
 
-        if self
-            .content_ref()
+        let mut content_guard = self.content();
+        let should_update = content_guard
             .first()
-            .map_or(true, |first| first != content.as_ref())
-        {
-            self.built_message_hashmap_mut().clear();
-            *self.built_message_string_mut() = None;
-            self.content_mut().insert(0, content.as_ref().to_owned());
+            .map_or(true, |first| first != content.as_ref());
+
+        if should_update {
+            content_guard.insert(0, content.as_ref().to_owned());
+            self.build(content_guard);
         }
 
         self
     }
 
-    pub fn prepend_content_from_path(&self, content_path: &PathBuf) -> &Self {
-        self.prepend_content(load_content_path(content_path))
-    }
-
+    /// Adds content to the end of the message.
+    ///
+    /// If the provided content is empty, the message remains unchanged. Otherwise,
+    /// adds the new content after existing content and rebuilds the message.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The content to append to the message
+    ///
+    /// # Returns
+    ///
+    /// A reference to self for method chaining
     pub fn append_content<T: AsRef<str>>(&self, content: T) -> &Self {
         if content.as_ref().is_empty() {
             return self;
         }
 
-        if self
-            .content_ref()
+        let mut content_guard = self.content();
+        let should_update = content_guard
             .last()
-            .map_or(true, |last| last != content.as_ref())
-        {
-            self.built_message_hashmap_mut().clear();
-            *self.built_message_string_mut() = None;
-            self.content_mut().push(content.as_ref().to_owned());
+            .map_or(true, |last| last != content.as_ref());
+
+        if should_update {
+            content_guard.push(content.as_ref().to_owned());
+            self.build(content_guard);
         }
 
         self
     }
 
-    pub fn append_content_from_path(&self, content_path: &PathBuf) -> &Self {
-        self.append_content(load_content_path(content_path))
-    }
+    // Getter methods
+    //
 
-    // Getter functions
-    pub fn get_built_message_string(&self) -> Option<String> {
-        if self.built_message_string_ref().is_none() {
-            self.build();
-        }
-        self.built_message_string_ref().clone()
-    }
-
-    // Builder functions
-    pub fn requires_build(&self) -> bool {
-        !self.content_ref().is_empty() && self.built_message_hashmap_ref().is_empty()
-    }
-
-    pub fn build(&self) {
-        if let Some(built_message_string) = self.build_prompt_string() {
-            *self.built_message_string_mut() = Some(built_message_string.clone());
-            *self.built_message_hashmap_mut() = HashMap::from([
-                ("role".to_string(), self.message_type.as_str().to_owned()),
-                ("content".to_string(), built_message_string.to_owned()),
-            ]);
+    /// Retrieves the built message content.
+    ///
+    /// Returns the complete message content with all parts properly concatenated
+    /// according to the message's concatenation rules.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(String)` containing the built message content.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the message has not been built yet.
+    pub fn get_built_prompt_message(&self) -> Result<String, crate::Error> {
+        match &*self.built_prompt_message() {
+            Some(prompt) => Ok(prompt.clone()),
+            None => crate::bail!(
+                " PromptMessage Error - built_prompt_string not available - message not built"
+            ),
         }
     }
 
-    fn build_prompt_string(&self) -> Option<String> {
-        if self.content_ref().is_empty() {
-            return None;
-        };
-        let mut built_message_string = String::new();
+    // Builder methods
+    //
 
-        for c in self.content_ref().iter() {
-            if c.as_str().is_empty() {
-                continue;
+    fn build(&self, content_guard: MutexGuard<'_, Vec<String>>) {
+        let mut built_prompt_message = String::new();
+
+        for c in content_guard.iter() {
+            if !built_prompt_message.is_empty() {
+                built_prompt_message.push_str(self.concatenator.as_str());
             }
-            if !built_message_string.is_empty() {
-                built_message_string.push_str(self.concatenator.as_str());
-            }
-            built_message_string.push_str(c.as_str());
+            built_prompt_message.push_str(c.as_str());
         }
-        if built_message_string.is_empty() {
-            return None;
-        }
-        Some(built_message_string)
+
+        *self.built_prompt_message() = Some(built_prompt_message);
     }
 
-    // Helper functions
-    fn content_ref(&self) -> std::cell::Ref<Vec<String>> {
-        self.content.borrow()
+    // Helper methods
+    //
+
+    fn content(&self) -> MutexGuard<'_, Vec<String>> {
+        self.content
+            .lock()
+            .unwrap_or_else(|e| panic!("PromptMessage Error - content not available: {:?}", e))
     }
 
-    fn content_mut(&self) -> std::cell::RefMut<Vec<String>> {
-        self.content.borrow_mut()
-    }
-
-    fn built_message_hashmap_ref(&self) -> std::cell::Ref<HashMap<String, String>> {
-        self.built_message_hashmap.borrow()
-    }
-
-    fn built_message_hashmap_mut(&self) -> std::cell::RefMut<HashMap<String, String>> {
-        self.built_message_hashmap.borrow_mut()
-    }
-
-    fn built_message_string_ref(&self) -> std::cell::Ref<Option<String>> {
-        self.built_message_string.borrow()
-    }
-
-    fn built_message_string_mut(&self) -> std::cell::RefMut<Option<String>> {
-        self.built_message_string.borrow_mut()
+    pub(crate) fn built_prompt_message(&self) -> MutexGuard<'_, Option<String>> {
+        self.built_prompt_message.lock().unwrap_or_else(|e| {
+            panic!(
+                "PromptMessage Error - built_prompt_message not available: {:?}",
+                e
+            )
+        })
     }
 }
 
-pub(crate) fn build_messages(messages: &mut [PromptMessage]) -> Vec<HashMap<String, String>> {
-    let mut prompt_messages: Vec<HashMap<String, String>> = Vec::new();
-    let mut last_message_type = None;
-    for (i, message) in messages.iter_mut().enumerate() {
-        let message_type = &message.message_type;
-        // Rule 1: System message can only be the first message
-        if *message_type == PromptMessageType::System && i != 0 {
-            panic!("System message can only be the first message.");
+impl Clone for PromptMessage {
+    fn clone(&self) -> Self {
+        Self {
+            content: self.content().clone().into(),
+            built_prompt_message: self.built_prompt_message().clone().into(),
+            message_type: self.message_type.clone(),
+            concatenator: self.concatenator.clone(),
         }
-        // Rule 2: First message must be either System or User
-        if i == 0
-            && *message_type != PromptMessageType::System
-            && *message_type != PromptMessageType::User
-        {
-            panic!("Conversation must start with either a System or User message.");
-        }
-        // Rule 3: Ensure alternating User/Assistant messages after the first message
-        if i > 0 {
-            match (last_message_type, message_type) {
-                (Some(PromptMessageType::User), PromptMessageType::Assistant) => {},
-                (Some(PromptMessageType::Assistant), PromptMessageType::User) => {},
-                (Some(PromptMessageType::System), PromptMessageType::User) => {},
-                _ => panic!("Messages must alternate between User and Assistant after the first message (which can be System)."),
-            }
-        }
-        last_message_type = Some(message_type.clone());
-        if message.requires_build() {
-            message.build();
-        }
-        if message.built_message_hashmap_ref().is_empty() {
-            eprintln!("message.built_content is empty and skipped");
-            continue;
-        }
-        prompt_messages.push(message.built_message_hashmap_ref().clone());
     }
-    prompt_messages
 }
 
 impl std::fmt::Display for PromptMessage {
@@ -220,7 +263,7 @@ impl std::fmt::Display for PromptMessage {
             PromptMessageType::User => "User",
             PromptMessageType::Assistant => "Assistant",
         };
-        let message = match self.build_prompt_string() {
+        let message = match &*self.built_prompt_message() {
             Some(built_message_string) => {
                 if built_message_string.len() > 300 {
                     format!(
@@ -228,10 +271,10 @@ impl std::fmt::Display for PromptMessage {
                         built_message_string.chars().take(300).collect::<String>()
                     )
                 } else {
-                    built_message_string
+                    built_message_string.clone()
                 }
             }
-            None => "debug message: empty or unbuilt".to_string(),
+            None => "debug message: empty or unbuilt".to_owned(),
         };
 
         writeln!(f, "\x1b[1m{message_type}\x1b[0m:\n{:?}", message)

@@ -58,11 +58,15 @@ impl LlamaCppCompletionRequest {
         Ok(Self {
             prompt: req
                 .prompt
+                .local_prompt()
+                .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?
                 .get_built_prompt_as_tokens()
                 .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?,
             prompt_string: Some(
                 req.prompt
-                    .get_built_prompt_string()
+                    .local_prompt()
+                    .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?
+                    .get_built_prompt()
                     .map_err(|e| CompletionError::RequestBuilderError(e.to_string()))?,
             ),
             grammar: req.grammar_string.clone(),

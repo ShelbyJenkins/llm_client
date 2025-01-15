@@ -8,6 +8,12 @@ macro_rules! p {
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
+
+    // Skip building when building docs
+    if std::env::var("DOCS_RS").is_ok() {
+        return;
+    }
+
     if cfg!(feature = "llama_cpp_backend") {
         let start_time = std::time::Instant::now();
         let package = get_package_metadata();

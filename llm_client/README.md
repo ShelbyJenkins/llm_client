@@ -17,6 +17,8 @@ let llm_client = LlmClient::llama_cpp()
 
 Several of the most common models are available as presets. Loading from local models is also fully supported. See [models.md](./docs/models.md) for more information.
 
+[API Docs](https://docs.rs/llm_client/latest/llm_client/)
+
 # An Interface for Deterministic Signals from Probabilistic LLM Vibes
 
 ## Reasoning with Primitive Outcomes

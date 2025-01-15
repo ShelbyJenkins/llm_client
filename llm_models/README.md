@@ -7,6 +7,8 @@ This crate is part of the [llm_client](https://github.com/ShelbyJenkins/llm_clie
     * Includes limited support for tokenizer from GGUF file
     * Also supports loading Metadata and Tokenizer from their respective files
 
+[API Docs](https://docs.rs/llm_models/latest/llm_models/)
+
 ### LocalLlmModel
 
 Everything you need for GGUF models. The `GgugLoader` wraps the loaders for convience. All loaders return a `LocalLlmModel` which contains the tokenizer, metadata, chat template, and anything that can be extract from the GGUF. 
