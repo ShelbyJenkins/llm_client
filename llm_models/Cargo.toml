@@ -1,5 +1,5 @@
 [package]
-description="Load and Download LLM Models, Metadata, and Tokenizers"
+description="llm_models: Load and download LLM models, metadata, and tokenizers"
 edition.workspace=true
 homepage.workspace=true
 license.workspace=true

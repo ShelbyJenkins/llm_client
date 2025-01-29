@@ -1,4 +1,4 @@
-//! # llm_models: Load and Download LLM Models, Metadata, and Tokenizers
+//! # llm_models: Load and download LLM models, metadata, and tokenizers
 //!
 //! [![API Documentation](https://docs.rs/llm_models/badge.svg)](https://docs.rs/llm_models)
 //!
