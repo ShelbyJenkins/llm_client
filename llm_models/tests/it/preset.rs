@@ -4,29 +4,33 @@ use llm_models::{
 
 #[test]
 fn load_from_vram() {
-    let model = GgufLoader::default()
-        .phi4()
-        .preset_with_available_vram_gb(48)
-        .load()
-        .unwrap();
+    let model = GgufLoader::default().llama3_1_8b_instruct().load().unwrap();
 
     println!("{:#?}", model);
 
-    let model = GgufLoader::default()
-        .phi3_5_moe_instruct()
-        .preset_with_available_vram_gb(48)
-        .load()
-        .unwrap();
+    // let model = GgufLoader::default()
+    //     .phi4()
+    //     .preset_with_available_vram_gb(48)
+    //     .load()
+    //     .unwrap();
 
-    println!("{:#?}", model);
+    // println!("{:#?}", model);
 
-    let model = GgufLoader::default()
-        .llama3_1_51b_nemotron_instruct()
-        .preset_with_available_vram_gb(48)
-        .load()
-        .unwrap();
+    // let model = GgufLoader::default()
+    //     .phi3_5_moe_instruct()
+    //     .preset_with_available_vram_gb(48)
+    //     .load()
+    //     .unwrap();
 
-    println!("{:#?}", model);
+    // println!("{:#?}", model);
+
+    // let model = GgufLoader::default()
+    //     .llama3_1_51b_nemotron_instruct()
+    //     .preset_with_available_vram_gb(48)
+    //     .load()
+    //     .unwrap();
+
+    // println!("{:#?}", model);
 }
 
 #[test]

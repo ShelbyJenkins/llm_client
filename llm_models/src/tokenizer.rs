@@ -1,6 +1,9 @@
 use super::local_model::hf_loader::{HfTokenTrait, HuggingFaceLoader};
 use llm_prompt::PromptTokenizer;
-use std::{fmt, path::PathBuf};
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+};
 use tiktoken_rs::{get_bpe_from_model, CoreBPE};
 use tokenizers::Tokenizer as HFTokenizer;
 
@@ -52,12 +55,12 @@ impl LlmTokenizer {
         })
     }
 
-    pub fn new_from_tokenizer_json(local_path: &PathBuf) -> Result<Self, crate::Error> {
-        let tokenizer = HFTokenizer::from_file(local_path).map_err(|e| crate::anyhow!(e))?;
+    pub fn new_from_tokenizer_json<T: AsRef<Path>>(local_path: T) -> Result<Self, crate::Error> {
+        let tokenizer = HFTokenizer::from_file(&local_path).map_err(|e| crate::anyhow!(e))?;
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
-            tokenizer_path: Some(local_path.clone()),
+            tokenizer_path: Some(local_path.as_ref().to_path_buf()),
             with_special_tokens: false,
             white_space_token_id,
         })
