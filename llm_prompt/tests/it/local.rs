@@ -1,8 +1,10 @@
+use llm_models::{GgufLoader, GgufPresetTrait};
+
 use super::*;
 
 #[test]
 fn test_local() -> crate::Result<()> {
-    let model = LocalLlmModel::default();
+    let model = GgufLoader::new().llama3_1_8b_instruct().load()?;
     let prompt = LlmPrompt::new_local_prompt(
         model.model_base.tokenizer.clone(),
         &model.chat_template.chat_template,
@@ -26,7 +28,7 @@ fn test_local() -> crate::Result<()> {
         );
     let token_count: u64 = prompt.local_prompt()?.get_total_prompt_tokens()?;
     let prompt_as_tokens: Vec<u32> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
-    assert_eq!(54, token_count);
+    assert_eq!(49, token_count);
     assert_eq!(token_count, prompt_as_tokens.len() as u64);
 
     prompt.set_generation_prefix("Generating 12345:");
@@ -34,11 +36,11 @@ fn test_local() -> crate::Result<()> {
     println!("{prompt}");
     assert_eq!(
             test_local,
-            "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\ntest user content 1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{ASSISTANT_PROMPT_1}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{USER_PROMPT_2}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nGenerating 12345:"
+            "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\ntell me a joke<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nthe clouds<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nfunny<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nGenerating 12345:"
         );
     let token_count = prompt.local_prompt()?.get_total_prompt_tokens()?;
     let prompt_as_tokens = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
-    assert_eq!(63, token_count);
+    assert_eq!(58, token_count);
     assert_eq!(token_count, prompt_as_tokens.len() as u64);
     Ok(())
 }
