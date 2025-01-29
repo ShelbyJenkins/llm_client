@@ -1,4 +1,4 @@
-//! # llm_interface: The Backend for the llm_client Crate
+//! # llm_interface: The backend for the llm_client crate
 //! [![API Documentation](https://docs.rs/llm_interface/badge.svg)](https://docs.rs/llm_interface)
 //!
 //! The llm_interface crate is a workspace member of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.

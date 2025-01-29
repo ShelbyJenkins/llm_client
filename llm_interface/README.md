@@ -1,13 +1,13 @@
 <!-- cargo-rdme start -->
 
-## llm_interface: The Backend for the llm_client Crate
+# llm_interface: The backend for the llm_client crate
 [![API Documentation](https://docs.rs/llm_interface/badge.svg)](https://docs.rs/llm_interface)
 
 The llm_interface crate is a workspace member of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.
 
 This crate contains the build.rs, data types, and behaviors for LLMs.
 
-### Features
+## Features
 
 * Integration with Llama.cpp (through llama-server)
     * Repo cloning and building
@@ -17,7 +17,7 @@ This crate contains the build.rs, data types, and behaviors for LLMs.
 This crate enables running local LLMs and making requests to LLMs, designed
 for easy integration into other projects.
 
-### Examples
+## Examples
 
 See the various `Builders` implemented in the [integration tests](./tests/it/main.rs) for examples
 of using this crate.
