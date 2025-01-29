@@ -1,12 +1,12 @@
 [package]
-description="Managing Devices and Builds for LLMs"
+description="llm_devices: Device management and build system for LLM inference"
 edition.workspace=true
 homepage.workspace=true
 license.workspace=true
 name="llm_devices"
 readme="README.md"
 repository.workspace=true
-version="0.0.2"
+version="0.0.3"
 
 [dependencies]
 anyhow.workspace=true
