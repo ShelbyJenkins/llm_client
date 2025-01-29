@@ -1,6 +1,6 @@
 [package]
 categories=["api-bindings", "asynchronous"]
-description="The Easiest Rust Interface for Local LLMs, and an Interface for Deterministic Signals from Probabilistic LLM Vibes"
+description="llm_client: The easiest Rust interface for local LLMs"
 edition.workspace=true
 homepage.workspace=true
 keywords=["anthropic", "gguf", "llama-cpp", "llm", "openai"]
@@ -8,7 +8,7 @@ license.workspace=true
 name="llm_client"
 readme="README.md"
 repository.workspace=true
-version="0.0.6"
+version="0.0.7"
 
 [dependencies]
 anyhow.workspace=true

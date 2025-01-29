@@ -32,7 +32,7 @@ impl ApiLlmModel {
     }
 
     pub fn claude_3_sonnet() -> Self {
-        let model_id = "claude-3-sonnet-latest".to_string();
+        let model_id = "claude-3-sonnet-20240229".to_string();
         let tokenizer = model_tokenizer(&model_id);
         Self {
             model_base: LlmModelBase {
@@ -49,7 +49,7 @@ impl ApiLlmModel {
     }
 
     pub fn claude_3_haiku() -> Self {
-        let model_id = "claude-3-haiku-latest".to_string();
+        let model_id = "claude-3-haiku-20240307".to_string();
         let tokenizer = model_tokenizer(&model_id);
         Self {
             model_base: LlmModelBase {
