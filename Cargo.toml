@@ -16,7 +16,7 @@ colorful="0.3.2"
 dotenvy="0.15.7"
 indenter="0.3.3"
 llm_devices={path="./llm_devices", version="0.0.3"}
-llm_interface={path="./llm_interface", version="0.0.2"}
+llm_interface={path="./llm_interface", version="0.0.3"}
 llm_models={path="./llm_models", version="0.0.2"}
 llm_prompt={path="./llm_prompt", version="0.0.3"}
 llm_utils="0.0.11"
