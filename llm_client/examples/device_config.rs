@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 #[tokio::main(flavor = "current_thread")]

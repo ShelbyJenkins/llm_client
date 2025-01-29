@@ -1,12 +1,8 @@
 pub mod round;
 pub mod step;
 
-use anyhow::{anyhow, Result};
 use core::panic;
-use llm_interface::requests::{
-    completion::{CompletionFinishReason, CompletionRequest},
-    stop_sequence::StoppingSequence,
-};
+use llm_interface::requests::*;
 pub use round::CascadeRound;
 use step::InferenceStep;
 
@@ -40,7 +36,7 @@ impl CascadeFlow {
         self.rounds.push(round);
     }
 
-    pub async fn run_all_rounds(&mut self, base_req: &mut CompletionRequest) -> Result<()> {
+    pub async fn run_all_rounds(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
         self.start_time = std::time::Instant::now();
 
         for round in self.rounds.iter_mut() {
@@ -51,10 +47,10 @@ impl CascadeFlow {
         Ok(())
     }
 
-    pub fn last_round(&mut self) -> Result<&mut CascadeRound> {
+    pub fn last_round(&mut self) -> crate::Result<&mut CascadeRound> {
         match self.rounds.last_mut() {
             Some(round) => Ok(round),
-            None => Err(anyhow!("No rounds in cascade")),
+            None => Err(crate::anyhow!("No rounds in cascade")),
         }
     }
 
@@ -69,7 +65,7 @@ impl CascadeFlow {
         self.start_time = std::time::Instant::now();
     }
 
-    pub fn close_cascade(&mut self) -> Result<()> {
+    pub fn close_cascade(&mut self) -> crate::Result<()> {
         self.duration = self.start_time.elapsed();
         Ok(())
     }
@@ -85,7 +81,7 @@ impl CascadeFlow {
 pub(crate) async fn cascade_request(
     base_req: &mut CompletionRequest,
     step: &mut InferenceStep,
-) -> Result<()> {
+) -> crate::Result<()> {
     let res = base_req.request().await?;
     if matches!(
         res.finish_reason,

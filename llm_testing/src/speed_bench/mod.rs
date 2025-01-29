@@ -1,9 +1,6 @@
 pub mod types;
-use llm_client::{CompletionResponse, LlmClient};
-use types::*;
-
-use crate::backends::TestBackendConfig;
-use llm_client::RequestConfigTrait;
+use super::*;
+pub use types::*;
 
 impl SpeedBenchmark {
     pub async fn run(&mut self) -> crate::Result<()> {

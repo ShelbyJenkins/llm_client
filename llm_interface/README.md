@@ -1,14 +1,28 @@
-# llm_interface: The Backend for the llm_client Crate
+<!-- cargo-rdme start -->
+
+## llm_interface: The Backend for the llm_client Crate
+[![API Documentation](https://docs.rs/llm_interface/badge.svg)](https://docs.rs/llm_interface)
+
+The llm_interface crate is a workspace member of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.
 
 This crate contains the build.rs, data types, and behaviors for LLMs.
 
-* Llama.cpp (through llama-server) 
-* Various LLM APIs including support for generic OpenAI format LLMs
+### Features
 
-You can use this crate to run local LLMs and make requests to LLMs. It's set up to be easy to integrate into other projects. 
+* Integration with Llama.cpp (through llama-server)
+    * Repo cloning and building
+    * Managing Llama.cpp server
+* Support for various LLM APIs including generic OpenAI format LLMs
 
-See the various `Builders` implemented in the [lib.rs](https://github.com/ShelbyJenkins/llm_client/llm_interface/src/lib.rs) file for an example of using this crate.
+This crate enables running local LLMs and making requests to LLMs, designed
+for easy integration into other projects.
 
-For a look at a higher level API and how it implements this crate, checkout the [llm_client](https://github.com/ShelbyJenkins/llm_client) crate and it's lib.rs file.
+### Examples
 
-[API Docs](https://docs.rs/llm_interface/latest/llm_interface/)
+See the various `Builders` implemented in the [integration tests](./tests/it/main.rs) for examples
+of using this crate.
+
+For a look at a higher level API and how it implements this crate, see the
+[llm_client](https://github.com/ShelbyJenkins/llm_client) crate.
+
+<!-- cargo-rdme end -->

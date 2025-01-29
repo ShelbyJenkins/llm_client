@@ -1,14 +1,11 @@
 use super::{LlamaCppBackend, LlamaCppConfig};
 use crate::llms::{
-    api::config::{ApiConfig, LlmApiConfigTrait},
+    api::{ApiConfig, LlmApiConfigTrait},
     local::{LlmLocalTrait, LocalLlmConfig},
     LlmBackend,
 };
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
-use llm_models::local_model::{
-    gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
-    GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
-};
+use llm_devices::{LoggingConfig, LoggingConfigTrait};
+use llm_models::{GgufLoader, GgufLoaderTrait, GgufPresetLoader, GgufPresetTrait, HfTokenTrait};
 
 // Everything here can be implemented for any struct.
 #[derive(Default)]

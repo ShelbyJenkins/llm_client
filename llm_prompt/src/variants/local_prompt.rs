@@ -84,7 +84,6 @@ impl LocalPrompt {
     ///
     /// Returns the complete prompt string with all messages formatted according to
     /// the chat template, including any special tokens and generation prefix.
-    /// The prompt must be built before it can be retrieved.
     ///
     /// # Returns
     ///
@@ -106,8 +105,7 @@ impl LocalPrompt {
     ///
     /// Returns the complete prompt converted to model tokens using the configured
     /// tokenizer. This is useful for operations that need to work directly with
-    /// token IDs rather than text. The prompt must be built before it can be
-    /// retrieved.
+    /// token IDs rather than text.
     ///
     /// # Returns
     ///

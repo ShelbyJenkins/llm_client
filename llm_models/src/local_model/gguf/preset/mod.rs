@@ -25,7 +25,7 @@ fn presets_path() -> std::path::PathBuf {
 pub struct LlmPresetData {
     pub model_id: String,
     pub gguf_repo_id: String,
-    pub number_of_parameters: u64,
+    pub number_of_parameters: u64, // This should be a float
     pub f_name_for_q_bits: QuantizationConfig,
     pub tokenizer_preset_data: TokenizerPresetData,
     pub tokenizer_config_preset_data: TokenizerConfigPresetData,
@@ -243,25 +243,28 @@ macro_rules! generate_models {
 
 generate_models!(
     LlmPreset {
-        SuperNovaMedius13b => "arcee/supernova_medius",
+        Granite3_2bInstruct => "granite/granite3_2b_instruct",
+        Granite3_8bInstruct => "granite/granite3_8b_instruct",
+        Llama3_1_51bNemotronInstruct => "nvidia/llama3_1_51b_nemotron_instruct",
+        Llama3_1_70bNemotronInstruct => "nvidia/llama3_1_70b_nemotron_instruct",
         Llama3_1_8bInstruct => "llama/llama3_1_8b_instruct",
-        Llama3_2_3bInstruct => "llama/llama3_2_3b_instruct",
         Llama3_2_1bInstruct => "llama/llama3_2_1b_instruct",
+        Llama3_2_3bInstruct => "llama/llama3_2_3b_instruct",
         Mistral7bInstructV0_3 => "mistral/mistral7b_instruct_v0_3",
-        Mixtral8x7bInstructV0_1 => "mistral/mixtral8x7b_instruct_v0_1",
         MistralNemoInstruct2407 => "mistral/mistral_nemo_instruct_2407",
+        MistralNemoMinitron8bInstruct => "nvidia/mistral_nemo_minitron_8b_instruct",
         MistralSmallInstruct2409 => "mistral/mistral_small_instruct_2409",
+        Mixtral8x7bInstructV0_1 => "mistral/mixtral8x7b_instruct_v0_1",
+        Phi3_5MiniInstruct => "phi/phi3_5_mini_instruct",
+        Phi3_5MoeInstruct => "phi/phi3_5_moe_instruct",
         Phi3Medium4kInstruct => "phi/phi3_medium4k_instruct",
         Phi3Mini4kInstruct => "phi/phi3_mini4k_instruct",
-        Phi3_5MiniInstruct => "phi/phi3_5_mini_instruct",
-        Granite3_8bInstruct => "granite/granite3_8b_instruct",
-        Granite3_2bInstruct => "granite/granite3_2b_instruct",
-        Qwen2_5_32bInstruct => "qwen/qwen2_5_32b_instruct",
+        Phi4 => "phi/phi4",
         Qwen2_5_14bInstruct => "qwen/qwen2_5_14b_instruct",
-        Qwen2_5_7bInstruct => "qwen/qwen2_5_7b_instruct",
+        Qwen2_5_32bInstruct => "qwen/qwen2_5_32b_instruct",
         Qwen2_5_3bInstruct => "qwen/qwen2_5_3b_instruct",
-        Llama3_1_70bNemotronInstruct => "nvidia/llama3_1_70b_nemotron_instruct",
-        MistralNemoMinitron8bInstruct => "nvidia/mistral_nemo_minitron_8b_instruct",
+        Qwen2_5_7bInstruct => "qwen/qwen2_5_7b_instruct",
         StableLm2_12bChat => "stabilityai/stablelm_2_12b_chat",
+        SuperNovaMedius13b => "arcee/supernova_medius",
     }
 );

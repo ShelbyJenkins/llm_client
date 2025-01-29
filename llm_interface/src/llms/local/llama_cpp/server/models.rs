@@ -1,24 +1,23 @@
-use serde::{Deserialize, Serialize};
-
 use crate::llms::{
-    api::{client::ApiClient, error::ClientError},
+    api::{ApiClient, ClientError},
     local::llama_cpp::LlamaCppConfig,
 };
+use serde::{Deserialize, Serialize};
 
-pub enum ModelStatus {
+pub(super) enum ModelStatus {
     LoadedModel(String),
     LoadedModels(Vec<String>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Model {
+pub(super) struct Model {
     pub id: String,
     pub object: String,
     pub owned_by: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ModelsResponse {
+pub(super) struct ModelsResponse {
     pub object: String,
     pub data: Vec<Model>,
 }

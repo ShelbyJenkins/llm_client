@@ -1,8 +1,30 @@
+/// Configuration for managing CPU resources in LLM inference workloads.
+///
+/// This struct handles the detection and allocation of CPU cores for parallel processing tasks.
+/// It provides functionality to:
+/// - Detect available physical CPU cores (with fallback to logical cores for VMs)
+/// - Configure manual thread count overrides
+/// - Manage CPU resource utilization through percentage allocation
+///
 #[derive(Debug, Clone)]
 pub struct CpuConfig {
+    /// The number of physical CPU cores available on the system.
+    /// Falls back to logical core count when running in a VM.
     pub num_cpus: usize,
+
+    /// Optional manual override for the number of threads to use for general processing.
+    /// If None, the thread count will be calculated based on `use_percentage`.
     pub threads: Option<i16>,
+
+    /// Optional manual override for the number of threads to use for batch processing.
+    /// If None, the thread count will be calculated based on `use_percentage`.
     pub threads_batch: Option<i16>,
+
+    /// The percentage (0.0 to 1.0) of total CPU cores to use when no manual thread
+    /// count is specified. This affects both general and batch processing when their
+    /// respective thread counts are not manually specified.
+    ///
+    /// Defaults to 0.70 (70% of available cores).
     pub use_percentage: f32,
 }
 

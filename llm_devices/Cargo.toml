@@ -12,11 +12,11 @@ version="0.0.2"
 anyhow.workspace=true
 colorful.workspace=true
 indenter.workspace=true
-sysinfo={version="0.31.4", default-features=false, features=["system"]}
+sysinfo={version="0.33.1", default-features=false, features=["system"]}
 thiserror.workspace=true
+tracing.workspace=true
 tracing-appender="0.2.3"
 tracing-subscriber={version="0.3.18", features=["env-filter", "std"]}
-tracing.workspace=true
 
 [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 nvml-wrapper={version="0.10.0"}

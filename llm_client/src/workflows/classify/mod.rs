@@ -1,4 +1,4 @@
-use llm_interface::{llms::LlmBackend, requests::completion::CompletionRequest};
+use super::*;
 use subject_of_text::ClassifySubjectOfText;
 
 pub mod hierarchical_classification;

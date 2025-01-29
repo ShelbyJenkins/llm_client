@@ -1,4 +1,4 @@
-use llm_models::local_model::{gguf::GgufLoader, GgufPresetTrait};
+use llm_models::{GgufLoader, GgufPresetTrait};
 
 #[test]
 fn test_base_generation_prefix() {

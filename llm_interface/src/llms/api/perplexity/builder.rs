@@ -1,12 +1,9 @@
-use crate::llms::{
-    api::{
-        config::{ApiConfig, LlmApiConfigTrait},
-        generic_openai::{GenericApiBackend, GenericApiConfig},
-    },
-    LlmBackend,
-};
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
-use llm_models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
+// Internal imports
+use super::*;
+use generic_openai::{GenericApiBackend, GenericApiConfig};
+use llm_devices::LoggingConfigTrait;
+use llm_models::api_model::perplexity::PerplexityModelTrait;
+
 // Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
     pub config: GenericApiConfig,

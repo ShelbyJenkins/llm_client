@@ -4,8 +4,7 @@ use crate::components::cascade::CascadeFlow;
 use crate::components::grammar::*;
 use crate::LlmClient;
 
-use llm_interface::llms::LlmBackend;
-use llm_interface::requests::completion::CompletionRequest;
+use super::*;
 
 use super::tag::Tag;
 

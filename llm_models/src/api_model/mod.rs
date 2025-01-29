@@ -15,6 +15,6 @@ pub struct ApiLlmModel {
 
 impl Default for ApiLlmModel {
     fn default() -> Self {
-        Self::gpt_4_o_mini()
+        Self::claude_3_5_haiku()
     }
 }

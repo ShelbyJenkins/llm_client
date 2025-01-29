@@ -18,6 +18,6 @@
     "tokenizer_config_preset_data": {
         "local_path": "phi/phi3_5_mini_instruct/tokenizer_config.json",
         "hf_repo": "microsoft/Phi-3.5-mini-instruct",
-        "hf_filename": "tokenizer.json"
+        "hf_filename": "tokenizer_config.json"
     }
 }

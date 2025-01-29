@@ -1,15 +1,6 @@
-use super::{
-    client::ApiClient,
-    config::{ApiConfig, ApiConfigTrait},
-    openai::completion::OpenAiCompletionRequest,
-};
-use crate::requests::completion::{
-    error::CompletionError, request::CompletionRequest, response::CompletionResponse,
-};
-use llm_devices::logging::LoggingConfig;
-use llm_models::api_model::ApiLlmModel;
-use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
-use secrecy::{ExposeSecret, Secret};
+// Internal imports
+use super::*;
+use openai::completion::req::OpenAiCompletionRequest;
 
 pub struct GenericApiBackend {
     pub(crate) client: ApiClient<GenericApiConfig>,

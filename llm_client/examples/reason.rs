@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 /// Enforces CoT style reasoning on the output of an LLM, before returning the requested primitive. Currently, reason is bound to the one_round reasoning workflow. Workflows relying on grammars are only supported by local LLMs.
 

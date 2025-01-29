@@ -1,5 +1,4 @@
-use llm_interface::{requests::completion::CompletionRequest, LlmInterface};
-use serial_test::serial;
+use super::*;
 
 #[tokio::test]
 #[serial]

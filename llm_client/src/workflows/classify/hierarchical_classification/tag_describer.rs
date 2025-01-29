@@ -3,7 +3,7 @@ use crate::components::cascade::CascadeFlow;
 use crate::components::grammar::NoneGrammar;
 use crate::LlmClient;
 
-use llm_interface::requests::completion::CompletionRequest;
+use super::*;
 use serde::{Deserialize, Serialize};
 
 use super::{tag::Tag, tag_collection::TagCollection};

@@ -1,7 +1,6 @@
+// Internal imports
+use super::*;
 use llm_models::tokenizer::LlmTokenizer;
-
-use crate::requests::req_components::RequestConfigTrait;
-
 use std::{collections::HashMap, sync::Arc};
 
 #[derive(Clone, Default)]

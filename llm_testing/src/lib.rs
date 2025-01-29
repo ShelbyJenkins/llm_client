@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 pub use anyhow::{anyhow, bail, Result};
 
-use llm_client::LlmPrompt;
+pub use llm_client::*;
 
 pub use backends::*;
 pub use test_loader::*;
@@ -11,8 +11,8 @@ pub use tracing::{debug, error, info, span, trace, warn, Level};
 
 pub mod backends;
 pub mod speed_bench;
-mod test_loader;
-mod test_types;
+pub mod test_loader;
+pub mod test_types;
 
 const PRINT_PRIMITIVE_RESULT: bool = true;
 const PRINT_WORKFLOW_RESULT: bool = true;

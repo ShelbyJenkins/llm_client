@@ -1,20 +1,12 @@
+use super::*;
 use super::{
-    decision::DecisionTrait,
-    PrimitiveTrait,
-    ReasonResult,
-    ReasonTrait,
-    SentencesPrimitive,
+    decision::DecisionTrait, PrimitiveTrait, ReasonResult, ReasonTrait, SentencesPrimitive,
 };
 use crate::components::{
     cascade::{step::StepConfig, CascadeFlow},
     instruct_prompt::InstructPrompt,
     InstructPromptTrait,
 };
-use llm_interface::requests::{
-    completion::CompletionRequest,
-    req_components::{RequestConfig, RequestConfigTrait},
-};
-
 pub struct ReasonOneRound<P> {
     pub reasoning_sentences: u8,
     pub conclusion_sentences: u8,

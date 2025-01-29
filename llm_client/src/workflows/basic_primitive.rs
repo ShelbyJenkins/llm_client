@@ -1,3 +1,4 @@
+use super::*;
 use crate::{
     components::{
         cascade::{step::StepConfig, CascadeFlow},
@@ -5,13 +6,6 @@ use crate::{
         InstructPromptTrait,
     },
     primitives::*,
-};
-use llm_interface::{
-    llms::LlmBackend,
-    requests::{
-        completion::CompletionRequest,
-        req_components::{RequestConfig, RequestConfigTrait},
-    },
 };
 
 pub struct BasicPrimitiveWorkflow<P> {

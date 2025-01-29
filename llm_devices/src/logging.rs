@@ -1,20 +1,33 @@
-use crate::build::get_target_directory;
+use crate::get_target_directory;
 
 use colorful::Colorful;
 use indenter::indented;
-
 use std::fmt::Write;
 use std::path::PathBuf;
 use std::{fs::create_dir_all, path::Path};
 use tracing_subscriber::layer::SubscriberExt;
 
+/// Configuration for the logging system.
+///
+/// Manages log levels, file output, and logger initialization.
 #[derive(Clone, Debug)]
 pub struct LoggingConfig {
+    /// Log level threshold (ERROR, WARN, INFO, DEBUG, TRACE)
     pub level: tracing::Level,
+
+    /// Whether logging is enabled
     pub logging_enabled: bool,
+
+    /// Name used to identify this logger in output
     pub logger_name: String,
+
+    /// Custom path for log files. If None, uses default path
     pub log_path: Option<PathBuf>,
+
+    /// Guard for the tracing subscriber
     pub _tracing_guard: Option<std::sync::Arc<tracing::subscriber::DefaultGuard>>,
+
+    /// Whether this is a build log
     pub build_log: bool,
 }
 
@@ -32,10 +45,27 @@ impl Default for LoggingConfig {
 }
 
 impl LoggingConfig {
+    /// Creates a new LoggingConfig with default settings.
+    ///
+    /// Defaults to:
+    /// - INFO level
+    /// - Logging enabled
+    /// - "llm_interface" logger name
+    /// - Default log path
     pub fn new() -> Self {
         Default::default()
     }
 
+    /// Initializes and starts the logger with the current configuration.
+    ///
+    /// If logging is enabled, creates log files and sets up console output.
+    /// Logs are rotated hourly and up to 6 files are kept.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - Log directory creation fails
+    /// - File appender creation fails
     pub fn load_logger(&mut self) -> crate::Result<()> {
         self._tracing_guard = if self.logging_enabled {
             Some(std::sync::Arc::new(self.create_logger()?))
@@ -104,6 +134,9 @@ impl LoggingConfig {
     }
 }
 
+/// Trait for configuring logging behavior.
+///
+/// Provides a fluent interface for configuring logging settings.
 #[allow(dead_code)]
 pub trait LoggingConfigTrait {
     fn logging_config_mut(&mut self) -> &mut LoggingConfig;
@@ -242,16 +275,46 @@ pub trait LoggingConfigTrait {
     }
 }
 
+/// Writes an indented line without newline.
+///
+/// # Arguments
+///
+/// * `f` - The formatter to write to
+/// * `arg` - The arguments to format and write
+///
+/// # Returns
+///
+/// std::fmt::Result indicating success or failure
 pub fn i_ln(f: &mut std::fmt::Formatter<'_>, arg: std::fmt::Arguments<'_>) -> std::fmt::Result {
     write!(indented(f), "{}", arg)?;
     Ok(())
 }
 
+/// Writes an indented line with newline.
+///
+/// # Arguments
+///
+/// * `f` - The formatter to write to
+/// * `arg` - The arguments to format and write
+///
+/// # Returns
+///
+/// std::fmt::Result indicating success or failure
 pub fn i_nln(f: &mut std::fmt::Formatter<'_>, arg: std::fmt::Arguments<'_>) -> std::fmt::Result {
     writeln!(indented(f), "{}", arg)?;
     Ok(())
 }
 
+/// Writes multiple indented lines without newlines.
+///
+/// # Arguments
+///
+/// * `f` - The formatter to write to
+/// * `args` - Array of arguments to format and write
+///
+/// # Returns
+///
+/// std::fmt::Result indicating success or failure
 pub fn i_lns(
     f: &mut std::fmt::Formatter<'_>,
     args: &[std::fmt::Arguments<'_>],
@@ -262,6 +325,16 @@ pub fn i_lns(
     Ok(())
 }
 
+/// Writes multiple indented lines with newlines.
+///
+/// # Arguments
+///
+/// * `f` - The formatter to write to
+/// * `args` - Array of arguments to format and write
+///
+/// # Returns
+///
+/// std::fmt::Result indicating success or failure
 pub fn i_nlns(
     f: &mut std::fmt::Formatter<'_>,
     args: &[std::fmt::Arguments<'_>],

@@ -1,59 +1,11 @@
-use llm_models::local_model::{
-    gguf::{preset::LlmPreset, GgufLoader},
-    GgufPresetTrait, LocalLlmModel,
+use llm_models::{
+    local_model::gguf::preset::LlmPreset, GgufLoader, GgufPresetTrait, LocalLlmModel,
 };
 
 #[test]
 fn load_from_vram() {
     let model = GgufLoader::default()
-        .stable_lm2_12b_chat()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-
-    let model = GgufLoader::default()
-        .granite3_2b_instruct()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-
-    let model = GgufLoader::default()
-        .qwen2_5_3b_instruct()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-    let model = GgufLoader::default()
-        .super_nova_medius13b()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-
-    let model = GgufLoader::default()
-        .mistral_nemo_minitron8b_instruct()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-
-    let model = GgufLoader::default()
-        .llama3_1_70b_nemotron_instruct()
-        .preset_with_available_vram_gb(46)
-        .load()
-        .unwrap();
-
-    println!("{:#?}", model);
-
-    let model: LocalLlmModel = GgufLoader::default()
-        .llama3_1_8b_instruct()
+        .phi4()
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
@@ -61,7 +13,7 @@ fn load_from_vram() {
     println!("{:#?}", model);
 
     let model = GgufLoader::default()
-        .phi3_5_mini_instruct()
+        .phi3_5_moe_instruct()
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
@@ -69,7 +21,7 @@ fn load_from_vram() {
     println!("{:#?}", model);
 
     let model = GgufLoader::default()
-        .mistral_nemo_instruct2407()
+        .llama3_1_51b_nemotron_instruct()
         .preset_with_available_vram_gb(48)
         .load()
         .unwrap();
@@ -106,6 +58,7 @@ fn load_from_q_level() {
 
 #[test]
 fn models_macros_test() {
+    // Add get all variants macro
     let variants = vec![
         LlmPreset::Llama3_1_70bNemotronInstruct,
         LlmPreset::MistralNemoMinitron8bInstruct,
@@ -114,9 +67,13 @@ fn models_macros_test() {
         LlmPreset::Mixtral8x7bInstructV0_1,
         LlmPreset::MistralNemoInstruct2407,
         LlmPreset::MistralSmallInstruct2409,
+        LlmPreset::Llama3_1_70bNemotronInstruct,
+        LlmPreset::Llama3_1_51bNemotronInstruct,
         LlmPreset::Phi3Medium4kInstruct,
         LlmPreset::Phi3Mini4kInstruct,
         LlmPreset::Phi3_5MiniInstruct,
+        LlmPreset::Phi3_5MoeInstruct,
+        LlmPreset::Phi4,
         LlmPreset::Llama3_2_1bInstruct,
         LlmPreset::Llama3_2_3bInstruct,
         LlmPreset::SuperNovaMedius13b,

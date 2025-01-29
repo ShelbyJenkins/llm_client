@@ -1,23 +1,11 @@
+// Public modules
 pub mod builder;
 pub mod completion;
 pub mod server;
 
-use super::LocalLlmConfig;
-use crate::{
-    llms::api::{
-        client::ApiClient,
-        config::{ApiConfig, ApiConfigTrait},
-    },
-    requests::completion::{
-        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
-    },
-};
-use completion::LlamaCppCompletionRequest;
-use llm_devices::logging::LoggingConfig;
-use llm_models::local_model::{gguf::GgufLoader, LocalLlmModel};
-use reqwest::header::{HeaderMap, AUTHORIZATION};
-use secrecy::{ExposeSecret, Secret};
-use server::LlamaCppServer;
+// Internal imports
+use super::*;
+use crate::llms::api::{ApiClient, ApiConfig, ApiConfigTrait};
 
 pub const LLAMA_CPP_API_HOST: &str = "localhost";
 pub const LLAMA_CPP_API_PORT: &str = "8080";

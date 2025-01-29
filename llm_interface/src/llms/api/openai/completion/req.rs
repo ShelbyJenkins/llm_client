@@ -1,4 +1,4 @@
-use crate::requests::{completion::*, stop_sequence::StopSequences};
+use crate::requests::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

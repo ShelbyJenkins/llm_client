@@ -1,5 +1,4 @@
 use super::local_model::hf_loader::{HfTokenTrait, HuggingFaceLoader};
-use anyhow::{anyhow, Result};
 use llm_prompt::PromptTokenizer;
 use std::{fmt, path::PathBuf};
 use tiktoken_rs::{get_bpe_from_model, CoreBPE};
@@ -32,7 +31,7 @@ pub struct LlmTokenizer {
 }
 
 impl LlmTokenizer {
-    pub fn new_tiktoken<T: AsRef<str>>(model_id: T) -> Result<Self> {
+    pub fn new_tiktoken<T: AsRef<str>>(model_id: T) -> Result<Self, crate::Error> {
         let tokenizer = get_bpe_from_model(model_id.as_ref())?;
         let white_space_token_id = u32::try_from(tokenizer.encode_ordinary(" ").remove(0))?;
         Ok(Self {
@@ -43,7 +42,7 @@ impl LlmTokenizer {
         })
     }
 
-    pub fn new_from_tokenizer(tokenizer: HFTokenizer) -> Result<Self> {
+    pub fn new_from_tokenizer(tokenizer: HFTokenizer) -> Result<Self, crate::Error> {
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
@@ -53,8 +52,8 @@ impl LlmTokenizer {
         })
     }
 
-    pub fn new_from_tokenizer_json(local_path: &PathBuf) -> Result<Self> {
-        let tokenizer = HFTokenizer::from_file(local_path).map_err(|e| anyhow!(e))?;
+    pub fn new_from_tokenizer_json(local_path: &PathBuf) -> Result<Self, crate::Error> {
+        let tokenizer = HFTokenizer::from_file(local_path).map_err(|e| crate::anyhow!(e))?;
         let white_space_token_id = tokenizer.encode(" ", false).unwrap().get_ids()[0];
         Ok(Self {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
@@ -64,7 +63,7 @@ impl LlmTokenizer {
         })
     }
 
-    pub fn new_from_hf_repo(hf_token: Option<&str>, repo_id: &str) -> Result<Self> {
+    pub fn new_from_hf_repo(hf_token: Option<&str>, repo_id: &str) -> Result<Self, crate::Error> {
         let mut api: HuggingFaceLoader = HuggingFaceLoader::new();
         if let Some(hf_token) = hf_token {
             *api.hf_token_mut() = Some(hf_token.to_owned());
@@ -78,11 +77,11 @@ impl LlmTokenizer {
         self.encode(str.as_ref())
     }
 
-    pub fn detokenize_one(&self, token: u32) -> Result<String> {
+    pub fn detokenize_one(&self, token: u32) -> Result<String, crate::Error> {
         self.decode(&[token])
     }
 
-    pub fn detokenize_many(&self, tokens: &[u32]) -> Result<String> {
+    pub fn detokenize_many(&self, tokens: &[u32]) -> Result<String, crate::Error> {
         self.decode(tokens)
     }
 
@@ -91,7 +90,10 @@ impl LlmTokenizer {
         u32::try_from(tokens.len()).unwrap()
     }
 
-    pub fn try_from_single_token_id(&self, try_from_single_token_id: u32) -> Result<String> {
+    pub fn try_from_single_token_id(
+        &self,
+        try_from_single_token_id: u32,
+    ) -> Result<String, crate::Error> {
         let detokenize_response = self.detokenize_one(try_from_single_token_id)?;
         println!("detokenize_response: {}", detokenize_response);
         let mut strings_maybe: Vec<String> = detokenize_response
@@ -99,24 +101,27 @@ impl LlmTokenizer {
             .map(|s| s.to_string())
             .collect();
         match strings_maybe.len() {
-            0 => Err(anyhow!(
+            0 => Err(crate::anyhow!(
                 "token_id is empty for try_from_single_token_id: {}",
                 try_from_single_token_id
             )),
             1 => Ok(strings_maybe.remove(0)),
-            n => Err(anyhow!(
+            n => Err(crate::anyhow!(
                 "Found more than one token ({n} total) in try_from_single_token_id: {}",
                 try_from_single_token_id
             )),
         }
     }
 
-    pub fn try_into_single_token(&self, try_into_single_token: &str) -> Result<u32> {
+    pub fn try_into_single_token(&self, try_into_single_token: &str) -> Result<u32, crate::Error> {
         let mut tokens = self.tokenize(try_into_single_token);
         match tokens.len() {
-            0 => Err(anyhow!("No token found in text: {}", try_into_single_token)),
+            0 => Err(crate::anyhow!(
+                "No token found in text: {}",
+                try_into_single_token
+            )),
             1 => Ok(tokens.remove(0)),
-            n => Err(anyhow!(
+            n => Err(crate::anyhow!(
                 "Found more than one token ({n} total) in text: {}",
                 try_into_single_token
             )),
@@ -208,17 +213,19 @@ impl LlmTokenizer {
         }
     }
 
-    fn decode_tiktoken(&self, tokenizer: &CoreBPE, tokens: &[u32]) -> Result<String> {
+    fn decode_tiktoken(&self, tokenizer: &CoreBPE, tokens: &[u32]) -> Result<String, crate::Error> {
         tokenizer
-            .decode(tokens.iter().map(|&x| x as usize).collect())
-            .map_err(|e| anyhow!(e))
+            .decode(tokens.into())
+            .map_err(|e| crate::anyhow!(e))
     }
 
-    fn decode_hf(&self, tokenizer: &HFTokenizer, tokens: &[u32]) -> Result<String> {
-        tokenizer.decode(tokens, true).map_err(|e| anyhow!(e))
+    fn decode_hf(&self, tokenizer: &HFTokenizer, tokens: &[u32]) -> Result<String, crate::Error> {
+        tokenizer
+            .decode(tokens, true)
+            .map_err(|e| crate::anyhow!(e))
     }
 
-    fn decode(&self, tokens: &[u32]) -> Result<String> {
+    fn decode(&self, tokens: &[u32]) -> Result<String, crate::Error> {
         match &self.tokenizer {
             TokenizerBackend::HuggingFacesTokenizer(tokenizer) => self.decode_hf(tokenizer, tokens),
             TokenizerBackend::Tiktoken(tokenizer) => self.decode_tiktoken(tokenizer, tokens),

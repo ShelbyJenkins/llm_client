@@ -1,7 +1,7 @@
-use llm_client::CompletionResponse;
+use super::*;
 use llm_models::local_model::gguf::preset::LlmPreset;
 
-use crate::backends::TestBackendConfig;
+pub use crate::backends::TestBackendConfig;
 
 const PROMPT: &str =
     "write a buzzfeed style listicle for the given input: Boy howdy, how ya'll doing? Actually make it a blog post, I'm feeling fancy today.";

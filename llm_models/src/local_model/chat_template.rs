@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use super::metadata::tokenizer::TokenizerMetadata;
 use anyhow::Context;
 use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Deserialize, Clone, PartialEq)]
 pub struct LlmChatTemplate {

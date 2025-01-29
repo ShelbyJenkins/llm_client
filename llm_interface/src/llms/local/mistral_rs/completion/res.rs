@@ -1,4 +1,4 @@
-use crate::requests::completion::*;
+use crate::requests::*;
 use mistralrs::CompletionResponse as MistralCompletionResponse;
 
 impl CompletionResponse {

@@ -1,7 +1,7 @@
 use std::{path::PathBuf, process::Command};
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::devices::cuda::init_nvml_wrapper;
+use crate::init_nvml_wrapper;
 
 pub(super) fn local_repo_requires_build(local_repo_path: &PathBuf, executable_name: &str) -> bool {
     let executable = local_repo_path.join(executable_name);

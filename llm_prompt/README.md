@@ -1,39 +1,43 @@
-# llm_prompt: Low Level Prompt System for API LLMs (OpenAI) and local LLMs (Chat Template)
+<!-- cargo-rdme start -->
 
-This crate is part of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.
+# llm_prompt: Low Level Prompt System for API LLMs and local LLMs
+[![API Documentation](https://docs.rs/llm_prompt/badge.svg)](https://docs.rs/llm_prompt)
 
-[API Docs](https://docs.rs/llm_prompt/latest/llm_prompt/)
+The llm_prompt crate is a workspace member of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.
 
-__Local LLM Support__ 
-* Uses the LLM's chat template to properly format the prompt.
-* Wider support than Llama.cpp with Jinja chat templates and raw tokens
-    * Llama.cpp attempts to build a prompt from string input using community implementations of chat templates and matching via model ids. It does not always work nor does it support all models.
-    * Llama.cpp performs no manipulation of the input when sending just tokens, so using this crate's `get_built_prompt_as_tokens` function is safer.
-* Build with generation prefixes
-    * Supports all local models. Even those that don't explicitly support it.
+## Features
 
-__API LLM Support__ 
-* OpenAI formatted prompts (OpenAI, Anthropic, Etc.)
-    *  Outputs System/User/Assistant keys and content strings.
+### Local LLM Support
+- Uses the LLM's chat template to properly format the prompt
+- Wider support than Llama.cpp with Jinja chat templates and raw tokens:
+  - Llama.cpp attempts to build a prompt from string input using community implementations
+    of chat templates and matching via model ids. It does not always work nor does it
+    support all models
+  - Llama.cpp performs no manipulation of the input when sending just tokens, so using
+    this crate's `get_built_prompt_as_tokens` function is safer
+- Build with generation prefixes that support all local models, even those that don't
+  explicitly support it
 
-__Accurate Token Counts__ 
-* Accurately count prompt tokens 
-    * Ensures a prompt is within model limits.
-    * Handles unique rules for API and Local models.
+### API LLM Support
+- OpenAI formatted prompts (OpenAI, Anthropic, etc.)
+- Outputs System/User/Assistant keys and content strings
+
+### Accurate Token Counts
+- Accurately count prompt tokens to ensure prompts stay within model limits
+- Handles unique rules for both API and Local models
+
+### User Friendly
+- A single struct with thread safe interior mutability for ergonomics
+- Fails gracefully via Result if the prompt does not match turn ordering rules
+
+### Serialization Support
+- Serde implemented for PromptMessages enabling save/load from file
 
 
-__User friendly__ 
-* A single struct with thread safe interior mutability for ergonomics.
-* Will fail gracefully via result if the prompt does not match turn ordering rules.
+## Use
 
-__Save and load from file__ 
-* Serde implemented for PromptMessages
-
-
-
-
-### Use
-This llm_models crate from the [llm_client](https://github.com/ShelbyJenkins/llm_client) project is used here for example purposes. It is not required. 
+The llm_models crate from the [llm_client](https://github.com/ShelbyJenkins/llm_client) project
+is used here for example purposes. It is not required.
 
 ```rust
 use llm_prompt::*;
@@ -73,8 +77,6 @@ prompt.add_assistant_message()?.set_content("Well, how do you do?");
 // Only Chat Template format supports this
 prompt.set_generation_prefix("Don't you think that is...");
 
-
-
 // Access (and build) the underlying prompt topography
 let local_prompt: &LocalPrompt = prompt.local_prompt()?;
 let api_prompt: &ApiPrompt = prompt.api_prompt()?;
@@ -85,8 +87,6 @@ let local_prompt_as_tokens: Vec<u32> = prompt.local_prompt()?.get_built_prompt_a
 
 // Openai formatted prompt (Openai and Anthropic format)
 let api_prompt_as_messages: Vec<HashMap<String, String>> = prompt.api_prompt()?.get_built_prompt()?;
-
-
 
 // Get total tokens in prompt
 let total_prompt_tokens: u64 = prompt.local_prompt()?.get_total_prompt_tokens();
@@ -102,7 +102,8 @@ let actual_request_tokens = check_and_get_max_tokens(
 )?;
 ```
 
-`LlmPrompt` requires a tokenizer. You can use the [llm_models](https://github.com/ShelbyJenkins/llm_client/tree/master/llm_models/src/tokenizer.rs) crate's tokenizer, or implement the [PromptTokenizer](./src/lib.rs) trait on your own tokenizer.
+`LlmPrompt` requires a tokenizer. You can use the [llm_models](https://github.com/ShelbyJenkins/llm_client/tree/master/llm_models/src/tokenizer.rs)
+crate's tokenizer, or implement the [PromptTokenizer](./src/lib.rs) trait on your own tokenizer.
 
 ```rust
 impl PromptTokenizer for LlmTokenizer {
@@ -115,3 +116,5 @@ impl PromptTokenizer for LlmTokenizer {
     }
 }
 ```
+
+<!-- cargo-rdme end -->

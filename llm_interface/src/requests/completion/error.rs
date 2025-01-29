@@ -4,7 +4,7 @@ pub enum CompletionError {
     #[error("RequestBuilderError: {0}")]
     RequestBuilderError(String),
     #[error("ClientError: {0}")]
-    ClientError(#[from] crate::llms::api::error::ClientError),
+    ClientError(#[from] crate::llms::api::ClientError),
     #[error("LocalClientError: {0}")]
     LocalClientError(String),
     #[error("RequestTokenLimitError: {0}")]

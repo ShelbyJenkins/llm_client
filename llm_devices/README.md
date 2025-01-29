@@ -1,21 +1,16 @@
-# llm_devices: Managing Devices and Builds for LLMs
+<!-- cargo-rdme start -->
 
-This crate is part of the [llm_client](https://github.com/ShelbyJenkins/llm_client) crate.
+# llm_devices: Device management and build system for LLM inference
+[![API Documentation](https://docs.rs/llm_devices/badge.svg)](https://docs.rs/llm_devices)
 
-The [llm_interface](https://github.com/ShelbyJenkins/llm_client/tree/master/llm_interface) crate uses it as a dependency for building llama.cpp.
+The llm_devices crate is a workspace member of the [llm_client](https://github.com/ShelbyJenkins/llm_client) project.
+It is used as a dependency by the [llm_interface](https://github.com/ShelbyJenkins/llm_client/tree/master/llm_interface) crate for building llama.cpp.
 
-It's functionality includes:
+## Features
 
-* Cloning the specified tag, and building llama.cpp.
+* Automated building of llama.cpp with appropriate platform-specific optimizations
+* Device detection and configuration for CPU, RAM, CUDA (Linux/Windows), and Metal (macOS)
+* Manages memory by detecting available VRAM/RAM, estimating model fit, and distributing layers across devices
+* Logging tools
 
-* Checking for device availabilty (CUDA, MacOS) to determine what platform to build for.
-
-* Fetching available VRAM or system RAM for estimating the correct model to load.
-
-* Offloading model layers to memory.
-
-* Logging tools.
-
-See the [build documentation](../docs/build.md) for more notes.
-
-[API Docs](https://docs.rs/llm_devices/latest/llm_devices/)
+<!-- cargo-rdme end -->

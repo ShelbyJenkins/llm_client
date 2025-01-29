@@ -1,10 +1,8 @@
-use super::{OpenAiBackend, OpenAiConfig};
-use crate::llms::{
-    api::config::{ApiConfig, LlmApiConfigTrait},
-    LlmBackend,
-};
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
-use llm_models::api_model::{openai::OpenAiModelTrait, ApiLlmModel};
+// Internal imports
+use super::*;
+use llm_devices::LoggingConfigTrait;
+use llm_models::api_model::openai::OpenAiModelTrait;
+
 // Everything here can be implemented for any struct.
 pub struct OpenAiBackendBuilder {
     pub config: OpenAiConfig,

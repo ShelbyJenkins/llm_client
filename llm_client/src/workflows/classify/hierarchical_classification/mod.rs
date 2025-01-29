@@ -3,13 +3,16 @@ mod tag;
 mod tag_collection;
 mod tag_describer;
 
+use super::*;
 pub use hierarchical_tagger::{Critera, HierarchicalEntityTagger};
-
 pub use tag::Tag;
 pub use tag_collection::TagCollection;
 
 #[cfg(test)]
 mod test {
+    use crate::LlmClient;
+    use llm_interface::requests::CompletionRequest;
+    use llm_models::GgufPresetTrait;
     use workflows::classify::subject_of_text::ClassifySubjectOfText;
 
     use super::*;

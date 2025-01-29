@@ -1,4 +1,4 @@
-use llm_devices::devices::DeviceConfig;
+use llm_devices::DeviceConfig;
 use mistralrs::{Device, DeviceLayerMapMetadata, DeviceMapMetadata};
 
 pub fn mistral_rs_device_map(

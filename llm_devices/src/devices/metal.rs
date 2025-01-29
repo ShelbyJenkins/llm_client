@@ -3,12 +3,25 @@ use objc2_metal::{MTLCopyAllDevices, MTLDevice};
 
 use super::gpu::GpuDevice;
 
+/// Configuration for Metal device support on macOS platforms.
+///
+/// Manages memory allocation and usage for Metal-based inference.
+/// Detects unified memory capabilities and manages working set size.   
 #[derive(Debug, Clone)]
 pub struct MetalConfig {
+    /// Maximum working set size recommended by Metal
     pub max_working_set_size: u64,
+
+    /// Total available RAM in bytes
     pub available_ram_bytes: u64,
+
+    /// Currently allocated RAM in bytes
     pub allocated_ram_bytes: u64,
+
+    /// RAM to use for inference in bytes
     pub use_ram_bytes: u64,
+
+    /// Percentage of available RAM to use (0.0 to 1.0)
     pub use_percentage: f32,
 }
 
@@ -25,12 +38,23 @@ impl Default for MetalConfig {
 }
 
 impl MetalConfig {
+    /// Creates a new MetalConfig with a specified amount of RAM in GB.
+    ///
+    /// # Arguments
+    ///
+    /// * `use_ram_gb` - Amount of RAM to use in gigabytes
     pub fn new_from_ram_gb(use_ram_gb: f32) -> Self {
         Self {
             use_ram_bytes: (use_ram_gb * 1_073_741_824.0) as u64,
             ..Default::default()
         }
     }
+
+    /// Creates a new MetalConfig with a specified percentage of available RAM.
+    ///
+    /// # Arguments
+    ///
+    /// * `use_percentage` - Percentage of available RAM to use (0.0 to 1.0)
     pub fn new_from_percentage(use_percentage: f32) -> Self {
         Self {
             use_percentage,

@@ -1,13 +1,5 @@
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use llm_devices::devices::CudaConfig;
-#[cfg(target_os = "macos")]
-use llm_devices::devices::MetalConfig;
-
-use llm_interface::llms::api::config::LlmApiConfigTrait;
+use super::*;
 use llm_interface::llms::local::llama_cpp::server::{get_all_server_pids, kill_server_from_model};
-use llm_interface::llms::local::LlmLocalTrait;
-use llm_interface::{requests::completion::CompletionRequest, LlmInterface};
-use serial_test::serial;
 
 #[tokio::test]
 #[serial]

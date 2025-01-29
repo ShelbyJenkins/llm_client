@@ -1,20 +1,18 @@
-use tokio::time::{sleep, timeout, Duration, Instant};
-
-use crate::llms::{api::client::ApiClient, local::llama_cpp::LlamaCppConfig};
-
 use super::{
     health::{health_request, HealthStatus},
     models::{model_request, ModelStatus},
 };
+use crate::llms::{api::ApiClient, local::llama_cpp::LlamaCppConfig};
+use tokio::time::{sleep, timeout, Duration, Instant};
 
 #[derive(PartialEq)]
-pub enum ServerStatus {
+pub(super) enum ServerStatus {
     RunningModel(String),
     RunningRequested,
     Offline,
 }
 
-pub(crate) async fn server_status(
+pub(super) async fn server_status(
     requested_model_path: &str,
     server_http_path: &str,
     test_time: std::time::Duration,
@@ -45,10 +43,14 @@ pub(crate) async fn server_status(
 
         match health_request(client).await {
             HealthStatus::Alive => break,
-            HealthStatus::Loading => {
-                sleep(retry_time).await;
-            }
-            HealthStatus::ErrorOrOffline(_) => {
+            // HealthStatus::Loading => {
+            //     sleep(retry_time).await;
+            // }
+            HealthStatus::ErrorOrOffline(e) => {
+                crate::trace!(
+                    "Health check for failed ({e}). Retrying after: {}ms",
+                    retry_time.as_millis()
+                );
                 sleep(retry_time).await;
             }
         }

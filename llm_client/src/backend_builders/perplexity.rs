@@ -1,12 +1,9 @@
 use crate::LlmClient;
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_devices::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{
-    api::{
-        config::{ApiConfig, LlmApiConfigTrait},
-        generic_openai::{GenericApiBackend, GenericApiConfig},
-    },
-    LlmBackend,
+    ApiConfig, GenericApiBackend, GenericApiConfig, LlmApiConfigTrait, LlmBackend,
 };
+
 use llm_models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
 
 // Everything here can be implemented for any struct.

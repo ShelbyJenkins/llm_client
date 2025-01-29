@@ -8,6 +8,5 @@ mod llama_cpp;
 mod mistral_rs;
 mod reason_tests;
 
-use llm_client::prelude::*;
 use llm_testing::*;
 use serial_test::serial;

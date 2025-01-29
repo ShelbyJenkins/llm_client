@@ -1,15 +1,18 @@
-use super::{
-    hf_loader::HuggingFaceLoader, metadata::LocalLlmMetadata, GgufPresetTrait, HfTokenTrait,
-    LlmChatTemplate, LocalLlmModel,
-};
-use crate::tokenizer::LlmTokenizer;
-use loaders::{hf::GgufHfLoader, local::GgufLocalLoader, preset::GgufPresetLoader};
-use tools::gguf_tokenizer::convert_gguf_to_hf_tokenizer;
-
+// Public modules
 pub mod loaders;
 pub mod memory;
 pub mod preset;
 pub mod tools;
+
+// Internal imports
+use super::{
+    hf_loader::{HfTokenTrait, HuggingFaceLoader},
+    metadata::LocalLlmMetadata,
+    LocalLlmModel,
+};
+use crate::{tokenizer::LlmTokenizer, GgufPresetTrait, LlmChatTemplate};
+use loaders::{hf::GgufHfLoader, local::GgufLocalLoader, preset::GgufPresetLoader};
+use tools::gguf_tokenizer::convert_gguf_to_hf_tokenizer;
 
 #[derive(Default, Clone)]
 pub struct GgufLoader {

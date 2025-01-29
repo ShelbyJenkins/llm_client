@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 /// The most basic request. Implemented for API based LLMs and for the sake of completness.
 #[tokio::main(flavor = "current_thread")]

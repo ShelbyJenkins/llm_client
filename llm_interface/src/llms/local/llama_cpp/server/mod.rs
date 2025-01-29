@@ -1,16 +1,17 @@
-pub mod config;
-pub mod health;
-pub mod models;
-pub mod status;
+// Internal modules
+mod config;
+mod health;
+mod models;
+mod status;
 
+// Internal imports
+use crate::llms::{api::ApiClient, local::llama_cpp::LlamaCppConfig};
+use llm_devices::{get_target_directory, DeviceConfig};
+use status::{server_status, ServerStatus};
 use std::process::Command;
 
-use llm_devices::{build::get_target_directory, devices::DeviceConfig};
-
-use crate::llms::{api::client::ApiClient, local::llama_cpp::LlamaCppConfig};
-
-use config::LlamaCppServerConfig;
-use status::{server_status, ServerStatus};
+// Public exports
+pub use config::LlamaCppServerConfig;
 
 const STATUS_CHECK_TIME_MS: u64 = 650;
 const STATUS_RETRY_TIMEOUT_MS: u64 = 200;
@@ -51,10 +52,10 @@ impl LlamaCppServer {
         })
     }
 
-    pub(crate) async fn start_server(
+    pub(super) async fn start_server(
         &mut self,
         client: &ApiClient<LlamaCppConfig>,
-    ) -> crate::Result<ServerStatus> {
+    ) -> Result<(), crate::Error> {
         match server_status(
             &self.device_config.local_model_path,
             &self.server_http_path,
@@ -64,7 +65,7 @@ impl LlamaCppServer {
         )
         .await?
         {
-            ServerStatus::RunningRequested => return Ok(ServerStatus::RunningRequested),
+            ServerStatus::RunningRequested => return Ok(()),
             ServerStatus::Offline => (),
             ServerStatus::RunningModel(model_id) => match kill_server_from_model(&model_id) {
                 Ok(_) => (),
@@ -112,7 +113,7 @@ impl LlamaCppServer {
                         .expect("LlamaCppServer process not created")
                         .id()
                 );
-                Ok(ServerStatus::RunningRequested)
+                Ok(())
             }
             ServerStatus::Offline => {
                 self.shutdown()?;
@@ -161,7 +162,7 @@ impl LlamaCppServer {
         Ok(process)
     }
 
-    pub fn shutdown(&self) -> crate::Result<()> {
+    pub(super) fn shutdown(&self) -> crate::Result<()> {
         let process = if let Some(server_process) = &self.server_process {
             server_process
         } else {

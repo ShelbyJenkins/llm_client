@@ -1,8 +1,9 @@
-pub mod error;
-pub mod request;
-pub mod response;
+// Internal modules
+mod error;
+mod request;
+mod response;
 
-pub use super::res_components::{GenerationSettings, TimingUsage, TokenUsage};
+// Public exports
 pub use error::CompletionError;
 pub use request::CompletionRequest;
 pub use response::{CompletionFinishReason, CompletionResponse};

@@ -1,19 +1,30 @@
-use cpu::CpuConfig;
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-pub use cuda::CudaConfig;
+// Internal modules
 use gpu::GpuLayerAllocator;
+use ram::RamConfig;
+mod cpu;
+mod gpu;
+mod ram;
+
+// Platform-specific modules
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+mod cuda;
+#[cfg(target_os = "macos")]
+mod metal;
+
+// Public exports
+pub use cpu::CpuConfig;
+
+// Platform-specific exports
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub use cuda::{init_nvml_wrapper, CudaConfig};
 #[cfg(target_os = "macos")]
 pub use metal::MetalConfig;
-use ram::RamConfig;
-pub mod cpu;
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-pub mod cuda;
-pub mod gpu;
-#[cfg(target_os = "macos")]
-pub mod metal;
-pub mod ram;
 
-/// Configuration for device-specific settings in LLM inference.
+/// Configuration for hardware devices used in LLM inference.
+///
+/// Manages CPU, RAM, and GPU (CUDA/Metal) settings based on the platform.
+/// After initialization, provides access to hardware capabilities and handles
+/// layer distribution across available devices.
 #[derive(Debug, Clone)]
 pub struct DeviceConfig {
     /// CPU configuration for thread count.
@@ -87,6 +98,14 @@ impl Default for DeviceConfig {
 }
 
 impl DeviceConfig {
+    /// Initializes the device configuration, detecting hardware capabilities
+    /// and setting up appropriate configurations.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - Hardware detection fails and error_on_config_issue is true
+    /// - Platform is unsupported
     pub fn initialize(&mut self) -> crate::Result<()> {
         self.cpu_config.initialize(self.error_on_config_issue)?;
         #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -171,6 +190,14 @@ impl DeviceConfig {
         Ok(())
     }
 
+    /// Returns total available memory in bytes across all configured devices.
+    ///
+    /// For GPU configurations, returns total VRAM. For CPU-only configurations,
+    /// returns available system RAM.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if platform is unsupported
     pub fn available_memory_bytes(&self) -> crate::Result<u64> {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
@@ -191,6 +218,11 @@ impl DeviceConfig {
         }
     }
 
+    /// Returns the size in bytes of each model layer.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if average_layer_size_bytes is not set
     pub fn average_layer_size_bytes(&self) -> crate::Result<u64> {
         match self.average_layer_size_bytes {
             Some(size) => Ok(size),
@@ -198,6 +230,11 @@ impl DeviceConfig {
         }
     }
 
+    /// Returns the total number of layers in the model.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if layer_count is not set
     pub fn layer_count(&self) -> crate::Result<u64> {
         match self.layer_count {
             Some(count) => Ok(count),
@@ -205,6 +242,14 @@ impl DeviceConfig {
         }
     }
 
+    /// Returns the ordinal of the main GPU device.
+    ///
+    /// For CUDA, returns the GPU with the most VRAM.
+    /// For Metal, returns 1 if available, 0 otherwise.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if no GPUs are available
     pub fn main_gpu(&self) -> crate::Result<u32> {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
@@ -224,6 +269,9 @@ impl DeviceConfig {
         }
     }
 
+    /// Returns the number of available GPU devices.
+    ///
+    /// Returns 0 if no GPUs are available or GPU usage is disabled.
     pub fn gpu_count(&self) -> usize {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
@@ -243,6 +291,22 @@ impl DeviceConfig {
         }
     }
 
+    /// Allocates model layers across available GPU devices.
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer_layer_per_gpu` - Number of buffer layers per GPU
+    /// * `buffer_layer_main_gpu` - Additional buffer layers for main GPU
+    ///
+    /// # Returns
+    ///
+    /// Vector of GPU devices with their allocated layers.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - No GPUs are available
+    /// - Insufficient memory for layer allocation
     pub fn allocate_layers_to_gpus(
         &self,
         buffer_layer_per_gpu: u64,

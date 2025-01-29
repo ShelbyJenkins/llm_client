@@ -1,5 +1,6 @@
+use llm_interface::requests::CompletionRequest;
+
 use super::step::{CascadeStep, StepConfig};
-use llm_interface::requests::completion::CompletionRequest;
 use std::collections::VecDeque;
 
 #[derive(Clone)]

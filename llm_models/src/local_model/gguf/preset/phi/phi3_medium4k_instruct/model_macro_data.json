@@ -19,6 +19,6 @@
     "tokenizer_config_preset_data": {
         "local_path": "phi/phi3_medium4k_instruct/tokenizer_config.json",
         "hf_repo": "microsoft/Phi-3-medium-4k-instruct",
-        "hf_filename": "tokenizer.json"
+        "hf_filename": "tokenizer_config.json"
     }
 }

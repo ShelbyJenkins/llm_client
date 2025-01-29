@@ -24,7 +24,7 @@ fn main() {
             .as_str()
             .expect("Excpected llama_cpp_backend.tag as a string");
 
-        match llm_devices::build::run(
+        match llm_devices::build_repo(
             "llama_cpp",
             repo_url,
             repo_tag,

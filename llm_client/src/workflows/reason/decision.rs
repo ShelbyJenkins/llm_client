@@ -1,11 +1,8 @@
+use super::*;
 use super::{ReasonResult, ReasonTrait};
 use crate::{
     components::{instruct_prompt::InstructPrompt, InstructPromptTrait},
     primitives::*,
-};
-use llm_interface::requests::{
-    completion::CompletionRequest,
-    req_components::{RequestConfig, RequestConfigTrait},
 };
 use std::collections::HashMap;
 

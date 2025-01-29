@@ -16,6 +16,6 @@
     },
     "tokenizer_config_preset_data": {
         "hf_repo": "nvidia/Mistral-NeMo-Minitron-8B-Instruct",
-        "hf_filename": "tokenizer.json"
+        "hf_filename": "tokenizer_config.json"
     }
 }

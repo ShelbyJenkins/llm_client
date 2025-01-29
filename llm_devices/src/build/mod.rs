@@ -1,11 +1,55 @@
-use std::path::{Path, PathBuf};
-
-use crate::logging::LoggingConfig;
-
+// Internal modules
 mod git;
 mod make;
 
-pub fn run(
+// Internal imports
+use crate::{get_target_directory, logging::LoggingConfig};
+use std::path::PathBuf;
+
+/// Clones and builds a repository at a specified tag with appropriate platform-specific optimizations.
+///
+/// This function handles the complete process of:
+/// - Checking if a repository needs updating or building
+/// - Cloning/updating the repository to the specified tag
+/// - Building the repository with provided configuration
+/// - Cleaning up on build failures
+///
+/// # Arguments
+///
+/// * `target_sub_path` - Subdirectory within the workspace's target directory where the repo will be cloned
+/// * `repo_url` - URL of the git repository to clone
+/// * `repo_tag` - Specific git tag to checkout
+/// * `executable_name` - Name of the executable that should be built
+/// * `builder_args` - Arguments to pass to the make command (e.g., ["llama-server", "BUILD_TYPE=Release"])
+/// * `cuda_arg` - Optional CUDA-specific argument for the make command when building with CUDA support
+///
+/// # Returns
+///
+/// * `Result<()>` - Ok(()) if build succeeds, Error if any step fails
+///
+/// # Errors
+///
+/// Returns error if:
+/// - Git operations fail (clone, checkout)
+/// - Build process fails
+/// - Executable is not found after build
+/// - Directory operations fail (create, remove)
+///
+/// # Example
+///
+/// ```no_run
+/// use llm_devices::build_repo;
+///
+/// let result = build_repo(
+///     "llama.cpp",
+///     "https://github.com/ggerganov/llama.cpp",
+///     "b3943",
+///     "llama-server",
+///     &["llama-server", "BUILD_TYPE=Release", "-j"],
+///     &Some("GGML_CUDA=1")
+/// );
+/// ```
+pub fn build_repo(
     target_sub_path: &str,
     repo_url: &str,
     repo_tag: &str,
@@ -101,43 +145,4 @@ fn remove_directory(local_repo_path: &PathBuf) -> crate::Result<()> {
             )
         }
     }
-}
-
-/// Hack to resolve this cargo issue
-/// https://github.com/rust-lang/cargo/issues/9661
-pub fn get_target_directory() -> crate::Result<PathBuf> {
-    // First, check CARGO_TARGET_DIR environment variable
-    if let Ok(target_dir) = std::env::var("CARGO_TARGET_DIR") {
-        return Ok(PathBuf::from(target_dir));
-    }
-    // Next, check OUT_DIR and traverse up to find 'target'
-    if let Ok(out_dir) = std::env::var("OUT_DIR") {
-        if let Some(target_dir) = find_target_in_ancestors(&PathBuf::from(out_dir)) {
-            return Ok(target_dir);
-        }
-    }
-
-    // If that fails, check CARGO_MANIFEST_DIR and traverse up to find 'target'
-    if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-        if let Some(target_dir) = find_target_in_ancestors(&PathBuf::from(manifest_dir)) {
-            return Ok(target_dir);
-        }
-    }
-
-    // As a last resort, use the compile-time CARGO_MANIFEST_DIR
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    match find_target_in_ancestors(&manifest_dir) {
-        Some(target_dir) => Ok(target_dir),
-        None => crate::bail!(
-            "Could not find target directory in ancestors of {}",
-            manifest_dir.display()
-        ),
-    }
-}
-
-fn find_target_in_ancestors(start_dir: &Path) -> Option<PathBuf> {
-    start_dir
-        .ancestors()
-        .find(|path| path.join("target").is_dir())
-        .map(|path| path.join("target"))
 }

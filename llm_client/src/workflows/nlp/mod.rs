@@ -1,7 +1,7 @@
 pub mod extract;
 
+use super::*;
 use extract::Extract;
-use llm_interface::{llms::LlmBackend, requests::completion::CompletionRequest};
 
 pub struct Nlp {
     pub base_req: CompletionRequest,

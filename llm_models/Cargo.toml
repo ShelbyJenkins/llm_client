@@ -13,7 +13,7 @@ anyhow.workspace=true
 byteorder="1.5.0"
 colorful.workspace=true
 dotenvy.workspace=true
-hf-hub={version="0.3.2"}
+hf-hub={version="0.4.1"}
 indenter.workspace=true
 llm_prompt.workspace=true
 minijinja="2.0.1"
@@ -21,6 +21,6 @@ paste="1.0.15"
 serde.workspace=true
 serde_json.workspace=true
 thiserror.workspace=true
-tiktoken-rs="0.5.9"
-tokenizers="0.20.0"
+tiktoken-rs="0.6.0"
+tokenizers="0.21.0"
 tracing.workspace=true

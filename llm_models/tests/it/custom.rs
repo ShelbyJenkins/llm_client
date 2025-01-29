@@ -1,4 +1,4 @@
-use llm_models::local_model::{gguf::GgufLoader, GgufLoaderTrait};
+use llm_models::{GgufLoader, GgufLoaderTrait};
 
 #[test]
 fn load_local_basic() {

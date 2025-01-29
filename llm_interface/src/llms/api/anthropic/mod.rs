@@ -1,18 +1,10 @@
+// Public modules
 pub mod builder;
 pub mod completion;
 
-use super::{
-    client::ApiClient,
-    config::{ApiConfig, ApiConfigTrait},
-};
-use crate::requests::completion::{
-    error::CompletionError, request::CompletionRequest, response::CompletionResponse,
-};
-use completion::AnthropicCompletionRequest;
-use llm_devices::logging::LoggingConfig;
-use llm_models::api_model::ApiLlmModel;
-use reqwest::header::HeaderMap;
-use secrecy::{ExposeSecret, Secret};
+// Internal imports
+use super::*;
+use completion::req::AnthropicCompletionRequest;
 
 /// Default v1 API base url
 pub const ANTHROPIC_API_HOST: &str = "api.anthropic.com/v1";

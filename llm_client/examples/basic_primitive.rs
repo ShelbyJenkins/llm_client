@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 /// This example demonstrates how to use the `BasicPrimitiveWorkflow` to generate a response where the output is constrained to one of the defined primitive types. See `llm_client/src/primitives/mod.rs` for the available primitive types.
 

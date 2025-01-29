@@ -53,7 +53,6 @@ impl ApiPrompt {
     ///
     /// Returns the messages as a vector of hashmaps, where each message contains
     /// a "role" key (system/user/assistant) and a "content" key with the message text.
-    /// Messages must be built before they can be retrieved.
     ///
     /// # Returns
     ///

@@ -1,17 +1,10 @@
 use crate::LlmClient;
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_devices::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{
-    api::config::{ApiConfig, LlmApiConfigTrait},
-    local::{
-        llama_cpp::{LlamaCppBackend, LlamaCppConfig},
-        LlmLocalTrait, LocalLlmConfig,
-    },
-    LlmBackend,
+    ApiConfig, LlamaCppBackend, LlamaCppConfig, LlmApiConfigTrait, LlmBackend, LlmLocalTrait,
+    LocalLlmConfig,
 };
-use llm_models::local_model::{
-    gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
-    GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
-};
+use llm_models::{GgufLoader, GgufLoaderTrait, GgufPresetLoader, GgufPresetTrait, HfTokenTrait};
 
 // Everything here can be implemented for any struct.
 #[derive(Default, Clone)]

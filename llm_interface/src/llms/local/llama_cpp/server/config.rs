@@ -1,5 +1,4 @@
-use llm_devices::devices::cpu::CpuConfig;
-use llm_devices::devices::DeviceConfig;
+use llm_devices::{CpuConfig, DeviceConfig};
 
 pub struct LlamaCppServerConfig {
     /// -t, --threads
@@ -91,7 +90,7 @@ impl LlamaCppServerConfig {
         })
     }
 
-    pub(crate) fn populate_args(&self, command: &mut std::process::Command) {
+    pub(super) fn populate_args(&self, command: &mut std::process::Command) {
         if let Some(threads) = &self.threads {
             command.args(threads.as_arg());
         }
@@ -118,7 +117,7 @@ impl LlamaCppServerConfig {
     }
 }
 
-pub(crate) struct Threads(pub i16);
+pub(super) struct Threads(pub i16);
 impl Threads {
     fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
         Self(cpu_config.thread_count_or_default())
@@ -128,7 +127,7 @@ impl Threads {
     }
 }
 
-pub(crate) struct ThreadsBatch(pub i16);
+pub(super) struct ThreadsBatch(pub i16);
 impl ThreadsBatch {
     fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
         Self(cpu_config.thread_count_batch_or_default())
@@ -138,7 +137,7 @@ impl ThreadsBatch {
     }
 }
 
-pub(crate) struct NGpuLayers(pub u64);
+pub(super) struct NGpuLayers(pub u64);
 impl NGpuLayers {
     fn as_arg(&self) -> [String; 2] {
         ["--n-gpu-layers".to_string(), self.0.to_string()]
@@ -146,7 +145,7 @@ impl NGpuLayers {
 }
 
 #[allow(dead_code)]
-pub(crate) enum SplitMode {
+pub(super) enum SplitMode {
     None,
     Layer,
     Row,
@@ -177,7 +176,7 @@ impl TensorSplit {
     }
 }
 
-pub(crate) struct MainGpu(pub u32);
+pub(super) struct MainGpu(pub u32);
 
 impl MainGpu {
     fn as_arg(&self) -> [String; 2] {
@@ -185,7 +184,7 @@ impl MainGpu {
     }
 }
 
-pub(crate) struct NoKvOffload;
+pub(super) struct NoKvOffload;
 
 impl NoKvOffload {
     fn as_arg(&self) -> String {

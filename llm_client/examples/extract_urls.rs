@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 /// Extracts URLs from a given text based on the given instructions.
 

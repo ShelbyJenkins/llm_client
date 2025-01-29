@@ -2,15 +2,24 @@ use super::gpu::GpuDevice;
 use nvml_wrapper::Nvml;
 
 // See https://gist.github.com/jrruethe/8974d2c8b4ece242a071d1a1526aa763#file-vram-rb-L64
+/// CUDA overhead in bytes (500MB) used for VRAM calculations
 pub const CUDA_OVERHEAD: u64 = 500 * 1024 * 1024;
 
+/// Configuration for NVIDIA CUDA devices on Linux and Windows platforms.
+///
+/// Manages device detection, VRAM allocation, and multi-GPU configurations.
 #[derive(Debug, Clone)]
 pub struct CudaConfig {
-    /// The main GPU device ordinal. Defaults to the largest VRAM device.
+    /// Main GPU device ordinal. If None, selects GPU with most VRAM
     pub main_gpu: Option<u32>,
-    /// Ordinals of the devices to use.
+
+    /// List of CUDA device ordinals to use. If empty, uses all available devices
     pub use_cuda_devices: Vec<u32>,
+
+    /// Information about detected CUDA devices
     pub(crate) cuda_devices: Vec<CudaDevice>,
+
+    /// Total available VRAM across all devices in bytes
     pub(crate) total_vram_bytes: u64,
 }
 
@@ -26,6 +35,11 @@ impl Default for CudaConfig {
 }
 
 impl CudaConfig {
+    /// Creates a new CudaConfig using specified device ordinals.
+    ///
+    /// # Arguments
+    ///
+    /// * `use_cuda_devices` - Vector of CUDA device ordinals to use
     pub fn new_from_cuda_devices(use_cuda_devices: Vec<u32>) -> Self {
         Self {
             use_cuda_devices,
@@ -33,6 +47,12 @@ impl CudaConfig {
         }
     }
 
+    /// Creates a new CudaConfig with a specified main device.
+    ///
+    /// # Arguments
+    ///
+    /// * `use_cuda_devices` - Vector of CUDA device ordinals to use
+    /// * `main_gpu` - Ordinal of the device to use as main GPU
     pub fn new_with_main_device(use_cuda_devices: Vec<u32>, main_gpu: u32) -> Self {
         Self {
             main_gpu: Some(main_gpu),
@@ -163,17 +183,41 @@ pub fn get_all_cuda_devices(nvml: Option<&Nvml>) -> crate::Result<Vec<CudaDevice
     Ok(cuda_devices)
 }
 
+/// Represents a single CUDA device with its capabilities.
 #[derive(Debug, Clone)]
 pub struct CudaDevice {
+    /// Device ordinal (GPU index)
     pub ordinal: u32,
+
+    /// Available VRAM in bytes (total VRAM minus CUDA_OVERHEAD)
     pub available_vram_bytes: u64,
+
+    /// Device name (e.g., "NVIDIA GeForce RTX 3080")
     pub name: Option<String>,
+
+    /// Power limit in watts
     pub power_limit: Option<u32>,
+
+    /// CUDA compute capability major version
     pub driver_major: Option<i32>,
+
+    /// CUDA compute capability minor version
     pub driver_minor: Option<i32>,
 }
 
 impl CudaDevice {
+    /// Creates a new CudaDevice from a device ordinal.
+    ///
+    /// # Arguments
+    ///
+    /// * `ordinal` - CUDA device ordinal to initialize
+    /// * `nvml` - Optional NVML instance for hardware queries
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - Device cannot be queried
+    /// - Device has 0 bytes of VRAM
     pub fn new(ordinal: u32, nvml: Option<&Nvml>) -> crate::Result<Self> {
         let nvml = match nvml {
             Some(nvml) => nvml,
@@ -232,6 +276,13 @@ impl CudaDevice {
     }
 }
 
+/// Initializes NVIDIA Management Library (NVML).
+///
+/// Attempts to load the NVML library from common paths on Linux, WSL, and Windows.
+///
+/// # Errors
+///
+/// Returns error if NVML initialization fails on all attempted paths.
 pub fn init_nvml_wrapper() -> crate::Result<Nvml> {
     let library_names = vec![
         "libnvidia-ml.so",   // For Linux

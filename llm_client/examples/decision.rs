@@ -1,4 +1,4 @@
-use llm_client::prelude::*;
+use llm_client::*;
 
 /// Multiple reason requests across a temp gradient with the winner being returned. Currently, decision is bound to the one_round reasoning workflow. Workflows relying on grammars are only supported by local LLMs.
 #[tokio::main(flavor = "current_thread")]

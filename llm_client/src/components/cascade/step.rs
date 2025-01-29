@@ -1,6 +1,6 @@
 use super::cascade_request;
 use crate::components::grammar::Grammar;
-use llm_interface::requests::{completion::CompletionRequest, logit_bias::LogitBias};
+use llm_interface::requests::{CompletionRequest, LogitBias};
 
 #[derive(Clone)]
 pub enum CascadeStep {

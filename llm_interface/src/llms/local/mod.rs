@@ -1,16 +1,21 @@
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use llm_devices::devices::CudaConfig;
-use llm_devices::devices::DeviceConfig;
-#[cfg(target_os = "macos")]
-use llm_devices::devices::MetalConfig;
-use llm_models::local_model::{
-    gguf::GgufLoader, metadata::llm::DEFAULT_CONTEXT_LENGTH, LocalLlmModel,
-};
-
+// Feature-specific public modules
 #[cfg(feature = "llama_cpp_backend")]
 pub mod llama_cpp;
 #[cfg(feature = "mistral_rs_backend")]
 pub mod mistral_rs;
+
+// Platform-specific internal imports
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use llm_devices::CudaConfig;
+#[cfg(target_os = "macos")]
+use llm_devices::MetalConfig;
+
+// Internal imports
+use super::*;
+use llm_devices::DeviceConfig;
+use llm_models::local_model::{
+    gguf::GgufLoader, metadata::llm::DEFAULT_CONTEXT_LENGTH, LocalLlmModel,
+};
 
 #[derive(Clone, Debug)]
 pub struct LocalLlmConfig {

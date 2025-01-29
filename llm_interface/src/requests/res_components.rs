@@ -1,10 +1,13 @@
-use super::completion::request::CompletionRequest;
+// Internal imports
+use super::CompletionRequest;
 use crate::llms::api::{
-    anthropic::completion::AnthropicCompletionResponse,
-    openai::completion::OpenAiCompletionResponse,
+    anthropic::completion::res::AnthropicCompletionResponse,
+    openai::completion::res::OpenAiCompletionResponse,
 };
+
+// Internal feature-specific imports
 #[cfg(feature = "llama_cpp_backend")]
-use crate::llms::local::llama_cpp::completion::LlamaCppCompletionResponse;
+use crate::llms::local::llama_cpp::completion::res::LlamaCppCompletionResponse;
 #[cfg(feature = "mistral_rs_backend")]
 use mistralrs::CompletionResponse as MistralCompletionResponse;
 

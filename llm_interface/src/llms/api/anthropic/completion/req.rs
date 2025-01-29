@@ -1,4 +1,4 @@
-use crate::requests::completion::{error::CompletionError, request::CompletionRequest};
+use crate::requests::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]

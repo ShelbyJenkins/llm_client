@@ -3,22 +3,24 @@ use crate::{tokenizer::LlmTokenizer, LlmModelBase};
 use std::sync::Arc;
 
 impl ApiLlmModel {
-    pub fn openai_model_from_model_id(model_id: &str) -> ApiLlmModel {
+    pub fn openai_model_from_model_id(model_id: &str) -> Self {
         match model_id {
-            "gpt-4" => Self::gpt_4(),
-            "gpt-4-32k" => Self::gpt_4_32k(),
-            "gpt-4-turbo" => Self::gpt_4_turbo(),
-            "gpt-4o" => Self::gpt_4_o(),
-            "gpt-3.5-turbo" => Self::gpt_3_5_turbo(),
-            "gpt-4o-mini" => Self::gpt_3_5_turbo(),
+            model_id if model_id.starts_with("gpt-4") => Self::gpt_4(),
+            model_id if model_id.starts_with("gpt-3.5-turbo") => Self::gpt_3_5_turbo(),
+            model_id if model_id.starts_with("gpt-4-32k") => Self::gpt_4_32k(),
+            model_id if model_id.starts_with("gpt-4-turbo") => Self::gpt_4_turbo(),
+            model_id if model_id.starts_with("gpt-4o") => Self::gpt_4_o(),
+            model_id if model_id.starts_with("gpt-4o-mini") => Self::gpt_4_o_mini(),
+            model_id if model_id.starts_with("o1") => Self::o1(),
+            model_id if model_id.starts_with("o1-mini") => Self::o1_mini(),
             _ => panic!("Model ID ({model_id}) not found for ApiLlmModel"),
         }
     }
 
-    pub fn gpt_4() -> ApiLlmModel {
+    pub fn gpt_4() -> Self {
         let model_id = "gpt-4".to_string();
         let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
+        Self {
             model_base: LlmModelBase {
                 model_id,
                 model_ctx_size: 8192,
@@ -32,44 +34,10 @@ impl ApiLlmModel {
         }
     }
 
-    pub fn gpt_4_32k() -> ApiLlmModel {
-        let model_id = "gpt-4-32k".to_string();
-        let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
-            model_base: LlmModelBase {
-                model_id,
-                model_ctx_size: 32768,
-                inference_ctx_size: 4096,
-                tokenizer,
-            },
-            cost_per_m_in_tokens: 60.00,
-            cost_per_m_out_tokens: 120.00,
-            tokens_per_message: 3,
-            tokens_per_name: Some(1),
-        }
-    }
-
-    pub fn gpt_4_turbo() -> ApiLlmModel {
-        let model_id = "gpt-4-turbo".to_string();
-        let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
-            model_base: LlmModelBase {
-                model_id,
-                model_ctx_size: 128000,
-                inference_ctx_size: 4096,
-                tokenizer,
-            },
-            cost_per_m_in_tokens: 10.00,
-            cost_per_m_out_tokens: 30.00,
-            tokens_per_message: 3,
-            tokens_per_name: Some(1),
-        }
-    }
-
-    pub fn gpt_3_5_turbo() -> ApiLlmModel {
+    pub fn gpt_3_5_turbo() -> Self {
         let model_id = "gpt-3.5-turbo".to_string();
         let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
+        Self {
             model_base: LlmModelBase {
                 model_id,
                 model_ctx_size: 16385,
@@ -83,10 +51,44 @@ impl ApiLlmModel {
         }
     }
 
-    pub fn gpt_4_o_mini() -> ApiLlmModel {
+    pub fn gpt_4_32k() -> Self {
+        let model_id = "gpt-4-32k".to_string();
+        let tokenizer = model_tokenizer(&model_id);
+        Self {
+            model_base: LlmModelBase {
+                model_id,
+                model_ctx_size: 32768,
+                inference_ctx_size: 4096,
+                tokenizer,
+            },
+            cost_per_m_in_tokens: 60.00,
+            cost_per_m_out_tokens: 120.00,
+            tokens_per_message: 3,
+            tokens_per_name: Some(1),
+        }
+    }
+
+    pub fn gpt_4_turbo() -> Self {
+        let model_id = "gpt-4-turbo".to_string();
+        let tokenizer = model_tokenizer(&model_id);
+        Self {
+            model_base: LlmModelBase {
+                model_id,
+                model_ctx_size: 128000,
+                inference_ctx_size: 4096,
+                tokenizer,
+            },
+            cost_per_m_in_tokens: 10.00,
+            cost_per_m_out_tokens: 30.00,
+            tokens_per_message: 3,
+            tokens_per_name: Some(1),
+        }
+    }
+
+    pub fn gpt_4_o_mini() -> Self {
         let model_id = "gpt-4o-mini".to_string();
         let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
+        Self {
             model_base: LlmModelBase {
                 model_id,
                 model_ctx_size: 128000,
@@ -100,10 +102,10 @@ impl ApiLlmModel {
         }
     }
 
-    pub fn gpt_4_o() -> ApiLlmModel {
+    pub fn gpt_4_o() -> Self {
         let model_id = "gpt-4o".to_string();
         let tokenizer = model_tokenizer(&model_id);
-        ApiLlmModel {
+        Self {
             model_base: LlmModelBase {
                 model_id,
                 model_ctx_size: 128000,
@@ -117,10 +119,27 @@ impl ApiLlmModel {
         }
     }
 
-    pub fn o1_mini() -> ApiLlmModel {
+    pub fn o1() -> Self {
+        let model_id = "o1".to_string();
+        let tokenizer = model_tokenizer(&model_id);
+        Self {
+            model_base: LlmModelBase {
+                model_id,
+                model_ctx_size: 200000,
+                inference_ctx_size: 100000,
+                tokenizer,
+            },
+            cost_per_m_in_tokens: 15.00,
+            cost_per_m_out_tokens: 60.00,
+            tokens_per_message: 4,
+            tokens_per_name: Some(-1),
+        }
+    }
+
+    pub fn o1_mini() -> Self {
         let model_id = "o1-mini".to_string();
-        let tokenizer = model_tokenizer("gpt-4o-mini");
-        ApiLlmModel {
+        let tokenizer = model_tokenizer(&model_id);
+        Self {
             model_base: LlmModelBase {
                 model_id,
                 model_ctx_size: 128000,
@@ -129,23 +148,6 @@ impl ApiLlmModel {
             },
             cost_per_m_in_tokens: 3.00,
             cost_per_m_out_tokens: 12.00,
-            tokens_per_message: 4,
-            tokens_per_name: Some(-1),
-        }
-    }
-
-    pub fn o1_preview() -> ApiLlmModel {
-        let model_id = "o1-preview".to_string();
-        let tokenizer = model_tokenizer("gpt-4o-mini");
-        ApiLlmModel {
-            model_base: LlmModelBase {
-                model_id,
-                model_ctx_size: 128000,
-                inference_ctx_size: 32768,
-                tokenizer,
-            },
-            cost_per_m_in_tokens: 15.00,
-            cost_per_m_out_tokens: 60.00,
             tokens_per_message: 4,
             tokens_per_name: Some(-1),
         }
@@ -189,6 +191,15 @@ pub trait OpenAiModelTrait {
         self
     }
 
+    /// Use gpt-3.5-turbo as the model for the OpenAI client.
+    fn gpt_3_5_turbo(mut self) -> Self
+    where
+        Self: Sized,
+    {
+        *self.model() = ApiLlmModel::gpt_3_5_turbo();
+        self
+    }
+
     /// Use gpt-4-turbo as the model for the OpenAI client.
     fn gpt_4_turbo(mut self) -> Self
     where
@@ -207,20 +218,30 @@ pub trait OpenAiModelTrait {
         self
     }
 
-    /// Use gpt-3.5-turbo as the model for the OpenAI client.
-    fn gpt_3_5_turbo(mut self) -> Self
+    /// Use gpt-4o-mini as the model for the OpenAI client.
+    fn gpt_4_o_mini(mut self) -> Self
     where
         Self: Sized,
     {
-        *self.model() = ApiLlmModel::gpt_3_5_turbo();
+        *self.model() = ApiLlmModel::gpt_4_o_mini();
         self
     }
 
-    fn o1_preview<T: Into<Option<bool>>>(mut self) -> Self
+    /// Use o1 as the model for the OpenAI client.
+    fn o1(mut self) -> Self
     where
         Self: Sized,
     {
-        *self.model() = ApiLlmModel::gpt_3_5_turbo();
+        *self.model() = ApiLlmModel::o1();
+        self
+    }
+
+    /// Use o1-mini as the model for the OpenAI client.
+    fn o1_mini(mut self) -> Self
+    where
+        Self: Sized,
+    {
+        *self.model() = ApiLlmModel::o1_mini();
         self
     }
 }

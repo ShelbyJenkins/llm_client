@@ -1,5 +1,5 @@
 use crate::LlmClient;
-use llm_devices::logging::{LoggingConfig, LoggingConfigTrait};
+use llm_devices::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{
     local::{
         mistral_rs::{MistralRsBackend, MistralRsConfig},

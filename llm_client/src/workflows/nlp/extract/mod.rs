@@ -1,4 +1,4 @@
-use llm_interface::requests::completion::CompletionRequest;
+use super::*;
 
 pub mod urls;
 

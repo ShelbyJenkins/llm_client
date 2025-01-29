@@ -1,9 +1,9 @@
-use super::{error::CompletionError, response::CompletionResponse};
+// Internal imports
+use super::*;
 use crate::{
     llms::LlmBackend,
     requests::{
-        completion::response::CompletionFinishReason, logit_bias::LogitBias,
-        req_components::RequestConfig, stop_sequence::StopSequences,
+        logit_bias::LogitBias, req_components::RequestConfig, stop_sequence::StopSequences,
     },
 };
 use llm_prompt::LlmPrompt;

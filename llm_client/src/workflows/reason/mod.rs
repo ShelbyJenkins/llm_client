@@ -1,11 +1,11 @@
 pub mod decision;
 pub mod one_round;
 
+use super::*;
 use crate::{
     components::{cascade::CascadeFlow, instruct_prompt::InstructPrompt},
     primitives::*,
 };
-use llm_interface::{llms::LlmBackend, requests::completion::CompletionRequest};
 use one_round::ReasonOneRound;
 
 pub trait ReasonTrait: PrimitiveTrait {

@@ -1,7 +1,10 @@
+// Public modules
 pub mod config_json;
 pub mod general;
 pub mod llm;
 pub mod tokenizer;
+
+// Internal imports
 use super::gguf::tools::{gguf_file::GgufFile, gguf_layers::GgufLayers};
 use general::GeneralMetadata;
 use llm::Architecture;

@@ -1,7 +1,7 @@
 use crate::components::cascade::CascadeFlow;
 use crate::{components::cascade::step::StepConfig, primitives::*};
 
-use llm_interface::requests::completion::CompletionRequest;
+use super::*;
 
 #[derive(Clone)]
 pub struct ClassifySubjectOfText {
@@ -235,7 +235,9 @@ mod test {
             "turtle",
         ),
     ];
-    use crate::{prelude::*, workflows::classify::subject_of_text::ClassifySubjectOfText};
+    use crate::{workflows::classify::subject_of_text::ClassifySubjectOfText, LlmClient};
+    use llm_interface::requests::CompletionRequest;
+    use llm_models::GgufPresetTrait;
 
     #[tokio::test]
     #[ignore]

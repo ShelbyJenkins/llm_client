@@ -1,14 +1,40 @@
-use crate::requests::{
-    completion::{
-        error::CompletionError, request::CompletionRequest, response::CompletionResponse,
-    },
-    logit_bias::LogitBias,
-};
-use llm_models::tokenizer::LlmTokenizer;
-use llm_prompt::{LlmPrompt, PromptTokenizer};
+// Public modules
 pub mod api;
+
+// Feature-specific public modules
 #[cfg(any(feature = "llama_cpp_backend", feature = "mistral_rs_backend"))]
 pub mod local;
+
+// Internal imports
+use crate::requests::*;
+use llm_devices::LoggingConfig;
+use llm_models::{api_model::ApiLlmModel, tokenizer::LlmTokenizer};
+use llm_prompt::{LlmPrompt, PromptTokenizer};
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use secrecy::{ExposeSecret, Secret};
+
+// Public exports
+pub use api::{
+    anthropic::{builder::AnthropicBackendBuilder, AnthropicBackend, AnthropicConfig},
+    generic_openai::{GenericApiBackend, GenericApiConfig},
+    openai::{builder::OpenAiBackendBuilder, OpenAiBackend, OpenAiConfig},
+    perplexity::builder::PerplexityBackendBuilder,
+    ApiConfig, ApiError, ClientError, LlmApiConfigTrait,
+};
+
+// Feature-specific public exports
+#[cfg(feature = "llama_cpp_backend")]
+pub use local::llama_cpp;
+pub use local::llama_cpp::{
+    builder::LlamaCppBackendBuilder,
+    completion::{LlamaCppCompletionRequest, LlamaCppCompletionResponse},
+    server::{LlamaCppServer, LlamaCppServerConfig},
+    LlamaCppBackend, LlamaCppConfig,
+};
+#[cfg(feature = "mistral_rs_backend")]
+pub use local::mistral_rs;
+#[cfg(any(feature = "llama_cpp_backend", feature = "mistral_rs_backend"))]
+pub use local::{LlmLocalTrait, LocalLlmConfig};
 
 pub enum LlmBackend {
     #[cfg(feature = "llama_cpp_backend")]

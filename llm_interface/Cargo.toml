@@ -23,7 +23,7 @@ reqwest="0.12.7"
 secrecy="0.8.0"
 serde.workspace=true
 serde_json.workspace=true
-sysinfo={version="0.31.4", optional=true, default-features=false, features=["system"]}
+sysinfo={version="0.33.1", optional=true, default-features=false, features=["system"]}
 thiserror.workspace=true
 tokio.workspace=true
 tracing.workspace=true
@@ -46,7 +46,7 @@ tokio={workspace=true, features=["macros", "test-util"]}
 # mistralrs={git="https://github.com/EricLBuehler/mistral.rs.git", rev="776c11664f36f690937db53cd1809614e64127d4", features=["metal"]}
 
 [build-dependencies]
-cargo_metadata="0.18.1"
+cargo_metadata="0.19.1"
 llm_devices.workspace=true
 
 [[bin]]

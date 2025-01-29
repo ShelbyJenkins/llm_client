@@ -73,7 +73,7 @@ impl ApiLlmModel {
     }
 }
 
-pub fn model_tokenizer(_model_id: &str) -> Arc<LlmTokenizer> {
+fn model_tokenizer(_model_id: &str) -> Arc<LlmTokenizer> {
     Arc::new(
         LlmTokenizer::new_tiktoken("gpt-4")
             .unwrap_or_else(|_| panic!("Failed to load tokenizer for gpt-4")),
