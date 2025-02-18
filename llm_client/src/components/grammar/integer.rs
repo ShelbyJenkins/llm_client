@@ -1,7 +1,7 @@
 use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::cell::RefCell;
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct IntegerGrammar {
     pub stop_word_done: Option<String>,
     pub stop_word_no_result: Option<String>,

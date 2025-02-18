@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
 pub struct LlamaCppCompletionRequest {
-    pub prompt: Vec<u32>,
+    pub prompt: Vec<usize>,
     #[serde(skip)]
     pub prompt_string: Option<String>,
     /// A formatted "Grammar" as a string.
@@ -25,7 +25,7 @@ pub struct LlamaCppCompletionRequest {
     ///
     /// The total length of input tokens and generated tokens is limited by the model's context length. [Example Python code](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) for counting tokens.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub n_predict: Option<u64>,
+    pub n_predict: Option<usize>,
     /// stop: Specify a JSON array of stopping strings.
     /// These words will not be included in the completion,
     /// so make sure to add them to the prompt for the next iteration (default: []).

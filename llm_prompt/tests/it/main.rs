@@ -4,7 +4,7 @@ mod local;
 
 #[allow(unused_imports)]
 use anyhow::{anyhow, bail, Error, Result};
-use llm_models::local_model::{gguf::preset::LlmPreset, LocalLlmModel};
+use llm_models::LocalLlmModel;
 use llm_prompt::{apply_chat_template, LlmPrompt, PromptMessages};
 use serde_json;
 use std::collections::HashMap;

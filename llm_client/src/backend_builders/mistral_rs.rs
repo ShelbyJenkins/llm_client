@@ -7,12 +7,11 @@ use llm_interface::llms::{
     },
     LlmBackend,
 };
-use llm_models::local_model::{
+use llm_models::local_models::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
     GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };
 
-// Everything here can be implemented for any struct.
 #[derive(Default, Clone)]
 pub struct MistralRsBackendBuilder {
     pub config: MistralRsConfig,

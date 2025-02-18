@@ -1,0 +1,18 @@
+[package]
+description="llm_models_macros: Compile-time macros for llm_models"
+edition.workspace=true
+homepage.workspace=true
+license.workspace=true
+name="llm_models_macros"
+readme="README.md"
+repository.workspace=true
+version="0.0.1"
+
+[dependencies]
+llm_models={path="../llm_models"}
+prettyplease="*"
+proc-macro2="*"
+quote="*"
+serde.workspace=true
+serde_json.workspace=true
+syn={version="2.0.96", default-features=false, features=["full", "parsing"]}

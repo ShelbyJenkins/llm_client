@@ -80,7 +80,7 @@ impl CompletionRequest {
                     errors: std::mem::take(&mut self.llm_interface_errors),
                 };
                 tracing::error!(?llm_interface_error);
-                eprintln!("{}", llm_interface_error);
+                crate::error!("{}", llm_interface_error);
                 return Err(llm_interface_error);
             }
             tracing::info!("{}", self);

@@ -32,7 +32,7 @@ pub struct OpenAiCompletionRequest {
     ///
     /// The total length of input tokens and generated tokens is limited by the model's context length. [Example Python code](https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken) for counting tokens.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_tokens: Option<u64>,
+    pub max_tokens: Option<usize>,
 
     /// min: 0.0, max: 2.0, default: None
     #[serde(skip_serializing_if = "Option::is_none")]

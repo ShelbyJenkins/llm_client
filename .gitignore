@@ -1,5 +1,23 @@
+# Rust build artifacts
 /target/
+
+# Environment variables
 .env
+
+# Log files
 /llm_logs/
+
+# Rust dependency lock file
 Cargo.lock
+
+# Generated outputs
 /generations
+
+# System files (macOS)
+.DS_Store
+
+# Rust formatting backup files
+**/*.rs.bk
+
+# llm_gui Tailwind CSS binary files
+/llm_gui/assets/tailwind/*

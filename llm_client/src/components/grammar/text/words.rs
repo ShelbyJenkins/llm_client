@@ -1,6 +1,6 @@
 use super::{create_range, Grammar, GrammarError, GrammarSetterTrait, RefCell};
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct WordsGrammar {
     pub min_count: u8,
     pub max_count: u8,

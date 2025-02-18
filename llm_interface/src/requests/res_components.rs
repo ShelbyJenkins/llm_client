@@ -40,10 +40,8 @@ pub struct GenerationSettings {
     /// The number of choices to generate.
     pub n_choices: u8,
     /// The number of tokens to predict same as max_tokens.
-    pub n_predict: Option<i32>,
-    /// The maxium context size of the model or server setting.
-    pub n_ctx: u64,
-    pub logit_bias: Option<Vec<Vec<serde_json::Value>>>,
+    pub n_predict: Option<i64>,
+    pub logit_bias: Option<Vec<serde_json::Value>>,
     pub grammar: Option<String>,
     pub stop_sequences: Vec<String>, // change toi vec of stop sequences
 }
@@ -58,8 +56,7 @@ impl GenerationSettings {
             temperature: res.generation_settings.temperature,
             top_p: Some(res.generation_settings.top_p),
             n_choices: 1,
-            n_predict: Some(res.generation_settings.n_predict as i32),
-            n_ctx: res.generation_settings.n_ctx as u64,
+            n_predict: Some(res.generation_settings.n_predict as i64),
             logit_bias: res.generation_settings.logit_bias.clone(),
             grammar: Some(res.generation_settings.grammar.to_owned()),
             stop_sequences: res.generation_settings.stop.clone(),
@@ -96,8 +93,8 @@ impl GenerationSettings {
             temperature: req.config.temperature,
             top_p: req.config.top_p,
             n_choices: 1,
-            n_predict: req.config.actual_request_tokens.map(|x| x as i32),
-            n_ctx: req.config.inference_ctx_size,
+            n_predict: req.config.actual_request_tokens.map(|x| x as i64),
+
             logit_bias: None,
             grammar: None,
             stop_sequences: req
@@ -117,8 +114,7 @@ impl GenerationSettings {
             temperature: req.config.temperature,
             top_p: req.config.top_p,
             n_choices: 1,
-            n_predict: req.config.actual_request_tokens.map(|x| x as i32),
-            n_ctx: req.config.inference_ctx_size,
+            n_predict: req.config.actual_request_tokens.map(|x| x as i64),
             logit_bias: None,
             grammar: None,
             stop_sequences: req
@@ -141,7 +137,6 @@ impl std::fmt::Display for GenerationSettings {
         writeln!(f, "    top_p: {:?}", self.top_p)?;
         writeln!(f, "    n_choices: {:?}", self.n_choices)?;
         writeln!(f, "    n_predict: {:?}", self.n_predict)?;
-        writeln!(f, "    n_ctx: {:?}", self.n_ctx)?;
         writeln!(f, "    logit_bias: {:?}", self.logit_bias)?;
         writeln!(f, "    grammar: {:?}", self.grammar)?;
         writeln!(f, "    stop_sequences: {:?}", self.stop_sequences)
@@ -254,13 +249,13 @@ impl std::fmt::Display for TimingUsage {
 /// Token statistics for the completion request.
 pub struct TokenUsage {
     /// Number of tokens from the prompt which could be re-used from previous completion (n_past)
-    pub tokens_cached: Option<u32>,
+    pub tokens_cached: Option<usize>,
     /// Number of tokens evaluated in total from the prompt. Same as tokens_evaluated.
-    pub prompt_tokens: u32,
+    pub prompt_tokens: usize,
     /// Number of tokens in the generated completion. Same as predicted_n.
-    pub completion_tokens: u32,
+    pub completion_tokens: usize,
     /// Total number of tokens used in the request (prompt + completion).
-    pub total_tokens: u32,
+    pub total_tokens: usize,
     /// Dollar cost of the request.
     pub dollar_cost: Option<f32>,
     /// Cents cost of the request.
@@ -271,10 +266,10 @@ impl TokenUsage {
     #[cfg(feature = "llama_cpp_backend")]
     pub fn new_from_llama(res: &LlamaCppCompletionResponse) -> Self {
         Self {
-            tokens_cached: Some(res.tokens_cached as u32),
-            prompt_tokens: res.tokens_evaluated as u32,
-            completion_tokens: res.timings.predicted_n as u32,
-            total_tokens: res.tokens_evaluated as u32 + res.timings.predicted_n as u32,
+            tokens_cached: Some(res.tokens_cached as usize),
+            prompt_tokens: res.tokens_evaluated as usize,
+            completion_tokens: res.timings.predicted_n as usize,
+            total_tokens: res.tokens_evaluated as usize + res.timings.predicted_n as usize,
             dollar_cost: None,
             cents_cost: None,
         }
@@ -283,9 +278,9 @@ impl TokenUsage {
     pub fn new_from_mistral(res: &MistralCompletionResponse) -> Self {
         Self {
             tokens_cached: None,
-            prompt_tokens: res.usage.prompt_tokens as u32,
-            completion_tokens: res.usage.completion_tokens as u32,
-            total_tokens: res.usage.prompt_tokens as u32 + res.usage.completion_tokens as u32,
+            prompt_tokens: res.usage.prompt_tokens as usize,
+            completion_tokens: res.usage.completion_tokens as usize,
+            total_tokens: res.usage.prompt_tokens as usize + res.usage.completion_tokens as usize,
             dollar_cost: None,
             cents_cost: None,
         }

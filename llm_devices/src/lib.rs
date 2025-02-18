@@ -12,8 +12,8 @@
 //! * Logging tools
 
 // Internal modules
-mod build;
 mod devices;
+mod llm_binary;
 mod logging;
 mod target_dir;
 
@@ -25,8 +25,9 @@ use tracing::{debug, error, info, span, trace, warn, Level};
 
 // Public exports
 pub use self::{
-    build::build_repo,
     devices::{CpuConfig, DeviceConfig},
+    llm_binary::build_or_install,
+    llm_binary::{get_bin_dir, get_bin_path, LLAMA_CPP_SERVER_EXECUTABLE},
     logging::{i_ln, i_lns, i_nln, i_nlns, LoggingConfig, LoggingConfigTrait},
     target_dir::get_target_directory,
 };

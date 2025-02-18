@@ -15,12 +15,12 @@ The llm_utils crate then calculates the largest quant you can use, and downloads
 ```rust
 use Llmclient::prelude::*;
 let llm_client = LlmClient::llama_cpp()
-    .mistral7b_instruct_v0_3() // Uses a preset model
+    .mistral_7b_instruct_v0_3() // Uses a preset model
     .init() // Downloads model from hugging face and starts the inference interface
     .await?;
 
 let llm_client = LlmClient::llama_cpp()
-    .llama3_1_8b_instruct()
+    .meta_llama_3_1_8b_instruct()
     .hf_token(hf_token) // Add your hugging face API token
     .hf_token_env_var("HF_TOKEN_ENV_VAR") // Or the env var to access it
     .init() 

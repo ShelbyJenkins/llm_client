@@ -1,9 +1,11 @@
 use crate::LlmClient;
 use llm_devices::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{ApiConfig, LlmApiConfigTrait, LlmBackend, OpenAiBackend, OpenAiConfig};
-use llm_models::api_model::{openai::OpenAiModelTrait, ApiLlmModel};
+use llm_models::{
+    api_models::{ApiLlmModel, OpenAiModelTrait},
+    ApiLlmPreset,
+};
 
-// Everything here can be implemented for any struct.
 pub struct OpenAiBackendBuilder {
     pub config: OpenAiConfig,
     pub model: ApiLlmModel,
@@ -13,7 +15,7 @@ impl Default for OpenAiBackendBuilder {
     fn default() -> Self {
         Self {
             config: Default::default(),
-            model: ApiLlmModel::gpt_4_o_mini(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::GPT_4O_MINI),
         }
     }
 }

@@ -3,7 +3,7 @@ use super::{
     RefCell, NEWLINE_CHARS,
 };
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct SentencesGrammar {
     pub min_count: u8,
     pub max_count: u8,

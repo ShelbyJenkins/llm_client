@@ -6,7 +6,6 @@ use llm_interface::llms::{
 };
 use llm_models::{GgufLoader, GgufLoaderTrait, GgufPresetLoader, GgufPresetTrait, HfTokenTrait};
 
-// Everything here can be implemented for any struct.
 #[derive(Default, Clone)]
 pub struct LlamaCppBackendBuilder {
     pub config: LlamaCppConfig,

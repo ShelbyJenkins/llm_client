@@ -2,12 +2,12 @@
 use llm_client::backend_builders::mistral_rs::MistralRsBackendBuilder;
 use llm_client::{backend_builders::llama_cpp::LlamaCppBackendBuilder, LlmClient};
 
-use llm_models::local_model::gguf::preset::LlmPreset;
+use llm_models::gguf_presets::GgufPreset;
 
-const TINY_LLM_PRESET: LlmPreset = LlmPreset::Llama3_2_3bInstruct;
-const MEDIUM_LLM_PRESET: LlmPreset = LlmPreset::Llama3_1_8bInstruct;
-const LARGE_LLM_PRESET: LlmPreset = LlmPreset::MistralNemoInstruct2407;
-const MAX_LLM_PRESET: LlmPreset = LlmPreset::MistralSmallInstruct2409;
+const TINY_LLM_PRESET: GgufPreset = GgufPreset::LLAMA_3_2_3B_INSTRUCT;
+const MEDIUM_LLM_PRESET: GgufPreset = GgufPreset::LLAMA_3_1_8B_INSTRUCT;
+const LARGE_LLM_PRESET: GgufPreset = GgufPreset::MISTRAL_NEMO_INSTRUCT_2407;
+const MAX_LLM_PRESET: GgufPreset = GgufPreset::MISTRAL_SMALL_24B_INSTRUCT_2501;
 const DEFAULT_BACKEND: &str = "LlamaCpp";
 
 #[derive(Clone)]
@@ -27,7 +27,7 @@ impl TestBackendConfig {
         TestBackendConfig::MistralRs(builder)
     }
 
-    pub async fn to_llm_client_with_preset(&self, preset: &LlmPreset) -> crate::Result<LlmClient> {
+    pub async fn to_llm_client_with_preset(&self, preset: &GgufPreset) -> crate::Result<LlmClient> {
         match self.clone() {
             #[cfg(feature = "llama_cpp_backend")]
             Self::LlamaCpp(mut b) => {
@@ -97,7 +97,7 @@ pub async fn default_max_llm() -> crate::Result<LlmClient> {
 }
 
 #[cfg(feature = "llama_cpp_backend")]
-pub async fn llama_cpp_from_preset(preset: &LlmPreset) -> crate::Result<LlmClient> {
+pub async fn llama_cpp_from_preset(preset: &GgufPreset) -> crate::Result<LlmClient> {
     let mut builder = LlmClient::llama_cpp();
     builder.llm_loader.gguf_preset_loader.llm_preset = preset.clone();
     builder.init().await
@@ -124,7 +124,7 @@ pub async fn llama_cpp_max_llm() -> crate::Result<LlmClient> {
 }
 
 #[cfg(feature = "mistral_rs_backend")]
-pub async fn mistral_rs_from_preset(preset: &LlmPreset) -> crate::Result<LlmClient> {
+pub async fn mistral_rs_from_preset(preset: &GgufPreset) -> crate::Result<LlmClient> {
     let mut builder = LlmClient::mistral_rs();
     builder.llm_loader.gguf_preset_loader.llm_preset = preset.clone();
     builder.init().await

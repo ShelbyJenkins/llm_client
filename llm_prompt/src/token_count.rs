@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::PromptTokenizer;
 use thiserror::Error;
 
-pub const DEFAULT_SAFETY_TOKENS: u64 = 10;
+pub const DEFAULT_SAFETY_TOKENS: usize = 10;
 
 /// Sets and validates the 'max_tokens' or 'n_ctx' or 'n_predict' parameter for a request.
 /// First, it checks that the total_prompt_tokens is less than the ctx_size - safety_tokens.
@@ -23,18 +23,18 @@ pub const DEFAULT_SAFETY_TOKENS: u64 = 10;
 ///
 /// # Returns
 ///
-/// A u64 to be used for the 'max_tokens' or 'n_ctx' parameter for inference requests.
+/// A usize to be used for the 'max_tokens' or 'n_ctx' parameter for inference requests.
 ///
 /// # Errors
 ///
 /// Returns an error if any of the validation checks fail.
 pub fn check_and_get_max_tokens(
-    ctx_size: u64,
-    inference_ctx_size: Option<u64>,
-    total_prompt_tokens: u64,
-    safety_tokens: Option<u64>,
-    requested_tokens: Option<u64>,
-) -> Result<u64, RequestTokenLimitError> {
+    ctx_size: usize,
+    inference_ctx_size: Option<usize>,
+    total_prompt_tokens: usize,
+    safety_tokens: Option<usize>,
+    requested_tokens: Option<usize>,
+) -> Result<usize, RequestTokenLimitError> {
     let available_tokens = available_tokens(
         ctx_size,
         inference_ctx_size,
@@ -43,7 +43,7 @@ pub fn check_and_get_max_tokens(
     )?;
     let requested_tokens = if let Some(requested_tokens) = requested_tokens {
         if requested_tokens > available_tokens {
-            eprintln!(
+            crate::error!(
                 "requested_tokens ({requested_tokens}) is greater than available_tokens ({}). Using available_tokens for request.", available_tokens
             );
             available_tokens
@@ -54,7 +54,7 @@ pub fn check_and_get_max_tokens(
         available_tokens
     };
 
-    if total_prompt_tokens as u64 + requested_tokens as u64 >= ctx_size {
+    if total_prompt_tokens + requested_tokens >= ctx_size {
         panic!(
             "total_prompt_tokens ({total_prompt_tokens}) + requested_tokens ({requested_tokens}) >= ctx_size ({ctx_size}). This should never happen.",
         );
@@ -63,14 +63,14 @@ pub fn check_and_get_max_tokens(
 }
 
 fn available_tokens(
-    ctx_size: u64,
-    inference_ctx_size: Option<u64>,
-    total_prompt_tokens: u64,
-    safety_tokens: Option<u64>,
-) -> Result<u64, RequestTokenLimitError> {
+    ctx_size: usize,
+    inference_ctx_size: Option<usize>,
+    total_prompt_tokens: usize,
+    safety_tokens: Option<usize>,
+) -> Result<usize, RequestTokenLimitError> {
     let safety_tokens = safety_tokens.unwrap_or(DEFAULT_SAFETY_TOKENS);
 
-    if total_prompt_tokens as u64 >= ctx_size - safety_tokens {
+    if total_prompt_tokens as usize >= ctx_size - safety_tokens {
         return Err(RequestTokenLimitError::PromptTokensExceeds {
             total_prompt_tokens,
             ctx_size: ctx_size - safety_tokens,
@@ -90,24 +90,24 @@ fn available_tokens(
 
 pub(crate) fn total_prompt_tokens_openai_format(
     built_prompt_messages: &Vec<std::collections::HashMap<String, String>>,
-    tokens_per_message: Option<u32>,
-    tokens_per_name: Option<i32>,
+    tokens_per_message: Option<usize>,
+    tokens_per_name: Option<isize>,
     tokenizer: &Arc<dyn PromptTokenizer>,
-) -> u64 {
+) -> usize {
     let tokens_per_message = tokens_per_message.unwrap_or(0);
-    let mut num_tokens: u64 = 0;
+    let mut num_tokens = 0;
     for message in built_prompt_messages {
-        num_tokens += tokens_per_message as u64;
+        num_tokens += tokens_per_message;
 
         for (key, value) in message.iter() {
-            num_tokens += tokenizer.count_tokens(value) as u64;
+            num_tokens += tokenizer.count_tokens(value) as usize;
             if let Some(tokens_per_name) = tokens_per_name {
                 if key == "name" {
                     if tokens_per_name < 0 {
                         // Handles cases for certain models where name doesn't count towards token count
-                        num_tokens -= tokens_per_name.unsigned_abs() as u64;
+                        num_tokens -= tokens_per_name.unsigned_abs();
                     } else {
-                        num_tokens += tokens_per_name as u64;
+                        num_tokens += tokens_per_name as usize;
                     }
                 }
             }
@@ -119,16 +119,16 @@ pub(crate) fn total_prompt_tokens_openai_format(
 
 #[derive(Debug, Clone)]
 pub struct MaxTokenState {
-    pub actual_request: u64,
-    pub requested_response: u64,
+    pub actual_request: usize,
+    pub requested_response: usize,
 }
 
 #[derive(Error, Debug, Clone)]
 pub enum RequestTokenLimitError {
     #[error("total_prompt_tokens ({total_prompt_tokens}) exceeds ctx_size ({ctx_size})")]
     PromptTokensExceeds {
-        total_prompt_tokens: u64,
-        ctx_size: u64,
+        total_prompt_tokens: usize,
+        ctx_size: usize,
     },
     #[error("GenericPromptError: {e}")]
     GenericPromptError { e: String },

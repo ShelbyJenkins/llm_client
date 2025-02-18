@@ -4,7 +4,7 @@ use crate::llms::{
     LlmBackend,
 };
 use llm_devices::{LoggingConfig, LoggingConfigTrait};
-use llm_models::local_model::{
+use llm_models::local_models::{
     gguf::{loaders::preset::GgufPresetLoader, GgufLoader},
     GgufLoaderTrait, GgufPresetTrait, HfTokenTrait,
 };

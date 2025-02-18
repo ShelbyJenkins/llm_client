@@ -27,8 +27,8 @@
 //! ```rust
 //! use llm_models::*;
 //! let model: LocalLlmModel = GgufLoader::default()
-//!     .llama3_1_8b_instruct()
-//!     .preset_with_available_vram_gb(48) // Load the largest quant that will fit in your vram
+//!     .meta_llama_3_1_8b_instruct()
+//!     .preset_with_memory_gb(48) // Load the largest quant that will fit in your vram
 //!     .load().unwrap();
 //! ```
 //!
@@ -84,9 +84,6 @@
 //!
 //! // From local path
 //! let tok = LlmTokenizer::new_from_tokenizer_json("path/to/tokenizer.json");
-//!
-//! // From repo (requires Hugging Face token)
-//! // let tok = LlmTokenizer::new_from_hf_repo(hf_token, "meta-llama/Meta-Llama-3-8B-Instruct");
 //! ```
 //!
 //! ## Setter Traits
@@ -97,8 +94,12 @@
 #![feature(f16)]
 
 // Public modules
-pub mod api_model;
-pub mod local_model;
+pub mod api_models;
+pub mod gguf_presets;
+pub mod local_models;
+
+// // Feature-specific public modules
+#[cfg(feature = "model-tokenizers")]
 pub mod tokenizer;
 
 // Internal imports
@@ -108,25 +109,30 @@ use anyhow::{anyhow, bail, Error, Result};
 use tracing::{debug, error, info, span, trace, warn, Level};
 
 // Public exports
-pub use api_model::{
-    anthropic::AnthropicModelTrait, openai::OpenAiModelTrait, perplexity::PerplexityModelTrait,
+pub use api_models::{
+    models::ApiLlmPreset,
+    providers::{AnthropicModelTrait, ApiLlmProvider, OpenAiModelTrait, PerplexityModelTrait},
     ApiLlmModel,
 };
-pub use local_model::{
+pub use gguf_presets::{GgufPreset, GgufPresetLoader, GgufPresetTrait, LocalLlmOrganization};
+pub use local_models::{
     chat_template::LlmChatTemplate,
-    gguf::{
-        loaders::preset::GgufPresetLoader, preset::GgufPresetTrait, GgufLoader, GgufLoaderTrait,
-    },
+    gguf::{GgufLoader, GgufLoaderTrait},
     hf_loader::HfTokenTrait,
     metadata::LocalLlmMetadata,
     LocalLlmModel,
 };
+
+// Feature-specific public export
+#[cfg(feature = "model-tokenizers")]
 pub use tokenizer::LlmTokenizer;
 
 #[derive(Clone)]
 pub struct LlmModelBase {
     pub model_id: String,
-    pub model_ctx_size: u64,
-    pub inference_ctx_size: u64,
+    pub friendly_name: String,
+    pub model_ctx_size: usize,
+    pub inference_ctx_size: usize,
+    #[cfg(feature = "model-tokenizers")]
     pub tokenizer: std::sync::Arc<LlmTokenizer>,
 }

@@ -16,7 +16,7 @@
 //! ```rust
 //! use Llmclient::prelude::*;
 //! let llm_client = LlmClient::llama_cpp()
-//!     .mistral7b_instruct_v0_3() // Uses a preset model
+//!     .mistral_7b_instruct_v0_3() // Uses a preset model
 //!     .init() // Downloads model from hugging face and starts the inference interface
 //!     .await?;
 //! ```
@@ -143,7 +143,7 @@
 //! ```rust
 //! let llm_client = LlmClient::llama_cpp()
 //!     .available_vram(48)
-//!     .mistral7b_instruct_v0_3()
+//!     .mistral_7b_instruct_v0_3()
 //!     .init()
 //!     .await?;
 //!
@@ -176,10 +176,9 @@ pub use llm_devices::*;
 pub use llm_interface;
 pub use llm_interface::llms::local::LlmLocalTrait;
 pub use llm_interface::requests::*;
-pub use llm_models::api_model::{
-    anthropic::AnthropicModelTrait, openai::OpenAiModelTrait, perplexity::PerplexityModelTrait,
-};
-pub use llm_models::local_model::gguf::preset::GgufPresetTrait;
+pub use llm_models;
+pub use llm_models::GgufPresetTrait;
+pub use llm_models::{AnthropicModelTrait, OpenAiModelTrait, PerplexityModelTrait};
 pub use llm_prompt::LlmPrompt;
 pub use llm_prompt::*;
 pub use primitives::PrimitiveTrait;
@@ -249,5 +248,17 @@ impl LlmClient {
 
     pub fn base_request(&self) -> llm_interface::requests::CompletionRequest {
         llm_interface::requests::CompletionRequest::new(self.backend.clone())
+    }
+
+    pub fn device_config(&self) -> Result<DeviceConfig, crate::Error> {
+        self.backend.device_config()
+    }
+}
+
+impl Clone for LlmClient {
+    fn clone(&self) -> Self {
+        Self {
+            backend: self.backend.clone(),
+        }
     }
 }

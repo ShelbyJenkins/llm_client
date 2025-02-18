@@ -7,8 +7,8 @@ pub mod local;
 
 // Internal imports
 use crate::requests::*;
-use llm_devices::LoggingConfig;
-use llm_models::{api_model::ApiLlmModel, tokenizer::LlmTokenizer};
+use llm_devices::{DeviceConfig, LoggingConfig};
+use llm_models::{api_models::ApiLlmModel, tokenizer::LlmTokenizer};
 use llm_prompt::{LlmPrompt, PromptTokenizer};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
@@ -47,6 +47,14 @@ pub enum LlmBackend {
 }
 
 impl LlmBackend {
+    pub fn device_config(&self) -> Result<DeviceConfig, crate::Error> {
+        match self {
+            #[cfg(feature = "llama_cpp_backend")]
+            LlmBackend::LlamaCpp(b) => Ok(b.server.device_config.clone()),
+            _ => crate::bail!("Device config not supported for this backend"),
+        }
+    }
+
     pub(crate) async fn completion_request(
         &self,
         request: &CompletionRequest,
@@ -120,7 +128,7 @@ impl LlmBackend {
         }
     }
 
-    pub fn get_total_prompt_tokens(&self, prompt: &LlmPrompt) -> crate::Result<u64> {
+    pub fn get_total_prompt_tokens(&self, prompt: &LlmPrompt) -> crate::Result<usize> {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(_) => prompt.local_prompt()?.get_total_prompt_tokens(),
@@ -144,7 +152,7 @@ impl LlmBackend {
         }
     }
 
-    pub fn model_ctx_size(&self) -> u64 {
+    pub fn model_ctx_size(&self) -> usize {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(b) => b.model.model_base.model_ctx_size,
@@ -156,7 +164,7 @@ impl LlmBackend {
         }
     }
 
-    pub fn inference_ctx_size(&self) -> u64 {
+    pub fn inference_ctx_size(&self) -> usize {
         match self {
             #[cfg(feature = "llama_cpp_backend")]
             LlmBackend::LlamaCpp(b) => b.model.model_base.inference_ctx_size,

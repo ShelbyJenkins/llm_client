@@ -1,0 +1,5 @@
+{
+    "enum_variant": "StabilityAi",
+    "friendly_name": "Stability AI",
+    "hf_account": "stabilityai"
+}

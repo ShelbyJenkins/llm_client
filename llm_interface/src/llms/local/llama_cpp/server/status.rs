@@ -69,7 +69,7 @@ pub(super) async fn server_status(
                 return Ok(ServerStatus::RunningModel(model_id));
             }
         }
-        Ok(ModelStatus::LoadedModels(_model_ids)) => {
+        Ok(ModelStatus::_LoadedModels(_model_ids)) => {
             todo!()
         }
         Err(e) => {

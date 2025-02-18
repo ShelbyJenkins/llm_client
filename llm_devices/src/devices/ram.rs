@@ -2,10 +2,10 @@ use sysinfo;
 
 #[derive(Debug, Clone)]
 pub struct RamConfig {
-    pub total_ram_bytes: u64,
-    pub available_ram_bytes: u64,
-    pub used_ram_bytes: u64,
-    pub use_ram_bytes: u64,
+    pub total_ram_bytes: usize,
+    pub available_ram_bytes: usize,
+    pub used_ram_bytes: usize,
+    pub use_ram_bytes: usize,
     pub use_percentage: f32,
 }
 
@@ -14,9 +14,9 @@ impl Default for RamConfig {
         let mut sys = sysinfo::System::new_all();
         sys.refresh_all();
         Self {
-            total_ram_bytes: sys.total_memory(),
-            available_ram_bytes: sys.available_memory(),
-            used_ram_bytes: sys.used_memory(),
+            total_ram_bytes: sys.total_memory() as usize,
+            available_ram_bytes: sys.available_memory() as usize,
+            used_ram_bytes: sys.used_memory() as usize,
             use_ram_bytes: 0,
             use_percentage: 0.70,
         }
@@ -46,14 +46,14 @@ impl RamConfig {
         Ok(())
     }
 
-    pub(crate) fn likely_ram_bytes(&self) -> u64 {
+    pub(crate) fn likely_ram_bytes(&self) -> usize {
         std::cmp::min(
             self.total_ram_bytes - self.used_ram_bytes,
             self.available_ram_bytes,
         )
     }
 
-    fn percentage_of_total(&mut self, error_on_config_issue: bool) -> crate::Result<u64> {
+    fn percentage_of_total(&mut self, error_on_config_issue: bool) -> crate::Result<usize> {
         if self.use_percentage > 1.0 || self.use_percentage < 0.0 {
             if error_on_config_issue {
                 crate::bail!(
@@ -66,7 +66,7 @@ impl RamConfig {
             }
         }
 
-        Ok((self.likely_ram_bytes() as f32 * self.use_percentage) as u64)
+        Ok((self.likely_ram_bytes() as f32 * self.use_percentage) as usize)
     }
 }
 

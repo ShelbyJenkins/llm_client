@@ -1,0 +1,16 @@
+{
+    "model_id": "Mistral-Nemo-Instruct-2407",
+    "friendly_name": "Mistral Nemo Instruct 2407",
+    "model_repo_id": "mistral/Mistral-Nemo-Instruct-2407",
+    "gguf_repo_id": "bartowski/Mistral-Nemo-Instruct-2407-GGUF",
+    "number_of_parameters": 12.0,
+    "quant_file_names": {
+        "q8": "Mistral-Nemo-Instruct-2407-Q8_0.gguf",
+        "q6": "Mistral-Nemo-Instruct-2407-Q6_K.gguf",
+        "q5": "Mistral-Nemo-Instruct-2407-Q5_K_M.gguf",
+        "q4": "Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+        "q3": "Mistral-Nemo-Instruct-2407-Q3_K_M.gguf",
+        "q2": "Mistral-Nemo-Instruct-2407-Q2_K.gguf"
+    },
+    "tokenizer_path": "mistral/mistral_nemo_instruct_2407/tokenizer.json"
+}

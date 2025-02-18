@@ -242,7 +242,10 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_cases() -> crate::Result<()> {
-        let llm_client = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
+        let llm_client = LlmClient::llama_cpp()
+            .llama_3_1_8b_instruct()
+            .init()
+            .await?;
 
         for (case, answer) in CASES {
             let entity = ClassifySubjectOfText::new(

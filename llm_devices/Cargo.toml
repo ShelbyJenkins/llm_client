@@ -17,6 +17,7 @@ thiserror.workspace=true
 tracing.workspace=true
 tracing-appender="0.2.3"
 tracing-subscriber={version="0.3.18", features=["env-filter", "std"]}
+zip="2.2.2"
 
 [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 nvml-wrapper={version="0.10.0"}

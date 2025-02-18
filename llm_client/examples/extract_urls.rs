@@ -6,7 +6,7 @@ use llm_client::*;
 pub async fn main() {
     // Using a preset model from Hugging Face
     let llm_client = LlmClient::llama_cpp()
-        .mistral_nemo_instruct2407()
+        .mistral_nemo_instruct_2407()
         .init()
         .await
         .unwrap();

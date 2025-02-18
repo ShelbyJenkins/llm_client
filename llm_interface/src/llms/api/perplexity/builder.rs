@@ -2,7 +2,7 @@
 use super::*;
 use generic_openai::{GenericApiBackend, GenericApiConfig};
 use llm_devices::LoggingConfigTrait;
-use llm_models::api_model::perplexity::PerplexityModelTrait;
+use llm_models::{ApiLlmPreset, PerplexityModelTrait};
 
 // Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
@@ -18,7 +18,7 @@ impl Default for PerplexityBackendBuilder {
         config.logging_config.logger_name = "perplexity".to_string();
         Self {
             config,
-            model: ApiLlmModel::sonar_large(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::SONAR),
         }
     }
 }

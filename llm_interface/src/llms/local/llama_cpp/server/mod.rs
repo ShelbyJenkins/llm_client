@@ -6,8 +6,9 @@ mod status;
 
 // Internal imports
 use crate::llms::{api::ApiClient, local::llama_cpp::LlamaCppConfig};
-use llm_devices::{get_target_directory, DeviceConfig};
+use llm_devices::{get_bin_dir, get_bin_path, DeviceConfig, LLAMA_CPP_SERVER_EXECUTABLE};
 use status::{server_status, ServerStatus};
+use std::path::PathBuf;
 use std::process::Command;
 
 // Public exports
@@ -25,7 +26,7 @@ pub struct LlamaCppServer {
     pub host: String,
     pub server_http_path: String,
     pub port: Option<String>,
-    pub inference_ctx_size: u64,
+    pub inference_ctx_size: usize,
 }
 
 impl LlamaCppServer {
@@ -33,7 +34,7 @@ impl LlamaCppServer {
         device_config: DeviceConfig,
         host: &str,
         port: &Option<String>,
-        inference_ctx_size: u64,
+        inference_ctx_size: usize,
     ) -> crate::Result<Self> {
         let server_http_path = if let Some(port) = port {
             format!("{}:{}", &host, port)
@@ -137,19 +138,23 @@ impl LlamaCppServer {
     }
 
     fn start_server_backend(&self) -> crate::Result<std::process::Child> {
-        let path = get_target_directory()?.join("llama_cpp");
-        let mut command = std::process::Command::new("./llama-server");
-        command.current_dir(path);
+        let mut command = std::process::Command::new(get_bin_path()?);
+        command.current_dir(get_bin_dir()?);
         self.server_config.populate_args(&mut command);
+
+        let model_path: PathBuf = self.device_config.local_model_path.clone().into();
+
         command
             .arg("--model")
-            .arg(&self.device_config.local_model_path)
+            .arg(model_path)
             .arg("--ctx-size")
             .arg(self.inference_ctx_size.to_string())
             .arg("--timeout")
             .arg("600")
             .arg("--host")
             .arg(&self.host)
+            .arg("--alias")
+            .arg(&self.device_config.local_model_alias)
             .arg("--log-disable")
             .arg("--verbose");
 
@@ -157,7 +162,13 @@ impl LlamaCppServer {
             command.arg("--port").arg(port);
         }
         crate::info!("Starting LlamaCppServer with command: {:?}", command);
-        let process = command.spawn().expect("Failed to start LlamaCppServer");
+        let process = match command.spawn() {
+            Ok(process) => process,
+            Err(e) => {
+                crate::info!("Failed to start LlamaCppServer process: {}", e);
+                crate::bail!("Failed to start LlamaCppServer process: {}", e)
+            }
+        };
 
         Ok(process)
     }
@@ -283,7 +294,10 @@ pub fn get_server_pid_by_model(model_id: &str) -> crate::Result<Option<u32>> {
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
         let output = Command::new("pgrep")
-            .args(&["-f", &format!("./llama-server.*{}", model_id)])
+            .args(&[
+                "-f",
+                &format!("./{LLAMA_CPP_SERVER_EXECUTABLE}.*{}", model_id),
+            ])
             .output()?;
         let pid = String::from_utf8_lossy(&output.stdout);
         Ok(pid.lines().next().and_then(|s| s.parse::<u32>().ok()))
@@ -317,7 +331,13 @@ pub fn get_all_server_pids() -> crate::Result<Vec<String>> {
     #[cfg(target_os = "windows")]
     {
         let output = Command::new("tasklist")
-            .args(&["/FO", "CSV", "/NH", "/FI", "IMAGENAME eq llama-server.exe"])
+            .args(&[
+                "/FO",
+                "CSV",
+                "/NH",
+                "/FI",
+                &format!("IMAGENAME eq {LLAMA_CPP_SERVER_EXECUTABLE}.exe"),
+            ])
             .output()?;
         let output_str = String::from_utf8_lossy(&output.stdout);
         Ok(output_str
@@ -333,7 +353,7 @@ pub fn get_all_server_pids() -> crate::Result<Vec<String>> {
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
         let output = Command::new("pgrep")
-            .args(&["-f", "^./llama-server"])
+            .args(&["-f", &format!("^./{LLAMA_CPP_SERVER_EXECUTABLE}")])
             .output()?;
         let pids = String::from_utf8_lossy(&output.stdout);
         Ok(pids.lines().map(|pid| pid.to_string()).collect())

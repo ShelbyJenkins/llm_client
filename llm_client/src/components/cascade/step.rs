@@ -2,7 +2,7 @@ use super::cascade_request;
 use crate::components::grammar::Grammar;
 use llm_interface::requests::{CompletionRequest, LogitBias};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CascadeStep {
     Inference(InferenceStep),
     Guidance(GuidanceStep),
@@ -87,7 +87,7 @@ impl CascadeStep {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct InferenceStep {
     pub llm_content: Option<String>, // raw, unformatted result from llm.
     pub dynamic_suffix: Option<String>, // suffix to be added to the result.
@@ -169,7 +169,7 @@ impl InferenceStep {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GuidanceStep {
     pub llm_content: String,
     pub step_config: StepConfig,
@@ -185,7 +185,7 @@ impl GuidanceStep {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StepConfig {
     pub step_prefix: Option<String>,
     pub stop_word_done: String,

@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import "./tailwind/daisyui.css";
+
+/* CSS in this file requires a manual rebuild. */
+@theme {
+    /* Brand colors */
+    --color-primary: #008bf8;
+    /* bleu-de-france as the main brand (primary) color */
+    --color-primary-content: #ffffff;
+    /* white for high contrast on primary */
+
+    --color-secondary: #dc0073;
+    /* mexican-pink as the secondary brand color */
+    --color-secondary-content: #ffffff;
+    /* white for contrast on secondary */
+
+    --color-accent: #5ef427;
+    /* harlequin used as an accent color */
+    --color-accent-content: #413c58;
+    /* english-violet provides dark contrast on accent */
+
+    /* Neutral colors */
+    --color-neutral: #413c58;
+    /* english-violet as a dark, neutral tone */
+    --color-neutral-content: #ffffff;
+    /* white text on dark neutral backgrounds */
+
+    /* Base colors (for surfaces and backgrounds) */
+    --color-base-100: #ffffff;
+    /* a clean, white base */
+    --color-base-200: #f0f0f0;
+    /* a light gray for subtle elevation */
+    --color-base-300: #e0e0e0;
+    /* a slightly darker gray for deeper elevation */
+    --color-base-content: #333333;
+    /* dark text for legibility on light base colors */
+
+    /* Status colors */
+    --color-info: #008bf8;
+    /* reusing bleu-de-france for informational messages */
+    --color-info-content: #ffffff;
+    /* white text on info backgrounds */
+
+    --color-success: #5ef427;
+    /* harlequin for success (green is a common success color) */
+    --color-success-content: #413c58;
+    /* dark text for contrast on success */
+
+    --color-warning: #e6af2e;
+    /* xanthous works well for warning/caution */
+    --color-warning-content: #413c58;
+    /* dark text on warning for readability */
+
+    --color-error: #dc0073;
+    /* mexican-pink is used for errors */
+    --color-error-content: #ffffff;
+    /* white text on error backgrounds */
+}

@@ -81,7 +81,7 @@
 //!
 //! // Get chat template formatted prompt
 //! let local_prompt_as_string: String = prompt.local_prompt()?.get_built_prompt()?;
-//! let local_prompt_as_tokens: Vec<u32> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
+//! let local_prompt_as_tokens: Vec<usize> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
 //!
 //! // Openai formatted prompt (Openai and Anthropic format)
 //! let api_prompt_as_messages: Vec<HashMap<String, String>> = prompt.api_prompt()?.get_built_prompt()?;
@@ -105,11 +105,11 @@
 //!
 //! ```rust
 //! impl PromptTokenizer for LlmTokenizer {
-//!     fn tokenize(&self, input: &str) -> Vec<u32> {
+//!     fn tokenize(&self, input: &str) -> Vec<usize> {
 //!         self.tokenize(input)
 //!     }
 //!
-//!     fn count_tokens(&self, str: &str) -> u32 {
+//!     fn count_tokens(&self, str: &str) -> usize {
 //!         self.count_tokens(str)
 //!     }
 //! }
@@ -123,10 +123,13 @@ mod token_count;
 mod variants;
 
 // Internal imports
-use anyhow::{bail, Error, Result};
+#[allow(unused_imports)]
+use anyhow::{anyhow, bail, Error, Result};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
+#[allow(unused_imports)]
+use tracing::{debug, error, info, span, trace, warn, Level};
 
 // Public exports
 pub use concatenator::{TextConcatenator, TextConcatenatorTrait};
@@ -141,7 +144,7 @@ pub use variants::{apply_chat_template, ApiPrompt, LocalPrompt};
 /// with support for both API-style messaging (system/user/assistant) and local LLM chat templates.
 /// It handles token counting, message validation, and proper prompt formatting.
 /// ```
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct LlmPrompt {
     pub local_prompt: Option<LocalPrompt>,
     pub api_prompt: Option<ApiPrompt>,
@@ -199,8 +202,8 @@ impl LlmPrompt {
     /// A new `LlmPrompt` instance configured for API usage.
     pub fn new_api_prompt(
         tokenizer: std::sync::Arc<dyn PromptTokenizer>,
-        tokens_per_message: Option<u32>,
-        tokens_per_name: Option<i32>,
+        tokens_per_message: Option<usize>,
+        tokens_per_name: Option<isize>,
     ) -> Self {
         Self {
             api_prompt: Some(ApiPrompt::new(
@@ -465,9 +468,7 @@ impl LlmPrompt {
                     ("content".to_string(), built_message_string.to_owned()),
                 ]));
             } else {
-                eprintln!("message.built_content is empty and skipped");
-                continue;
-                // This should be an error? Unless we're just building to display?
+                crate::bail!("message.built_content is empty and skipped");
             }
         }
 

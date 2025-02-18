@@ -20,7 +20,7 @@ pub use text::text::TextGrammar;
 pub use text::text_list::TextListGrammar;
 pub use text::words::WordsGrammar;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Grammar {
     Boolean(BooleanGrammar),
     Integer(IntegerGrammar),

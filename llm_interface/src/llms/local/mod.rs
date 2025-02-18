@@ -13,14 +13,14 @@ use llm_devices::MetalConfig;
 // Internal imports
 use super::*;
 use llm_devices::DeviceConfig;
-use llm_models::local_model::{
+use llm_models::local_models::{
     gguf::GgufLoader, metadata::llm::DEFAULT_CONTEXT_LENGTH, LocalLlmModel,
 };
 
 #[derive(Clone, Debug)]
 pub struct LocalLlmConfig {
-    pub batch_size: u64,
-    pub inference_ctx_size: u64,
+    pub batch_size: usize,
+    pub inference_ctx_size: usize,
     pub device_config: DeviceConfig,
 }
 
@@ -56,6 +56,7 @@ impl LocalLlmConfig {
                 .average_layer_size_bytes(self.inference_ctx_size, Some(self.batch_size))?,
         );
         self.device_config.local_model_path = model.local_model_path.to_string_lossy().to_string();
+        self.device_config.local_model_alias = model.model_base.model_id.clone();
 
         Ok(model)
     }
@@ -81,9 +82,8 @@ impl LocalLlmConfig {
         } else {
             llm_loader.gguf_preset_loader.preset_with_max_ctx_size = Some(self.inference_ctx_size);
         }
-        llm_loader
-            .gguf_preset_loader
-            .preset_with_available_vram_bytes = Some(self.device_config.available_memory_bytes()?);
+        llm_loader.gguf_preset_loader.preset_with_memory_bytes =
+            Some(self.device_config.available_memory_bytes()?);
 
         llm_loader.load()
     }
@@ -181,12 +181,15 @@ pub trait LlmLocalTrait {
     /// # Notes
     ///
     /// If loading purely in VRAM, this defaults to 1.
-    fn threads(mut self, threads: i16) -> Self
+    fn threads(mut self, threads: i16) -> Result<Self, crate::Error>
     where
         Self: Sized,
     {
-        self.config().device_config.cpu_config.threads = Some(threads);
-        self
+        self.config()
+            .device_config
+            .cpu_config
+            .set_threads(Some(threads))?;
+        Ok(self)
     }
 
     /// Sets the number of CPU threads to use for batching and prompt processing.
@@ -198,12 +201,15 @@ pub trait LlmLocalTrait {
     /// # Default
     ///
     /// If not set, defaults to a percentage of the total system threads.
-    fn threads_batch(mut self, threads_batch: i16) -> Self
+    fn threads_batch(mut self, threads_batch: i16) -> Result<Self, crate::Error>
     where
         Self: Sized,
     {
-        self.config().device_config.cpu_config.threads_batch = Some(threads_batch);
-        self
+        self.config()
+            .device_config
+            .cpu_config
+            .set_threads_batch(Some(threads_batch))?;
+        Ok(self)
     }
 
     /// Sets the batch size for inference.
@@ -215,7 +221,7 @@ pub trait LlmLocalTrait {
     /// # Default
     ///
     /// If not set, defaults to 512.
-    fn batch_size(mut self, batch_size: u64) -> Self
+    fn batch_size(mut self, batch_size: usize) -> Self
     where
         Self: Sized,
     {
@@ -233,7 +239,7 @@ pub trait LlmLocalTrait {
     ///
     /// This value is set when the model is loaded and cannot be changed after.
     /// If not set, a default value will be used.
-    fn inference_ctx_size(mut self, inference_ctx_size: u64) -> Self
+    fn inference_ctx_size(mut self, inference_ctx_size: usize) -> Self
     where
         Self: Sized,
     {
@@ -266,14 +272,14 @@ pub trait LlmLocalTrait {
         Self: Sized,
     {
         self.config().device_config.ram_config.use_ram_bytes =
-            (available_ram_gb * 1_073_741_824f32) as u64;
+            (available_ram_gb * 1_073_741_824f32) as usize;
         #[cfg(target_os = "macos")]
         {
             if let Some(metal_config) = &mut self.config().device_config.metal_config {
-                metal_config.use_ram_bytes = (available_ram_gb * 1_073_741_824f32) as u64;
+                metal_config.use_ram_bytes = (available_ram_gb * 1_073_741_824f32) as usize;
             } else {
                 let metal_config = MetalConfig {
-                    use_ram_bytes: (available_ram_gb * 1_073_741_824f32) as u64,
+                    use_ram_bytes: (available_ram_gb * 1_073_741_824f32) as usize,
                     ..Default::default()
                 };
                 self.config().device_config.metal_config = Some(metal_config);

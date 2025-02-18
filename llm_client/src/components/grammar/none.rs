@@ -1,6 +1,6 @@
 use super::{Grammar, GrammarError};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct NoneGrammar {
     pub stop_word_done: Option<String>,
     pub stop_word_no_result: Option<String>,

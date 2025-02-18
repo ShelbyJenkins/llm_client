@@ -1,0 +1,15 @@
+{
+    "model_id": "Mistral-Small-24B-Instruct-2501",
+    "friendly_name": "Mistral Small 24B Instruct 2501",
+    "model_repo_id": "mistral/Mistral-Small-24B-Instruct-2501",
+    "gguf_repo_id": "bartowski/Mistral-Small-24B-Instruct-2501-GGUF",
+    "number_of_parameters": 24.0,
+    "quant_file_names": {
+        "q8": "Mistral-Small-24B-Instruct-2501-Q8_0.gguf",
+        "q6": "Mistral-Small-24B-Instruct-2501-Q6_K.gguf",
+        "q5": "Mistral-Small-24B-Instruct-2501-Q5_K_M.gguf",
+        "q4": "Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf",
+        "q3": "Mistral-Small-24B-Instruct-2501-Q3_K_M.gguf",
+        "q2": "Mistral-Small-24B-Instruct-2501-Q2_K.gguf"
+    }
+}

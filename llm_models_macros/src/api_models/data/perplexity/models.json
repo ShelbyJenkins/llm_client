@@ -1,0 +1,42 @@
+[
+    {
+        "model_id": "sonar-reasoning-pro",
+        "friendly_name": "Sonar Reasoning Pro",
+        "model_ctx_size": 127000,
+        "inference_ctx_size": 8000,
+        "cost_per_m_in_tokens": 200,
+        "cost_per_m_out_tokens": 8000,
+        "tokens_per_message": 3,
+        "tokens_per_name": null
+    },
+    {
+        "model_id": "sonar-reasoning",
+        "friendly_name": "Sonar Reasoning",
+        "model_ctx_size": 127000,
+        "inference_ctx_size": 8000,
+        "cost_per_m_in_tokens": 100,
+        "cost_per_m_out_tokens": 500,
+        "tokens_per_message": 3,
+        "tokens_per_name": null
+    },
+    {
+        "model_id": "sonar-pro",
+        "friendly_name": "Sonar Pro",
+        "model_ctx_size": 200000,
+        "inference_ctx_size": 8000,
+        "cost_per_m_in_tokens": 300,
+        "cost_per_m_out_tokens": 1500,
+        "tokens_per_message": 3,
+        "tokens_per_name": null
+    },
+    {
+        "model_id": "sonar",
+        "friendly_name": "Sonar",
+        "model_ctx_size": 127000,
+        "inference_ctx_size": 8000,
+        "cost_per_m_in_tokens": 100,
+        "cost_per_m_out_tokens": 100,
+        "tokens_per_message": 3,
+        "tokens_per_name": null
+    }
+]

@@ -69,11 +69,17 @@ impl LlamaCppServerConfig {
     fn new_single_gpu(device_config: &DeviceConfig) -> crate::Result<Self> {
         let gpu_devices = device_config.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
+        let main_gpu = if let Some(main_gpu) = device_config.main_gpu() {
+            Some(MainGpu(main_gpu))
+        } else {
+            None
+        };
+
         Ok(Self {
             threads_batch: Some(ThreadsBatch::new_from_cpu_config(&device_config.cpu_config)),
             split_mode: Some(SplitMode::None),
             n_gpu_layers: Some(NGpuLayers(layer_count)),
-            main_gpu: Some(MainGpu(device_config.main_gpu()?)),
+            main_gpu,
             ..Default::default()
         })
     }
@@ -81,10 +87,15 @@ impl LlamaCppServerConfig {
     fn new_multiple_gpu(device_config: &DeviceConfig) -> crate::Result<Self> {
         let gpu_devices = device_config.allocate_layers_to_gpus(1, 1)?;
         let layer_count = gpu_devices.iter().map(|d| d.allocated_layers).sum();
+        let main_gpu = if let Some(main_gpu) = device_config.main_gpu() {
+            Some(MainGpu(main_gpu))
+        } else {
+            None
+        };
         Ok(Self {
             threads_batch: Some(ThreadsBatch::new_from_cpu_config(&device_config.cpu_config)),
             split_mode: Some(SplitMode::Layer),
-            main_gpu: Some(MainGpu(device_config.main_gpu()?)),
+            main_gpu,
             n_gpu_layers: Some(NGpuLayers(layer_count)),
             ..Default::default()
         })
@@ -120,7 +131,7 @@ impl LlamaCppServerConfig {
 pub(super) struct Threads(pub i16);
 impl Threads {
     fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
-        Self(cpu_config.thread_count_or_default())
+        Self(cpu_config.thread_count())
     }
     fn as_arg(&self) -> [String; 2] {
         ["--threads".to_string(), self.0.to_string()]
@@ -130,14 +141,14 @@ impl Threads {
 pub(super) struct ThreadsBatch(pub i16);
 impl ThreadsBatch {
     fn new_from_cpu_config(cpu_config: &CpuConfig) -> Self {
-        Self(cpu_config.thread_count_batch_or_default())
+        Self(cpu_config.thread_count_batch())
     }
     fn as_arg(&self) -> [String; 2] {
         ["--threads-batch".to_string(), self.0.to_string()]
     }
 }
 
-pub(super) struct NGpuLayers(pub u64);
+pub(super) struct NGpuLayers(pub usize);
 impl NGpuLayers {
     fn as_arg(&self) -> [String; 2] {
         ["--n-gpu-layers".to_string(), self.0.to_string()]

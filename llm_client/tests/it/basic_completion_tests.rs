@@ -64,7 +64,7 @@ mod basic_completion_unit_tests {
     #[serial]
     #[ignore]
     pub async fn test_perplexity() -> crate::Result<()> {
-        let llm_client = LlmClient::perplexity().sonar_small().init()?;
+        let llm_client = LlmClient::perplexity().sonar().init()?;
         basic_completion_integration_tester(&llm_client).await?;
         Ok(())
     }
@@ -96,7 +96,9 @@ pub(super) async fn basic_completion_logit_bias_integration_tester(
         .unwrap()
         .set_content("Write a buzzfeed style listicle for the given input! Be excited.")
         .append_content("Boy howdy, how ya'll doing?");
-    gen.max_tokens(100).add_logit_bias_from_char('!', -100.0);
+    gen.max_tokens(100)
+        .add_logit_bias_from_char('!', -100.0)
+        .add_logit_bias_from_char('?', -100.0);
     let res = gen.run().await?;
     println!("Response:\n {}\n", res.content);
     assert!(!res.content.contains(" ! "));

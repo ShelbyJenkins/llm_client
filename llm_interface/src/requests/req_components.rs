@@ -11,7 +11,7 @@ pub struct RequestConfig {
     /// for each request.
     ///
     /// This limit applies to all LLM types, including both local and API-based models.
-    pub(crate) model_ctx_size: u64,
+    pub(crate) model_ctx_size: usize,
     /// Maximum token limit for model output.
     ///
     /// This value represents the maximum number of tokens the model can generate
@@ -20,7 +20,7 @@ pub struct RequestConfig {
     ///
     /// Note: This limit is primarily used by API-based LLMs. For local LLMs,
     /// [RequestConfig::inference_ctx_size] should use the same value as '[RequestConfig::model_ctx_size].
-    pub(crate) inference_ctx_size: u64,
+    pub(crate) inference_ctx_size: usize,
     /// Requested maximum number of tokens for the model's output.
     ///
     /// This value specifies the upper limit of tokens the model should generate in its response.
@@ -32,7 +32,7 @@ pub struct RequestConfig {
     /// - For local LLMs, this is equivalent to the 'n_predict' parameter.
     ///
     /// If `None`, the system will use a default or calculated value based on [RequestConfig::model_ctx_size] or [RequestConfig::inference_ctx_size].
-    pub requested_response_tokens: Option<u64>,
+    pub requested_response_tokens: Option<usize>,
     /// A small safety margin to prevent exceeding model limits.
     ///
     /// This is a count of tokens subtracted from the total available tokens to help ensure
@@ -40,14 +40,14 @@ pub struct RequestConfig {
     /// This prevents issues that might arise from slight discrepancies in token counting or unexpected model behavior.
     ///
     /// Defaults to 10 tokens.
-    pub safety_tokens: u64,
+    pub safety_tokens: usize,
     /// Final adjusted token count for model output.
     ///
     /// This value represents the actual number of tokens requested for the model's output
     /// after all adjustments and calculations have been made. It's derived from
     /// [RequestConfig::requested_response_tokens] but may be different to ensure the request stays
     /// within the model's limits.
-    pub(crate) actual_request_tokens: Option<u64>,
+    pub(crate) actual_request_tokens: Option<usize>,
     /// Controls the randomness of the model's output.
     ///
     /// The temperature parameter adjusts the randomness in token selection for the model's
@@ -151,7 +151,7 @@ pub struct RequestConfig {
 }
 
 impl RequestConfig {
-    pub fn new(model_ctx_size: u64, inference_ctx_size: u64) -> Self {
+    pub fn new(model_ctx_size: usize, inference_ctx_size: usize) -> Self {
         Self {
             model_ctx_size,
             inference_ctx_size,
@@ -170,7 +170,7 @@ impl RequestConfig {
 
     pub fn set_max_tokens_for_request(
         &mut self,
-        total_prompt_tokens: u64,
+        total_prompt_tokens: usize,
     ) -> crate::Result<(), RequestTokenLimitError> {
         let actual_request_tokens = check_and_get_max_tokens(
             self.model_ctx_size,
@@ -189,7 +189,7 @@ impl RequestConfig {
     pub const DEFAULT_INCREASE_FACTOR: f32 = 1.33;
     pub fn increase_token_limit(
         &mut self,
-        total_prompt_tokens: u64,
+        total_prompt_tokens: usize,
         token_increase_factor: Option<f32>,
     ) -> crate::Result<(), RequestTokenLimitError> {
         let token_increase_factor = token_increase_factor.unwrap_or(Self::DEFAULT_INCREASE_FACTOR);
@@ -209,7 +209,7 @@ impl RequestConfig {
         };
 
         self.requested_response_tokens =
-            Some((initial_state.requested_response as f32 * token_increase_factor) as u64);
+            Some((initial_state.requested_response as f32 * token_increase_factor) as usize);
 
         let new_state = MaxTokenState {
             actual_request: self
@@ -249,7 +249,7 @@ pub trait RequestConfigTrait {
     fn reset_request(&mut self);
 
     /// Sets the value of [RequestConfig::requested_response_tokens].
-    fn max_tokens(&mut self, max_tokens: u64) -> &mut Self {
+    fn max_tokens(&mut self, max_tokens: usize) -> &mut Self {
         self.config().requested_response_tokens = Some(max_tokens);
         self
     }

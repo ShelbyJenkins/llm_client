@@ -7,11 +7,11 @@ impl CompletionResponse {
         req: &CompletionRequest,
         res: LlamaCppCompletionResponse,
     ) -> Result<Self, CompletionError> {
-        let finish_reason = if res.stopped_eos {
+        let finish_reason = if res.stop_type == "eos" {
             CompletionFinishReason::Eos
-        } else if res.stopped_limit {
+        } else if res.stop_type == "limit" {
             CompletionFinishReason::StopLimit
-        } else if res.stopped_word {
+        } else if res.stop_type == "word" {
             match req.stop_sequences.parse_string_response(&res.stopping_word) {
                 Some(stop_sequence) => {
                     CompletionFinishReason::MatchingStoppingSequence(stop_sequence)
@@ -44,28 +44,24 @@ impl CompletionResponse {
 pub struct LlamaCppCompletionResponse {
     pub content: String,
     pub model: String,
-    pub prompt: Vec<u32>,
+    pub prompt: String,
     pub generation_settings: LlamaGenerationSettings,
     pub timings: LlamaTimings,
-    pub stop: bool,
-    pub stopped_eos: bool,
-    pub stopped_limit: bool,
-    pub stopped_word: bool,
+    pub stop_type: String,
     pub stopping_word: String,
-    pub tokens_cached: u16,
-    pub tokens_evaluated: u16,
+    pub tokens_cached: usize,
+    pub tokens_evaluated: usize,
     pub truncated: bool,
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
 pub struct LlamaGenerationSettings {
-    pub n_ctx: u16,
     pub frequency_penalty: f32,
     pub presence_penalty: f32,
     pub temperature: f32,
     pub top_p: f32,
-    pub n_predict: i16,
-    pub logit_bias: Option<Vec<Vec<serde_json::Value>>>,
+    pub n_predict: isize,
+    pub logit_bias: Option<Vec<serde_json::Value>>,
     pub grammar: String,
     pub stop: Vec<String>,
 }
@@ -80,11 +76,4 @@ pub struct LlamaTimings {
     pub predicted_n: f32,
     pub prompt_n: f32,
     pub predicted_per_second: f32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(untagged)]
-pub enum Stop {
-    String(String),           // nullable: true
-    StringArray(Vec<String>), // minItems: 1; maxItems: 4
 }

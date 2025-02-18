@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::sync::Arc;
 
 /// A trait for tokenizers that can be used with the prompt management system.
@@ -6,7 +7,7 @@ use std::sync::Arc;
 /// the prompt system. Implementors must provide methods to both tokenize text into
 /// token IDs and count tokens in a given input. The trait requires thread safety
 /// through Send + Sync bounds, making it suitable for use in concurrent contexts.
-pub trait PromptTokenizer: Send + Sync {
+pub trait PromptTokenizer: Send + Sync + Debug {
     /// Converts a text string into a sequence of token IDs.
     ///
     /// This method should tokenize the input text according to the tokenizer's
@@ -18,8 +19,8 @@ pub trait PromptTokenizer: Send + Sync {
     ///
     /// # Returns
     ///
-    /// A vector of token IDs (u32) representing the tokenized input
-    fn tokenize(&self, input: &str) -> Vec<u32>;
+    /// A vector of token IDs (usize) representing the tokenized input
+    fn tokenize(&self, input: &str) -> Vec<usize>;
 
     /// Counts the number of tokens in a text string.
     ///
@@ -34,15 +35,15 @@ pub trait PromptTokenizer: Send + Sync {
     /// # Returns
     ///
     /// The number of tokens in the input text
-    fn count_tokens(&self, input: &str) -> u32;
+    fn count_tokens(&self, input: &str) -> usize;
 }
 
 impl PromptTokenizer for Arc<dyn PromptTokenizer> {
-    fn tokenize(&self, input: &str) -> Vec<u32> {
+    fn tokenize(&self, input: &str) -> Vec<usize> {
         (**self).tokenize(input)
     }
 
-    fn count_tokens(&self, input: &str) -> u32 {
+    fn count_tokens(&self, input: &str) -> usize {
         (**self).count_tokens(input)
     }
 }

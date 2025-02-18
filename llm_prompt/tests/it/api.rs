@@ -1,10 +1,10 @@
-use llm_models::api_model::ApiLlmModel;
+use llm_models::{ApiLlmModel, ApiLlmPreset};
 
 use super::*;
 
 #[test]
 fn test_api() -> crate::Result<()> {
-    let model = ApiLlmModel::gpt_3_5_turbo();
+    let model = ApiLlmModel::from_preset(ApiLlmPreset::GPT_3_5_TURBO);
     let prompt = LlmPrompt::new_api_prompt(
         model.model_base.tokenizer.clone(),
         Some(model.tokens_per_message),
@@ -40,7 +40,7 @@ fn test_api() -> crate::Result<()> {
     ];
     assert_eq!(test_api, result_api);
 
-    let token_count: u64 = prompt.api_prompt()?.get_total_prompt_tokens()?;
+    let token_count: usize = prompt.api_prompt()?.get_total_prompt_tokens()?;
     assert_eq!(36, token_count);
     Ok(())
 }

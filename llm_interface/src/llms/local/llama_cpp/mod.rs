@@ -8,7 +8,7 @@ use super::*;
 use crate::llms::api::{ApiClient, ApiConfig, ApiConfigTrait};
 
 pub const LLAMA_CPP_API_HOST: &str = "localhost";
-pub const LLAMA_CPP_API_PORT: &str = "8080";
+pub const LLAMA_CPP_API_PORT: &str = "3333";
 
 pub struct LlamaCppBackend {
     pub model: LocalLlmModel,

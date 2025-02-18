@@ -18,7 +18,8 @@ tracing.workspace=true
 url.workspace=true
 
 [features]
-all=["llama_cpp_backend", "mistral_rs_backend"]
+all=["llama_cpp_backend"]
+# all=["llama_cpp_backend", "mistral_rs_backend"]
 default=["llama_cpp_backend"]
 llama_cpp_backend=["llm_client/llama_cpp_backend"]
 mistral_rs_backend=["llm_client/mistral_rs_backend"]

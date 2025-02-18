@@ -10,16 +10,16 @@ use super::gpu::GpuDevice;
 #[derive(Debug, Clone)]
 pub struct MetalConfig {
     /// Maximum working set size recommended by Metal
-    pub max_working_set_size: u64,
+    pub max_working_set_size: usize,
 
     /// Total available RAM in bytes
-    pub available_ram_bytes: u64,
+    pub available_ram_bytes: usize,
 
     /// Currently allocated RAM in bytes
-    pub allocated_ram_bytes: u64,
+    pub allocated_ram_bytes: usize,
 
     /// RAM to use for inference in bytes
-    pub use_ram_bytes: u64,
+    pub use_ram_bytes: usize,
 
     /// Percentage of available RAM to use (0.0 to 1.0)
     pub use_percentage: f32,
@@ -45,7 +45,7 @@ impl MetalConfig {
     /// * `use_ram_gb` - Amount of RAM to use in gigabytes
     pub fn new_from_ram_gb(use_ram_gb: f32) -> Self {
         Self {
-            use_ram_bytes: (use_ram_gb * 1_073_741_824.0) as u64,
+            use_ram_bytes: (use_ram_gb * 1_073_741_824.0) as usize,
             ..Default::default()
         }
     }
@@ -109,13 +109,13 @@ impl MetalConfig {
             }
         };
 
-        self.max_working_set_size = device.recommendedMaxWorkingSetSize();
-        self.allocated_ram_bytes = device.currentAllocatedSize() as u64;
+        self.max_working_set_size = device.recommendedMaxWorkingSetSize() as usize;
+        self.allocated_ram_bytes = device.currentAllocatedSize() as usize;
         self.available_ram_bytes = self.max_working_set_size - self.allocated_ram_bytes;
         Ok(())
     }
 
-    fn percentage_of_total(&mut self, error_on_config_issue: bool) -> crate::Result<u64> {
+    fn percentage_of_total(&mut self, error_on_config_issue: bool) -> crate::Result<usize> {
         if self.use_percentage > 1.0 || self.use_percentage < 0.0 {
             if error_on_config_issue {
                 crate::bail!(
@@ -128,7 +128,7 @@ impl MetalConfig {
             }
         }
 
-        Ok((self.available_ram_bytes as f32 * self.use_percentage) as u64)
+        Ok((self.available_ram_bytes as f32 * self.use_percentage) as usize)
     }
 
     pub(crate) fn to_generic_gpu_device(&self) -> GpuDevice {

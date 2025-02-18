@@ -1,37 +1,37 @@
 #[derive(Debug, Default)]
 pub struct GpuDevice {
     pub ordinal: u32,
-    pub available_vram_bytes: u64,
-    pub allocated_layer_bytes: u64,
-    pub allocated_buffer_bytes: u64,
-    pub allocated_layers: u64,
+    pub available_vram_bytes: usize,
+    pub allocated_layer_bytes: usize,
+    pub allocated_buffer_bytes: usize,
+    pub allocated_layers: usize,
     pub is_main_gpu: bool,
 }
 
 impl GpuDevice {
-    fn can_allocate(&self, layer_size: u64) -> bool {
+    fn can_allocate(&self, layer_size: usize) -> bool {
         self.available_vram_bytes >= self.allocated_layer_bytes + layer_size
     }
 
-    fn allocate_layer(&mut self, layer_size: u64) {
+    fn allocate_layer(&mut self, layer_size: usize) {
         self.allocated_layers += 1;
         self.allocated_layer_bytes += layer_size;
     }
 }
 
 pub struct GpuLayerAllocator {
-    layer_size: u64,
-    total_layers: u64,
-    buffer_layer_per_gpu: u64,
-    buffer_layer_main_gpu: u64,
+    layer_size: usize,
+    total_layers: usize,
+    buffer_layer_per_gpu: usize,
+    buffer_layer_main_gpu: usize,
 }
 
 impl GpuLayerAllocator {
     pub fn new(
-        layer_size: u64,
-        total_layers: u64,
-        buffer_layer_per_gpu: u64,
-        buffer_layer_main_gpu: u64,
+        layer_size: usize,
+        total_layers: usize,
+        buffer_layer_per_gpu: usize,
+        buffer_layer_main_gpu: usize,
     ) -> Self {
         GpuLayerAllocator {
             layer_size,
@@ -46,7 +46,7 @@ impl GpuLayerAllocator {
         gpus.sort_by_key(|gpu| std::cmp::Reverse(gpu.available_vram_bytes));
 
         // Calculate total available VRAM
-        let total_available_vram: u64 = gpus.iter().map(|gpu| gpu.available_vram_bytes).sum();
+        let total_available_vram: usize = gpus.iter().map(|gpu| gpu.available_vram_bytes).sum();
 
         let mut buffer_layers = 0;
         // Allocate buffer layers
@@ -81,7 +81,7 @@ impl GpuLayerAllocator {
         Self::print_allocation(gpus);
         if !result {
             // Check why allocation failed
-            let allocated_layers: u64 = gpus.iter().map(|gpu| gpu.allocated_layers).sum();
+            let allocated_layers: usize = gpus.iter().map(|gpu| gpu.allocated_layers).sum();
             let remaining_layers = self.total_layers - (allocated_layers - buffer_layers);
 
             if remaining_layers > 0 {
@@ -99,9 +99,9 @@ impl GpuLayerAllocator {
     fn dfs_allocate(
         &self,
         gpus: &mut [GpuDevice],
-        allocation: &mut Vec<u64>,
+        allocation: &mut Vec<usize>,
         gpu_index: usize,
-        remaining_layers: u64,
+        remaining_layers: usize,
     ) -> bool {
         if remaining_layers == 0 {
             return true;

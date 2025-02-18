@@ -30,7 +30,8 @@ tracing.workspace=true
 url="2.5.2"
 
 [features]
-all=["llama_cpp_backend", "mistral_rs_backend"]
+all=["llama_cpp_backend"]
+# all=["llama_cpp_backend", "mistral_rs_backend"]
 default=["llama_cpp_backend"]
 llama_cpp_backend=["clap", "sysinfo"]
 mistral_rs_backend=["sysinfo"]
@@ -55,5 +56,5 @@ path="src/llms/local/llama_cpp/bin/server_runner.rs"
 required-features=["llama_cpp_backend"]
 
 [package.metadata.llama_cpp_backend]
-repo="https://github.com/ggerganov/llama.cpp"
-tag="b3943"
+repo="https://github.com/ggml-org/llama.cpp"
+tag="b4735"

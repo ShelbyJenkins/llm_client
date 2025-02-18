@@ -1,5 +1,14 @@
 [workspace]
-members=["llm_client", "llm_devices", "llm_interface", "llm_models", "llm_prompt", "llm_testing"]
+members=[
+    "llm_client",
+    "llm_devices",
+    "llm_gui",
+    "llm_interface",
+    "llm_models",
+    "llm_models_macros",
+    "llm_prompt",
+    "llm_testing",
+]
 resolver="2"
 
 [workspace.package]
@@ -15,9 +24,10 @@ anyhow="1.0.95"
 colorful="0.3.2"
 dotenvy="0.15.7"
 indenter="0.3.3"
+llm_client={path="./llm_client", version="0.0.7"}
 llm_devices={path="./llm_devices", version="0.0.3"}
 llm_interface={path="./llm_interface", version="0.0.3"}
-llm_models={path="./llm_models", version="0.0.2"}
+llm_models={path="./llm_models", version="0.0.2", features=["model-tokenizers"]}
 llm_prompt={path="./llm_prompt", version="0.0.3"}
 llm_utils="0.0.11"
 serde={version="1.0.217", features=["derive", "rc"]}
@@ -27,3 +37,15 @@ thiserror="2.0.11"
 tokio="1.43.0"
 tracing="0.1.41"
 url="2.5.4"
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"

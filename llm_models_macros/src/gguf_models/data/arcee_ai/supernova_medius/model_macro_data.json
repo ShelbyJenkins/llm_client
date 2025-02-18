@@ -1,0 +1,15 @@
+{
+    "model_id": "SuperNova-Medius",
+    "friendly_name": "SuperNova Medius",
+    "model_repo_id": "arcee-ai/arcee-ai/SuperNova-Medius",
+    "gguf_repo_id": "arcee-ai/SuperNova-Medius-GGUF",
+    "number_of_parameters": 13.0,
+    "quant_file_names": {
+        "q8": "SuperNova-Medius-Q8_0.gguf",
+        "q6": "SuperNova-Medius-Q6_K.gguf",
+        "q5": "SuperNova-Medius-Q5_K_M.gguf",
+        "q4": "SuperNova-Medius-Q4_K_M.gguf",
+        "q3": "SuperNova-Medius-Q3_K_M.gguf",
+        "q2": "SuperNova-Medius-Q2_K.gguf"
+    }
+}

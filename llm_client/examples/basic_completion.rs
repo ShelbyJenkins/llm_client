@@ -9,7 +9,7 @@ pub async fn main() {
 
     // Or use a preset model from Hugging Face
     // let llm_client = LlmClient::llama_cpp()
-    //     .mistral7b_instruct_v0_3()
+    //     .mistral_7b_instruct_v0_3()
     //     .init()
     //     .await
     //     .unwrap();

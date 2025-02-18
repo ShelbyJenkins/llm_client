@@ -1,10 +1,10 @@
-use llm_models::{GgufLoader, GgufPresetTrait};
+use llm_models::*;
 
 use super::*;
 
 #[test]
 fn test_local() -> crate::Result<()> {
-    let model = GgufLoader::new().llama3_1_8b_instruct().load()?;
+    let model = GgufLoader::new().llama_3_1_8b_instruct().load()?;
     let prompt = LlmPrompt::new_local_prompt(
         model.model_base.tokenizer.clone(),
         &model.chat_template.chat_template,
@@ -26,10 +26,10 @@ fn test_local() -> crate::Result<()> {
             test_local,
             format!("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{USER_PROMPT_1}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{ASSISTANT_PROMPT_1}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{USER_PROMPT_2}<|eot_id|>")
         );
-    let token_count: u64 = prompt.local_prompt()?.get_total_prompt_tokens()?;
-    let prompt_as_tokens: Vec<u32> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
+    let token_count = prompt.local_prompt()?.get_total_prompt_tokens()?;
+    let prompt_as_tokens = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
     assert_eq!(49, token_count);
-    assert_eq!(token_count, prompt_as_tokens.len() as u64);
+    assert_eq!(token_count, prompt_as_tokens.len());
 
     prompt.set_generation_prefix("Generating 12345:");
     let test_local = prompt.local_prompt()?.get_built_prompt()?;
@@ -41,7 +41,7 @@ fn test_local() -> crate::Result<()> {
     let token_count = prompt.local_prompt()?.get_total_prompt_tokens()?;
     let prompt_as_tokens = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
     assert_eq!(58, token_count);
-    assert_eq!(token_count, prompt_as_tokens.len() as u64);
+    assert_eq!(token_count, prompt_as_tokens.len());
     Ok(())
 }
 
@@ -76,8 +76,8 @@ fn test_local_templates() -> crate::Result<()> {
         ]),
     ];
     let templates = vec![
-        LlmPreset::Mistral7bInstructV0_3.load()?.chat_template,
-        LlmPreset::Phi3Mini4kInstruct.load()?.chat_template,
+        GgufPreset::MISTRAL_7B_INSTRUCT_V0_3.load()?.chat_template,
+        GgufPreset::PHI_3_MINI_4K_INSTRUCT.load()?.chat_template,
     ];
 
     for (i, chat_template) in templates.iter().enumerate() {

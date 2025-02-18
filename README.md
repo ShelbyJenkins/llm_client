@@ -26,7 +26,7 @@ This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/
 use Llmclient::prelude::*;
 // Loads the largest quant available based on your VRAM or system memory
 let llm_client = LlmClient::llama_cpp()
-    .mistral7b_instruct_v0_3() // Uses a preset model
+    .mistral_7b_instruct_v0_3() // Uses a preset model
     .init() // Downloads model from hugging face and starts the inference interface
     .await?;
 ```

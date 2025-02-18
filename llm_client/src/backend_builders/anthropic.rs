@@ -3,9 +3,11 @@ use llm_devices::{LoggingConfig, LoggingConfigTrait};
 use llm_interface::llms::{
     AnthropicBackend, AnthropicConfig, ApiConfig, LlmApiConfigTrait, LlmBackend,
 };
-use llm_models::api_model::{anthropic::AnthropicModelTrait, ApiLlmModel};
+use llm_models::{
+    api_models::{AnthropicModelTrait, ApiLlmModel},
+    ApiLlmPreset,
+};
 
-// Everything here can be implemented for any struct.
 pub struct AnthropicBackendBuilder {
     pub config: AnthropicConfig,
     pub model: ApiLlmModel,
@@ -15,7 +17,7 @@ impl Default for AnthropicBackendBuilder {
     fn default() -> Self {
         Self {
             config: Default::default(),
-            model: ApiLlmModel::claude_3_5_sonnet(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::CLAUDE_3_5_SONNET),
         }
     }
 }

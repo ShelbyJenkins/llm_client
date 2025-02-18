@@ -24,9 +24,9 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_one() -> crate::Result<()> {
-        // let llm_client: LlmClient = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
+        // let llm_client: LlmClient = LlmClient::llama_cpp().meta_llama_3_1_8b_instruct().init().await?;
         let llm_client: LlmClient = LlmClient::llama_cpp()
-            .mistral_nemo_instruct2407()
+            .mistral_nemo_instruct_2407()
             .init()
             .await?;
 
@@ -62,7 +62,7 @@ mod test {
     #[ignore]
     pub async fn test_full_workflow() -> crate::Result<()> {
         let llm_client: LlmClient = LlmClient::llama_cpp()
-            .llama3_1_70b_nemotron_instruct()
+            .llama_3_1_nemotron_51b_instruct()
             .init()
             .await?;
 
@@ -124,7 +124,10 @@ mod test {
     #[tokio::test]
     #[ignore]
     pub async fn test_cases() -> crate::Result<()> {
-        let llm_client: LlmClient = LlmClient::llama_cpp().llama3_1_8b_instruct().init().await?;
+        let llm_client: LlmClient = LlmClient::llama_cpp()
+            .llama_3_1_8b_instruct()
+            .init()
+            .await?;
 
         let mut tag_collection = TagCollection::default()
             .from_text_file_path("/workspaces/test/bacdive_hierarchy.txt")

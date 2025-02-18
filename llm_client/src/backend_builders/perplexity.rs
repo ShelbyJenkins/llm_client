@@ -4,9 +4,11 @@ use llm_interface::llms::{
     ApiConfig, GenericApiBackend, GenericApiConfig, LlmApiConfigTrait, LlmBackend,
 };
 
-use llm_models::api_model::{perplexity::PerplexityModelTrait, ApiLlmModel};
+use llm_models::{
+    api_models::{ApiLlmModel, PerplexityModelTrait},
+    ApiLlmPreset,
+};
 
-// Everything here can be implemented for any struct.
 pub struct PerplexityBackendBuilder {
     pub config: GenericApiConfig,
     pub model: ApiLlmModel,
@@ -20,7 +22,7 @@ impl Default for PerplexityBackendBuilder {
         config.logging_config.logger_name = "perplexity".to_string();
         Self {
             config,
-            model: ApiLlmModel::sonar_large(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::SONAR),
         }
     }
 }

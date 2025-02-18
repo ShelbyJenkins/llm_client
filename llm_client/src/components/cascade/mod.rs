@@ -6,7 +6,7 @@ use llm_interface::requests::*;
 pub use round::CascadeRound;
 use step::InferenceStep;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CascadeFlow {
     pub cascade_name: String,
     pub duration: std::time::Duration,
@@ -96,7 +96,7 @@ pub(crate) async fn cascade_request(
             step.llm_content = Some(content.clone());
         }
         Err(e) => {
-            crate::info!(?e);
+            crate::bail!(e);
         }
     }
     Ok(())

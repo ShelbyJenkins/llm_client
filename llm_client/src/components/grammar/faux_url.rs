@@ -1,7 +1,7 @@
 use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::cell::RefCell;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct FauxUrlGrammar {
     pub min_count: u8,
     pub max_count: u8,

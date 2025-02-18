@@ -3,7 +3,7 @@ use nvml_wrapper::Nvml;
 
 // See https://gist.github.com/jrruethe/8974d2c8b4ece242a071d1a1526aa763#file-vram-rb-L64
 /// CUDA overhead in bytes (500MB) used for VRAM calculations
-pub const CUDA_OVERHEAD: u64 = 500 * 1024 * 1024;
+pub const CUDA_OVERHEAD: usize = 500 * 1024 * 1024;
 
 /// Configuration for NVIDIA CUDA devices on Linux and Windows platforms.
 ///
@@ -20,7 +20,7 @@ pub struct CudaConfig {
     pub(crate) cuda_devices: Vec<CudaDevice>,
 
     /// Total available VRAM across all devices in bytes
-    pub(crate) total_vram_bytes: u64,
+    pub(crate) total_vram_bytes: usize,
 }
 
 impl Default for CudaConfig {
@@ -91,7 +91,7 @@ impl CudaConfig {
             crate::bail!("No CUDA devices found");
         }
 
-        self.main_gpu = Some(self.main_gpu(error_on_config_issue)?);
+        self.main_gpu = Some(self.main_gpu(error_on_config_issue));
 
         self.total_vram_bytes = self
             .cuda_devices
@@ -105,15 +105,15 @@ impl CudaConfig {
         self.cuda_devices.len()
     }
 
-    pub(crate) fn main_gpu(&self, error_on_config_issue: bool) -> crate::Result<u32> {
+    pub(crate) fn main_gpu(&self, error_on_config_issue: bool) -> u32 {
         if let Some(main_gpu) = self.main_gpu {
             for device in &self.cuda_devices {
                 if device.ordinal == main_gpu {
-                    return Ok(main_gpu);
+                    return main_gpu;
                 }
             }
             if error_on_config_issue {
-                crate::bail!(
+                panic!(
                     "Main GPU set by user {} not found in CUDA devices",
                     main_gpu
                 );
@@ -128,14 +128,14 @@ impl CudaConfig {
             .cuda_devices
             .iter()
             .max_by_key(|d| d.available_vram_bytes)
-            .ok_or_else(|| crate::anyhow!("No devices found when setting main gpu"))?
+            .expect("No devices found when setting main gpu")
             .ordinal;
         for device in &self.cuda_devices {
             if device.ordinal == main_gpu {
-                return Ok(main_gpu);
+                return main_gpu;
             }
         }
-        crate::bail!("Main GPU {} not found in CUDA devices", main_gpu);
+        panic!("Main GPU {} not found in CUDA devices", main_gpu);
     }
 
     pub(crate) fn to_generic_gpu_devices(
@@ -147,7 +147,7 @@ impl CudaConfig {
             .iter()
             .map(|d| d.to_generic_gpu())
             .collect();
-        let main_gpu = self.main_gpu(error_on_config_issue)?;
+        let main_gpu = self.main_gpu(error_on_config_issue);
         for gpu in &mut gpu_devices {
             if gpu.ordinal == main_gpu {
                 gpu.is_main_gpu = true;
@@ -190,7 +190,7 @@ pub struct CudaDevice {
     pub ordinal: u32,
 
     /// Available VRAM in bytes (total VRAM minus CUDA_OVERHEAD)
-    pub available_vram_bytes: u64,
+    pub available_vram_bytes: usize,
 
     /// Device name (e.g., "NVIDIA GeForce RTX 3080")
     pub name: Option<String>,
@@ -248,7 +248,7 @@ impl CudaDevice {
                     };
                     let cuda_device = CudaDevice {
                         ordinal: ordinal,
-                        available_vram_bytes: memory_info.total - CUDA_OVERHEAD,
+                        available_vram_bytes: memory_info.total as usize - CUDA_OVERHEAD,
                         name,
                         power_limit,
                         driver_major,

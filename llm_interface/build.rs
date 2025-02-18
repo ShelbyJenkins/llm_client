@@ -24,14 +24,7 @@ fn main() {
             .as_str()
             .expect("Excpected llama_cpp_backend.tag as a string");
 
-        match llm_devices::build_repo(
-            "llama_cpp",
-            repo_url,
-            repo_tag,
-            "llama-server",
-            &["llama-server", "BUILD_TYPE=Release", "-j"],
-            &Some("GGML_CUDA=1"),
-        ) {
+        match llm_devices::build_or_install(true, repo_url, repo_tag) {
             Ok(_) => p!(
                 "Successfully built llama_cpp in {} seconds",
                 start_time.elapsed().as_secs_f32()

@@ -104,9 +104,9 @@ pub struct CompletionContent {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CompletionUsage {
     /// The number of input tokens which were used.
-    pub input_tokens: u32,
+    pub input_tokens: usize,
     /// The number of output tokens which were used.
-    pub output_tokens: u32,
+    pub output_tokens: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]

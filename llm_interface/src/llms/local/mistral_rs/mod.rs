@@ -5,7 +5,7 @@ use crate::requests::completion::{CompletionError, CompletionRequest, Completion
 
 use devices::mistral_rs_device_map;
 use llm_devices::LoggingConfig;
-use llm_models::local_model::{gguf::GgufLoader, LocalLlmModel};
+use llm_models::local_models::{gguf::GgufLoader, LocalLlmModel};
 use mistralrs::{
     DefaultSchedulerMethod,  GGUFLoaderBuilder, GGUFSpecificConfig, MemoryGpuConfig, MistralRs, MistralRsBuilder, ModelDType,  PagedAttentionConfig,  Response, SchedulerConfig, TokenSource
 };

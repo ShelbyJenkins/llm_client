@@ -1,7 +1,7 @@
 use super::{Grammar, GrammarError, GrammarSetterTrait};
 use std::cell::RefCell;
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct ExactStringGrammar {
     pub exact_strings: Vec<String>,
     pub stop_word_done: Option<String>,

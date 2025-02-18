@@ -1,7 +1,7 @@
 // Internal imports
 use super::*;
 use llm_devices::LoggingConfigTrait;
-use llm_models::api_model::openai::OpenAiModelTrait;
+use llm_models::{ApiLlmPreset, OpenAiModelTrait};
 
 // Everything here can be implemented for any struct.
 pub struct OpenAiBackendBuilder {
@@ -13,7 +13,7 @@ impl Default for OpenAiBackendBuilder {
     fn default() -> Self {
         Self {
             config: Default::default(),
-            model: ApiLlmModel::gpt_4_o_mini(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::GPT_4O_MINI),
         }
     }
 }

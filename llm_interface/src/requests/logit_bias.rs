@@ -3,9 +3,9 @@ use super::*;
 use llm_models::tokenizer::LlmTokenizer;
 use std::{collections::HashMap, sync::Arc};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct LogitBias {
-    pub base_logit_bias: Option<HashMap<u32, f32>>,
+    pub base_logit_bias: Option<HashMap<usize, f32>>,
     pub built_llama_cpp_bias: LlamaCppLogitBias,
     pub built_openai_bias: OpenAiLogitBias,
     from_token_ids: FromTokenIds,
@@ -19,13 +19,13 @@ impl LogitBias {
         Self::default()
     }
 
-    pub fn add_token_id(&mut self, token_id: u32, bias: f32) -> &mut Self {
+    pub fn add_token_id(&mut self, token_id: usize, bias: f32) -> &mut Self {
         self.from_token_ids.add_token_id(token_id, bias);
         self.clear_built();
         self
     }
 
-    pub fn add_token_ids(&mut self, logit_bias: HashMap<u32, f32>) -> &mut Self {
+    pub fn add_token_ids(&mut self, logit_bias: HashMap<usize, f32>) -> &mut Self {
         self.from_token_ids.add_token_ids(logit_bias);
         self.clear_built();
         self
@@ -144,7 +144,7 @@ impl LogitBias {
     /// # Returns
     ///
     /// Returns `Result<(), anyhow::Error>` indicating success or an error if any of the bias values are out of range.
-    fn validate_logit_bias_values(logit_bias: &HashMap<u32, f32>) -> crate::Result<()> {
+    fn validate_logit_bias_values(logit_bias: &HashMap<usize, f32>) -> crate::Result<()> {
         for value in logit_bias.values() {
             if *value > 100.0 || *value < -100.0 {
                 return Err(crate::anyhow!(
@@ -164,9 +164,9 @@ impl LogitBias {
     ///
     /// # Returns
     ///
-    /// Returns a `HashMap<u32, f32>` containing the merged logit biases.
-    fn merge_logit_biases(logit_biases: Vec<&HashMap<u32, f32>>) -> HashMap<u32, f32> {
-        let mut merged_logit_bias: HashMap<u32, f32> = HashMap::new();
+    /// Returns a `HashMap<usize, f32>` containing the merged logit biases.
+    fn merge_logit_biases(logit_biases: Vec<&HashMap<usize, f32>>) -> HashMap<usize, f32> {
+        let mut merged_logit_bias: HashMap<usize, f32> = HashMap::new();
         for logit_bias in logit_biases {
             for (token_id, bias) in logit_bias {
                 merged_logit_bias.insert(*token_id, *bias);
@@ -176,9 +176,9 @@ impl LogitBias {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 struct FromTokenIds {
-    pub token_ids: Option<HashMap<u32, f32>>,
+    pub token_ids: Option<HashMap<usize, f32>>,
 }
 
 impl FromTokenIds {
@@ -190,7 +190,7 @@ impl FromTokenIds {
         self.token_ids = None;
     }
 
-    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<u32, f32>> {
+    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<usize, f32>> {
         if let Some(token_ids) = &self.token_ids {
             for token_id in token_ids.keys() {
                 tokenizer.try_from_single_token_id(*token_id)?;
@@ -201,21 +201,21 @@ impl FromTokenIds {
         }
     }
 
-    fn add_token_id(&mut self, token_id: u32, bias: f32) {
+    fn add_token_id(&mut self, token_id: usize, bias: f32) {
         self.token_ids
             .get_or_insert_with(HashMap::new)
             .entry(token_id)
             .or_insert(bias);
     }
 
-    fn add_token_ids(&mut self, logit_bias: HashMap<u32, f32>) {
+    fn add_token_ids(&mut self, logit_bias: HashMap<usize, f32>) {
         self.token_ids
             .get_or_insert_with(HashMap::new)
             .extend(logit_bias);
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 struct FromChars {
     pub chars: Option<HashMap<char, f32>>,
 }
@@ -229,9 +229,9 @@ impl FromChars {
         self.chars = None;
     }
 
-    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<u32, f32>> {
+    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<usize, f32>> {
         if let Some(chars) = &self.chars {
-            let mut token_logit_bias: HashMap<u32, f32> = HashMap::new();
+            let mut token_logit_bias: HashMap<usize, f32> = HashMap::new();
             for (char, bias) in chars {
                 let token_id = tokenizer.try_into_single_token(&char.to_string())?;
                 token_logit_bias.insert(token_id, *bias);
@@ -250,7 +250,7 @@ impl FromChars {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 struct FromWords {
     pub words: Option<HashMap<String, f32>>,
 }
@@ -264,9 +264,9 @@ impl FromWords {
         self.words = None;
     }
 
-    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<u32, f32>> {
+    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<usize, f32>> {
         if let Some(words) = &self.words {
-            let mut token_logit_bias: HashMap<u32, f32> = HashMap::new();
+            let mut token_logit_bias: HashMap<usize, f32> = HashMap::new();
             for (word_maybe, bias) in words {
                 let mut words_maybe: Vec<String> = word_maybe
                     .trim()
@@ -311,7 +311,7 @@ impl FromWords {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 struct FromTexts {
     pub texts: Option<HashMap<String, f32>>,
 }
@@ -325,9 +325,9 @@ impl FromTexts {
         self.texts = None;
     }
 
-    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<u32, f32>> {
+    fn get(&self, tokenizer: &Arc<LlmTokenizer>) -> crate::Result<HashMap<usize, f32>> {
         if let Some(texts) = &self.texts {
-            let mut token_logit_bias: HashMap<u32, f32> = HashMap::new();
+            let mut token_logit_bias: HashMap<usize, f32> = HashMap::new();
             for (text, bias) in texts {
                 let token_ids = tokenizer.tokenize(text);
                 for id in token_ids {
@@ -351,7 +351,7 @@ impl FromTexts {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct OpenAiLogitBias {
     pub built_logit_bias: Option<HashMap<String, serde_json::Value>>,
 }
@@ -365,7 +365,7 @@ impl OpenAiLogitBias {
         self.built_logit_bias = None;
     }
 
-    fn build(&mut self, logit_bias: &HashMap<u32, f32>) {
+    fn build(&mut self, logit_bias: &HashMap<usize, f32>) {
         let mut openai_logit_bias: HashMap<String, serde_json::Value> = HashMap::new();
         for (token_id, value) in logit_bias {
             openai_logit_bias.insert(
@@ -380,7 +380,7 @@ impl OpenAiLogitBias {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct LlamaCppLogitBias {
     pub built_logit_bias: Option<Vec<Vec<serde_json::Value>>>,
 }
@@ -394,7 +394,7 @@ impl LlamaCppLogitBias {
         self.built_logit_bias = None;
     }
 
-    fn build(&mut self, logit_bias: &HashMap<u32, f32>) {
+    fn build(&mut self, logit_bias: &HashMap<usize, f32>) {
         let mut llama_logit_bias: Vec<Vec<serde_json::Value>> = Vec::new();
         for (token_id, value) in logit_bias {
             llama_logit_bias.push(vec![
@@ -436,7 +436,7 @@ pub trait LogitBiasTrait: RequestConfigTrait {
     ///
     /// * `token_id` - The token ID.
     /// * `bias` - The bias value.
-    fn add_logit_bias_token_id(&mut self, token_id: u32, bias: f32) -> &mut Self {
+    fn add_logit_bias_token_id(&mut self, token_id: usize, bias: f32) -> &mut Self {
         self.logit_bias().add_token_id(token_id, bias);
         self
     }
@@ -446,7 +446,7 @@ pub trait LogitBiasTrait: RequestConfigTrait {
     /// # Arguments
     ///
     /// * `logit_bias` - A `HashMap` containing token IDs as keys and bias values as values.
-    fn add_logit_bias_token_ids(&mut self, logit_bias: HashMap<u32, f32>) -> &mut Self {
+    fn add_logit_bias_token_ids(&mut self, logit_bias: HashMap<usize, f32>) -> &mut Self {
         self.logit_bias().add_token_ids(logit_bias);
         self
     }

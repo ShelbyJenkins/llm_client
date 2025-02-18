@@ -1,16 +1,16 @@
 use super::*;
-use llm_models::local_model::gguf::preset::LlmPreset;
+use llm_models::gguf_presets::GgufPreset;
 
 pub use crate::backends::TestBackendConfig;
 
 const PROMPT: &str =
     "write a buzzfeed style listicle for the given input: Boy howdy, how ya'll doing? Actually make it a blog post, I'm feeling fancy today.";
-const MAX_TOKENS: [u32; 4] = [100, 200, 400, 800];
+const MAX_TOKENS: [usize; 4] = [100, 200, 400, 800];
 
 pub struct SpeedBenchmark {
     pub prompt: String,
-    pub max_tokens: Vec<u32>,
-    pub models: Vec<LlmPreset>,
+    pub max_tokens: Vec<usize>,
+    pub models: Vec<GgufPreset>,
     pub backends: Vec<TestBackendConfig>,
     pub start_time: std::time::Instant,
     pub duration: std::time::Duration,
@@ -73,7 +73,7 @@ pub struct ModelResult {
     pub model_id: String,
     start_time: std::time::Instant,
     pub duration: std::time::Duration,
-    pub total_completion_tokens: u32,
+    pub total_completion_tokens: usize,
     pub average_prompt_tokens_per_second: f32,
     pub average_completion_tokens_per_second: f32,
     pub runs: Vec<RunResult>,
@@ -110,15 +110,15 @@ impl ModelResult {
 
 pub struct RunResult {
     pub duration: std::time::Duration,
-    pub requested_tokens: u32,
-    pub response_tokens: u32,
+    pub requested_tokens: usize,
+    pub response_tokens: usize,
     pub prompt_tok_per_sec: f32,
     pub generation_tok_per_secs: f32,
     pub response: CompletionResponse,
 }
 
 impl RunResult {
-    pub(super) fn new(max_tok: u32, response: CompletionResponse) -> Self {
+    pub(super) fn new(max_tok: usize, response: CompletionResponse) -> Self {
         Self {
             duration: response.timing_usage.total_time,
             requested_tokens: max_tok,

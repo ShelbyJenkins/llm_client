@@ -1,0 +1,92 @@
+[
+    {
+        "model_id": "gpt-4",
+        "friendly_name": "GPT-4",
+        "model_ctx_size": 8192,
+        "inference_ctx_size": 4096,
+        "cost_per_m_in_tokens": 3000,
+        "cost_per_m_out_tokens": 6000,
+        "tokens_per_message": 3,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "gpt-3.5-turbo",
+        "friendly_name": "GPT-3.5 Turbo",
+        "model_ctx_size": 16385,
+        "inference_ctx_size": 4096,
+        "cost_per_m_in_tokens": 50,
+        "cost_per_m_out_tokens": 150,
+        "tokens_per_message": 4,
+        "tokens_per_name": -1
+    },
+    {
+        "model_id": "gpt-4-32k",
+        "friendly_name": "GPT-4 32K",
+        "model_ctx_size": 32768,
+        "inference_ctx_size": 4096,
+        "cost_per_m_in_tokens": 6000,
+        "cost_per_m_out_tokens": 12000,
+        "tokens_per_message": 3,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "gpt-4-turbo",
+        "friendly_name": "GPT-4 Turbo",
+        "model_ctx_size": 128000,
+        "inference_ctx_size": 4096,
+        "cost_per_m_in_tokens": 1000,
+        "cost_per_m_out_tokens": 3000,
+        "tokens_per_message": 3,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "gpt-4o",
+        "friendly_name": "GPT-4o",
+        "model_ctx_size": 128000,
+        "inference_ctx_size": 4096,
+        "cost_per_m_in_tokens": 250,
+        "cost_per_m_out_tokens": 1000,
+        "tokens_per_message": 3,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "gpt-4o-mini",
+        "friendly_name": "GPT-4o Mini",
+        "model_ctx_size": 128000,
+        "inference_ctx_size": 16384,
+        "cost_per_m_in_tokens": 15,
+        "cost_per_m_out_tokens": 60,
+        "tokens_per_message": 3,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "o1",
+        "friendly_name": "O1",
+        "model_ctx_size": 200000,
+        "inference_ctx_size": 100000,
+        "cost_per_m_in_tokens": 1500,
+        "cost_per_m_out_tokens": 6000,
+        "tokens_per_message": 4,
+        "tokens_per_name": -1
+    },
+    {
+        "model_id": "o1-mini",
+        "friendly_name": "o1 Mini",
+        "model_ctx_size": 128000,
+        "inference_ctx_size": 65536,
+        "cost_per_m_in_tokens": 110,
+        "cost_per_m_out_tokens": 440,
+        "tokens_per_message": 4,
+        "tokens_per_name": -1
+    },
+    {
+        "model_id": "o3-mini",
+        "friendly_name": "o3 Mini",
+        "model_ctx_size": 200000,
+        "inference_ctx_size": 100000,
+        "cost_per_m_in_tokens": 110,
+        "cost_per_m_out_tokens": 440,
+        "tokens_per_message": 4,
+        "tokens_per_name": -1
+    }
+]

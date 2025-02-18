@@ -1,4 +1,3 @@
-use super::local_model::hf_loader::{HfTokenTrait, HuggingFaceLoader};
 use llm_prompt::PromptTokenizer;
 use std::{
     fmt,
@@ -30,13 +29,13 @@ pub struct LlmTokenizer {
     pub tokenizer: TokenizerBackend,
     pub tokenizer_path: Option<PathBuf>,
     pub with_special_tokens: bool,
-    pub white_space_token_id: u32,
+    pub white_space_token_id: usize,
 }
 
 impl LlmTokenizer {
     pub fn new_tiktoken<T: AsRef<str>>(model_id: T) -> Result<Self, crate::Error> {
         let tokenizer = get_bpe_from_model(model_id.as_ref())?;
-        let white_space_token_id = u32::try_from(tokenizer.encode_ordinary(" ").remove(0))?;
+        let white_space_token_id = usize::try_from(tokenizer.encode_ordinary(" ").remove(0))?;
         Ok(Self {
             tokenizer: TokenizerBackend::Tiktoken(tokenizer),
             tokenizer_path: None,
@@ -51,7 +50,7 @@ impl LlmTokenizer {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
             tokenizer_path: None,
             with_special_tokens: false,
-            white_space_token_id,
+            white_space_token_id: white_space_token_id.try_into().unwrap(),
         })
     }
 
@@ -62,40 +61,30 @@ impl LlmTokenizer {
             tokenizer: TokenizerBackend::HuggingFacesTokenizer(tokenizer),
             tokenizer_path: Some(local_path.as_ref().to_path_buf()),
             with_special_tokens: false,
-            white_space_token_id,
+            white_space_token_id: white_space_token_id.try_into().unwrap(),
         })
     }
 
-    pub fn new_from_hf_repo(hf_token: Option<&str>, repo_id: &str) -> Result<Self, crate::Error> {
-        let mut api: HuggingFaceLoader = HuggingFaceLoader::new();
-        if let Some(hf_token) = hf_token {
-            *api.hf_token_mut() = Some(hf_token.to_owned());
-        }
-
-        let local_path = api.load_file("tokenizer.json", repo_id)?;
-        LlmTokenizer::new_from_tokenizer_json(&local_path)
-    }
-
-    pub fn tokenize<T: AsRef<str>>(&self, str: T) -> Vec<u32> {
+    pub fn tokenize<T: AsRef<str>>(&self, str: T) -> Vec<usize> {
         self.encode(str.as_ref())
     }
 
-    pub fn detokenize_one(&self, token: u32) -> Result<String, crate::Error> {
+    pub fn detokenize_one(&self, token: usize) -> Result<String, crate::Error> {
         self.decode(&[token])
     }
 
-    pub fn detokenize_many(&self, tokens: &[u32]) -> Result<String, crate::Error> {
+    pub fn detokenize_many(&self, tokens: &[usize]) -> Result<String, crate::Error> {
         self.decode(tokens)
     }
 
-    pub fn count_tokens(&self, str: &str) -> u32 {
+    pub fn count_tokens(&self, str: &str) -> usize {
         let tokens = self.tokenize(str);
-        u32::try_from(tokens.len()).unwrap()
+        usize::try_from(tokens.len()).unwrap()
     }
 
     pub fn try_from_single_token_id(
         &self,
-        try_from_single_token_id: u32,
+        try_from_single_token_id: usize,
     ) -> Result<String, crate::Error> {
         let detokenize_response = self.detokenize_one(try_from_single_token_id)?;
         println!("detokenize_response: {}", detokenize_response);
@@ -116,7 +105,10 @@ impl LlmTokenizer {
         }
     }
 
-    pub fn try_into_single_token(&self, try_into_single_token: &str) -> Result<u32, crate::Error> {
+    pub fn try_into_single_token(
+        &self,
+        try_into_single_token: &str,
+    ) -> Result<usize, crate::Error> {
         let mut tokens = self.tokenize(try_into_single_token);
         match tokens.len() {
             0 => Err(crate::anyhow!(
@@ -142,7 +134,7 @@ impl LlmTokenizer {
     ///
     /// A new string that represents the normalized window of text, or the original
     /// text if its token count is less than or equal to `target_token_size`.
-    pub fn create_text_window(&self, text: &str, target_token_size: u32) -> String {
+    pub fn create_text_window(&self, text: &str, target_token_size: usize) -> String {
         let tokens = self.tokenize(text);
         if tokens.len() <= target_token_size as usize {
             return text.to_string();
@@ -169,8 +161,8 @@ impl LlmTokenizer {
     pub fn create_text_range(
         &self,
         text: &str,
-        start_token_index: u32,
-        end_token_index: u32,
+        start_token_index: usize,
+        end_token_index: usize,
     ) -> String {
         let tokens = self.tokenize(text);
         let end_token_index = if tokens.len() <= end_token_index as usize {
@@ -183,52 +175,64 @@ impl LlmTokenizer {
         self.detokenize_many(preserved_tokens).unwrap()
     }
 
-    fn encode_tiktoken(&self, tokenizer: &CoreBPE, str: &str) -> Vec<u32> {
+    fn encode_tiktoken(&self, tokenizer: &CoreBPE, str: &str) -> Vec<usize> {
         let tokens = if self.with_special_tokens {
             tokenizer
                 .encode_with_special_tokens(str)
                 .iter()
-                .map(|&x| u32::try_from(x).unwrap())
+                .map(|&x| usize::try_from(x).unwrap())
                 .collect()
         } else {
             tokenizer
                 .encode_ordinary(str)
                 .iter()
-                .map(|&x| u32::try_from(x).unwrap())
+                .map(|&x| usize::try_from(x).unwrap())
                 .collect()
         };
         tokens
     }
 
-    fn encode_hf(&self, tokenizer: &HFTokenizer, str: &str) -> Vec<u32> {
+    fn encode_hf(&self, tokenizer: &HFTokenizer, str: &str) -> Vec<usize> {
         let tokens = if self.with_special_tokens {
             tokenizer.encode(str, true)
         } else {
             tokenizer.encode(str, false)
         };
-        tokens.unwrap().get_ids().to_vec()
+        tokens
+            .unwrap()
+            .get_ids()
+            .iter()
+            .map(|&x| x as usize)
+            .collect()
     }
 
-    fn encode(&self, str: &str) -> Vec<u32> {
+    fn encode(&self, str: &str) -> Vec<usize> {
         match &self.tokenizer {
             TokenizerBackend::HuggingFacesTokenizer(tokenizer) => self.encode_hf(tokenizer, str),
             TokenizerBackend::Tiktoken(tokenizer) => self.encode_tiktoken(tokenizer, str),
         }
     }
 
-    fn decode_tiktoken(&self, tokenizer: &CoreBPE, tokens: &[u32]) -> Result<String, crate::Error> {
+    fn decode_tiktoken(
+        &self,
+        tokenizer: &CoreBPE,
+        tokens: &[usize],
+    ) -> Result<String, crate::Error> {
         tokenizer
-            .decode(tokens.into())
+            .decode(tokens.iter().map(|&x| x as u32).collect::<Vec<u32>>())
             .map_err(|e| crate::anyhow!(e))
     }
 
-    fn decode_hf(&self, tokenizer: &HFTokenizer, tokens: &[u32]) -> Result<String, crate::Error> {
+    fn decode_hf(&self, tokenizer: &HFTokenizer, tokens: &[usize]) -> Result<String, crate::Error> {
         tokenizer
-            .decode(tokens, true)
+            .decode(
+                &tokens.iter().map(|&x| x as u32).collect::<Vec<u32>>(),
+                true,
+            )
             .map_err(|e| crate::anyhow!(e))
     }
 
-    fn decode(&self, tokens: &[u32]) -> Result<String, crate::Error> {
+    fn decode(&self, tokens: &[usize]) -> Result<String, crate::Error> {
         match &self.tokenizer {
             TokenizerBackend::HuggingFacesTokenizer(tokenizer) => self.decode_hf(tokenizer, tokens),
             TokenizerBackend::Tiktoken(tokenizer) => self.decode_tiktoken(tokenizer, tokens),
@@ -237,11 +241,11 @@ impl LlmTokenizer {
 }
 
 impl PromptTokenizer for LlmTokenizer {
-    fn tokenize(&self, input: &str) -> Vec<u32> {
+    fn tokenize(&self, input: &str) -> Vec<usize> {
         self.tokenize(input)
     }
 
-    fn count_tokens(&self, str: &str) -> u32 {
+    fn count_tokens(&self, str: &str) -> usize {
         self.count_tokens(str)
     }
 }

@@ -18,7 +18,7 @@ See [build.md](../docs/build.md) for other features and backends like mistral.rs
 ```rust
 use Llmclient::prelude::*;
 let llm_client = LlmClient::llama_cpp()
-    .mistral7b_instruct_v0_3() // Uses a preset model
+    .mistral_7b_instruct_v0_3() // Uses a preset model
     .init() // Downloads model from hugging face and starts the inference interface
     .await?;
 ```
@@ -145,7 +145,7 @@ See [the basic_completion example](./examples/basic_completion.rs)
 ```rust
 let llm_client = LlmClient::llama_cpp()
     .available_vram(48)
-    .mistral7b_instruct_v0_3()
+    .mistral_7b_instruct_v0_3()
     .init()
     .await?;
 

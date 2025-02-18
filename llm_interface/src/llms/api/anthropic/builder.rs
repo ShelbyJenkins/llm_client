@@ -1,7 +1,7 @@
 // Internal imports
 use super::*;
 use llm_devices::LoggingConfigTrait;
-use llm_models::api_model::anthropic::AnthropicModelTrait;
+use llm_models::{AnthropicModelTrait, ApiLlmPreset};
 
 // Everything here can be implemented for any struct.
 pub struct AnthropicBackendBuilder {
@@ -13,7 +13,7 @@ impl Default for AnthropicBackendBuilder {
     fn default() -> Self {
         Self {
             config: Default::default(),
-            model: ApiLlmModel::claude_3_5_sonnet(),
+            model: ApiLlmModel::from_preset(ApiLlmPreset::CLAUDE_3_5_SONNET),
         }
     }
 }

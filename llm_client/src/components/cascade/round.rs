@@ -3,7 +3,7 @@ use llm_interface::requests::CompletionRequest;
 use super::step::{CascadeStep, StepConfig};
 use std::collections::VecDeque;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CascadeRound {
     pub task: String,
     pub unresolved_steps: VecDeque<CascadeStep>,
@@ -96,15 +96,19 @@ impl CascadeRound {
     }
 
     pub async fn run_all_steps(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
+        let mut error_counter = 0;
         base_req.prompt.add_user_message()?.set_content(&self.task);
         while !self.unresolved_steps.is_empty() {
             match self.run_next_step(base_req).await {
                 Ok(_) => {}
                 Err(e) => {
-                    let mut resolved = std::mem::take(&mut self.resolved_steps);
-                    resolved.append(&mut self.unresolved_steps);
-                    self.unresolved_steps = resolved;
-                    return Err(e);
+                    error_counter += 1;
+                    if error_counter > 3 {
+                        let mut resolved = std::mem::take(&mut self.resolved_steps);
+                        resolved.append(&mut self.unresolved_steps);
+                        self.unresolved_steps = resolved;
+                        crate::bail!(e);
+                    }
                 }
             }
         }
@@ -119,6 +123,7 @@ impl CascadeRound {
 
     pub async fn run_next_step(&mut self, base_req: &mut CompletionRequest) -> crate::Result<()> {
         let mut current_step = self.unresolved_steps.pop_front().unwrap();
+        crate::info!("Running step: {:?}", current_step);
         let generation_prefix = self.generation_prefix(&current_step)?;
         match current_step
             .run_step(generation_prefix.as_deref(), base_req)
@@ -130,7 +135,7 @@ impl CascadeRound {
             }
             Err(e) => {
                 self.unresolved_steps.push_front(current_step);
-                Err(e)
+                crate::bail!(e);
             }
         }
     }

@@ -45,7 +45,7 @@ impl SpeedBenchmark {
     async fn benchmark_run(
         &self,
         llm_client: &LlmClient,
-        max_tok: u32,
+        max_tok: usize,
     ) -> crate::Result<CompletionResponse> {
         let mut gen = llm_client.basic_completion();
         gen.prompt().add_user_message()?.set_content(&self.prompt);
@@ -57,17 +57,17 @@ impl SpeedBenchmark {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use llm_models::local_model::gguf::preset::LlmPreset;
+    use llm_models::gguf_presets::GgufPreset;
 
     #[tokio::test]
     #[ignore]
     pub async fn test_llama() -> crate::Result<()> {
         let mut benchmark = SpeedBenchmark {
             models: vec![
-                LlmPreset::Phi3_5MiniInstruct,
-                LlmPreset::Llama3_1_8bInstruct,
-                LlmPreset::Llama3_2_1bInstruct,
-                LlmPreset::Llama3_2_3bInstruct,
+                GgufPreset::PHI_3_5_MINI_INSTRUCT,
+                GgufPreset::LLAMA_3_1_8B_INSTRUCT,
+                GgufPreset::LLAMA_3_2_1B_INSTRUCT,
+                GgufPreset::LLAMA_3_2_3B_INSTRUCT,
             ],
             backends: vec![TestBackendConfig::default_llama_cpp()],
             ..Default::default()

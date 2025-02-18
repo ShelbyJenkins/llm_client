@@ -1,0 +1,15 @@
+{
+    "model_id": "Llama-3_1-Nemotron-51B-Instruct",
+    "friendly_name": "Llama 3.1 Nemotron 51B Instruct",
+    "model_repo_id": "nvidia/Llama-3_1-Nemotron-51B-Instruct",
+    "gguf_repo_id": "bartowski/Llama-3_1-Nemotron-51B-Instruct-GGUF",
+    "number_of_parameters": 52.0,
+    "quant_file_names": {
+        "q6": "Llama-3_1-Nemotron-51B-Instruct-Q6_K.gguf",
+        "q5": "Llama-3_1-Nemotron-51B-Instruct-Q5_K_M.gguf",
+        "q4": "Llama-3_1-Nemotron-51B-Instruct-Q4_K_M.gguf",
+        "q3": "Llama-3_1-Nemotron-51B-Instruct-Q3_K_M.gguf",
+        "q2": "Llama-3_1-Nemotron-51B-Instruct-Q2_K.gguf"
+    },
+    "tokenizer_path": "meta/llama3_1_8b_instruct/tokenizer.json"
+}

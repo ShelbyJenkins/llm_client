@@ -66,23 +66,28 @@ pub struct DeviceConfig {
     /// The number of layers in the model.
     ///
     /// This is set at runtime.
-    pub layer_count: Option<u64>,
+    pub layer_count: Option<usize>,
 
     /// The average size of a layer in bytes.
     ///
     /// This is set at runtime.
-    pub average_layer_size_bytes: Option<u64>,
+    pub average_layer_size_bytes: Option<usize>,
 
     /// The file system path to the local model.
     ///
     /// This is set at runtime.
     pub local_model_path: String,
+
+    /// The alias of the local model.
+    ///
+    /// This is set at runtime.
+    pub local_model_alias: String,
 }
 
 impl Default for DeviceConfig {
     fn default() -> Self {
         Self {
-            cpu_config: CpuConfig::default(),
+            cpu_config: CpuConfig::new(false),
             ram_config: RamConfig::default(),
             use_gpu: true,
             #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -93,6 +98,7 @@ impl Default for DeviceConfig {
             layer_count: None,
             average_layer_size_bytes: None,
             local_model_path: Default::default(),
+            local_model_alias: Default::default(),
         }
     }
 }
@@ -107,7 +113,6 @@ impl DeviceConfig {
     /// - Hardware detection fails and error_on_config_issue is true
     /// - Platform is unsupported
     pub fn initialize(&mut self) -> crate::Result<()> {
-        self.cpu_config.initialize(self.error_on_config_issue)?;
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
             self.initialize_unix_windows()?;
@@ -198,18 +203,18 @@ impl DeviceConfig {
     /// # Errors
     ///
     /// Returns error if platform is unsupported
-    pub fn available_memory_bytes(&self) -> crate::Result<u64> {
+    pub fn available_memory_bytes(&self) -> crate::Result<usize> {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
-            Ok(cuda_config.total_vram_bytes)
+            Ok(cuda_config.total_vram_bytes.try_into().unwrap())
         } else {
-            Ok(self.ram_config.use_ram_bytes)
+            Ok(self.ram_config.use_ram_bytes.try_into().unwrap())
         }
         #[cfg(target_os = "macos")]
         if let Some(metal_config) = &self.metal_config {
-            Ok(metal_config.use_ram_bytes)
+            Ok(metal_config.use_ram_bytes.try_into().unwrap())
         } else {
-            Ok(self.ram_config.use_ram_bytes)
+            Ok(self.ram_config.use_ram_bytes.try_into().unwrap())
         }
 
         #[cfg(not(any(unix, windows, target_os = "macos")))]
@@ -223,7 +228,7 @@ impl DeviceConfig {
     /// # Errors
     ///
     /// Returns error if average_layer_size_bytes is not set
-    pub fn average_layer_size_bytes(&self) -> crate::Result<u64> {
+    pub fn average_layer_size_bytes(&self) -> crate::Result<usize> {
         match self.average_layer_size_bytes {
             Some(size) => Ok(size),
             None => crate::bail!("Average layer size not set"),
@@ -235,7 +240,7 @@ impl DeviceConfig {
     /// # Errors
     ///
     /// Returns error if layer_count is not set
-    pub fn layer_count(&self) -> crate::Result<u64> {
+    pub fn layer_count(&self) -> crate::Result<usize> {
         match self.layer_count {
             Some(count) => Ok(count),
             None => crate::bail!("Layer count not set"),
@@ -250,22 +255,19 @@ impl DeviceConfig {
     /// # Errors
     ///
     /// Returns error if no GPUs are available
-    pub fn main_gpu(&self) -> crate::Result<u32> {
+    pub fn main_gpu(&self) -> Option<u32> {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if let Some(cuda_config) = &self.cuda_config {
-            cuda_config.main_gpu(self.error_on_config_issue)
+            Some(cuda_config.main_gpu(self.error_on_config_issue))
         } else {
-            crate::bail!("No GPUs available")
+            return None;
         }
         #[cfg(target_os = "macos")]
-        if self.metal_config.is_some() {
-            Ok(1)
-        } else {
-            Ok(0)
-        }
+        return None;
+
         #[cfg(not(any(unix, windows, target_os = "macos")))]
         {
-            crate::bail!("Unsupported OS");
+            crate::panic!("Unsupported OS");
         }
     }
 
@@ -309,8 +311,8 @@ impl DeviceConfig {
     /// - Insufficient memory for layer allocation
     pub fn allocate_layers_to_gpus(
         &self,
-        buffer_layer_per_gpu: u64,
-        buffer_layer_main_gpu: u64,
+        buffer_layer_per_gpu: usize,
+        buffer_layer_main_gpu: usize,
     ) -> crate::Result<Vec<gpu::GpuDevice>> {
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         let mut gpu_devices: Vec<gpu::GpuDevice> = if let Some(cuda_config) = &self.cuda_config {

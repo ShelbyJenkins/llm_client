@@ -28,8 +28,8 @@ and anything that can be extracted from the GGUF.
 
 ```rust
 let model: LocalLlmModel = GgufLoader::default()
-    .llama3_1_8b_instruct()
-    .preset_with_available_vram_gb(48) // Load the largest quant that will fit in your vram
+    .meta_llama_3_1_8b_instruct()
+    .preset_with_memory_gb(48) // Load the largest quant that will fit in your vram
     .load()?;
 ```
 
@@ -83,9 +83,6 @@ let tok = LlmTokenizer::new_tiktoken("gpt-4o");
 
 // From local path
 let tok = LlmTokenizer::new_from_tokenizer_json("path/to/tokenizer.json");
-
-// From repo
-let tok = LlmTokenizer::new_from_hf_repo(hf_token, "meta-llama/Meta-Llama-3-8B-Instruct");
 
 // From LocalLlmModel or ApiLlmModel
 let tok = model.model_base.tokenizer;

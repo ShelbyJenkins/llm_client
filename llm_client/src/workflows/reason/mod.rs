@@ -69,7 +69,7 @@ reason_workflow_primitive_impl! {
     exact_string => ExactStringPrimitive
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ReasonResult {
     pub primitive_result: Option<String>,
     pub duration: std::time::Duration,
