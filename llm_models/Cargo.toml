@@ -6,13 +6,13 @@ license.workspace=true
 name="llm_models"
 readme="README.md"
 repository.workspace=true
-version="0.0.1"
+version="0.0.3"
 
 [dependencies]
 anyhow.workspace=true
 byteorder="1.5.0"
 dotenvy.workspace=true
-hf-hub="*"
+hf-hub="0.4.3"
 llm_prompt.workspace=true
 serde.workspace=true
 serde_json.workspace=true
