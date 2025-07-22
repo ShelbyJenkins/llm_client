@@ -33,7 +33,7 @@ impl MacroPresetOrganizations {
         let mut organizations = Vec::new();
         for preset_org_path in preset_org_paths {
             let org_path = preset_org_path.path().join("organization.json");
-            let org: DePresetOrganization = open_and_parse("organization.json", &org_path);
+            let org: DePresetOrganization = open_and_parse("organization.json", &org_path).unwrap();
 
             let org = MacroPresetOrganization {
                 friendly_name: org.friendly_name,
@@ -106,8 +106,8 @@ impl MacroPresetOrganization {
         let hf_account = self.hf_account;
         quote! {
             pub const #const_ident: LocalLlmOrganization = LocalLlmOrganization {
-                friendly_name: #friendly_name,
-                hf_account: #hf_account,
+                friendly_name: Cow::Borrowed(#friendly_name),
+                hf_account: Cow::Borrowed(#hf_account),
             };
         }
     }
@@ -124,11 +124,7 @@ pub(super) fn generate(output_path: &std::path::PathBuf) {
     }
 
     let code = quote! {
-        #[derive(Debug, Clone, PartialEq)]
-        pub struct LocalLlmOrganization {
-            pub friendly_name: &'static str,
-            pub hf_account: &'static str,
-        }
+        use super::*;
 
         impl LocalLlmOrganization {
             pub fn all_organizations() -> Vec<Self> {

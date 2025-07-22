@@ -9,7 +9,9 @@ repository.workspace=true
 version="0.0.1"
 
 [dependencies]
-llm_models={path="../llm_models"}
+anyhow.workspace=true
+dotenvy.workspace=true
+hf-hub="0.4.1"
 prettyplease="*"
 proc-macro2="*"
 quote="*"

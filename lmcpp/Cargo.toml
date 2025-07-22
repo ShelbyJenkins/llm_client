@@ -1,0 +1,64 @@
+[package]
+authors=["Shelby Jenkins"]
+categories=["api-bindings", "development-tools"]
+description="Rust bindings for llama.cpp's server with managed toolchain, typed endpoints, and UDS/HTTP support"
+documentation="https://docs.rs/lmcpp"
+edition.workspace=true
+homepage="https://github.com/shelbyJenkins/llm_client"
+keywords=["ai", "cpp", "inference", "llama", "llm"]
+license="MIT"
+name="lmcpp"
+readme="README.md"
+repository="https://github.com/shelbyJenkins/llm_client"
+version="0.1.0"
+
+[dependencies]
+bon={version="3.6.4", features=["implied-bounds"]}
+clap={version="4.5.41", features=["derive"]}
+cmdstruct="2.0.1"
+confy="1.0.0"
+ctrlc="3.4.7"
+directories.workspace=true
+fs4={version="0.13.1", features=["sync"]}
+indenter.workspace=true
+llm_models.workspace=true
+sanitize-filename="0.6.0"
+serde.workspace=true
+serde_json.workspace=true
+socket2="0.6.0"
+sysinfo={version="0.36.0", default-features=false, features=["system"]}
+thiserror.workspace=true
+tracing.workspace=true
+ureq={version="3.0.12", default-features=false, features=["json", "rustls"]}
+url.workspace=true
+uuid={version="1.17.0", features=["v4"]}
+wait-timeout="0.2.1"
+zip="4.3.0"
+
+[target.'cfg(unix)'.dependencies]
+nix={version="0.30.1", features=["fs", "process", "signal"], default-features=false}
+
+[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
+nvml-wrapper={version="0.11.0"}
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows={version="0.61.3", features=["Win32_System_JobObjects", "Win32_System_Threading"], default-features=false}
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2="0.6.1"
+objc2-metal={version="0.3.1", features=["MTLDevice"]}
+
+[dev-dependencies]
+anyhow.workspace=true
+assert_cmd="*"
+mockito="1.7.0"
+predicates="*"
+serial_test.workspace=true
+tempfile.workspace=true
+
+[[bin]]
+name="lmcpp-toolchain-cli"
+path="src/bin/lmcpp-toolchain-cli.rs"
+[[bin]]
+name="lmcpp-server-cli"
+path="src/bin/lmcpp-server-cli.rs"

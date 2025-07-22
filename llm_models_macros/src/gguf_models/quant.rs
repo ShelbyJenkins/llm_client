@@ -1,5 +1,3 @@
-use llm_models::local_models::hf_loader::HuggingFaceLoader;
-
 use super::{model::DeGgufPreset, *};
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -18,13 +16,21 @@ pub(super) struct DeQuantFileNames {
 pub struct MacroQuantFile {
     pub q_lvl: u8,
     pub fname: String,
-    pub total_bytes: usize,
+    pub total_bytes: u64,
 }
 
 impl MacroQuantFile {
     pub fn get_quants(preset: &DeGgufPreset) -> Vec<MacroQuantFile> {
-        let hf_loader = HuggingFaceLoader::default();
-        let hf_info = hf_loader.model_info(&preset.gguf_repo_id).unwrap();
+        let blobs_info: serde_json::Value = hf_api()
+            .model(preset.gguf_repo_id.clone().into())
+            .info_request()
+            .query("blobs", "true")
+            .call()
+            .unwrap()
+            .into_json()
+            .unwrap();
+        let hf_info: HuggingFaceRepoInfo = serde_json::from_value(blobs_info.clone()).unwrap();
+
         let mut quants = Vec::new();
         for q_lvl in 1..=8 {
             let quant_filename = match q_lvl {
@@ -46,7 +52,7 @@ impl MacroQuantFile {
             };
 
             let total_bytes = match hf_info.get_file(&fname).map(|f| f.size) {
-                Some(size) => size,
+                Some(size) => size as u64,
                 None => {
                     panic!(
                         "Could not find quant file {} in repo {}",
@@ -73,7 +79,7 @@ impl MacroQuantFile {
             preset_quants.push(quote! {
                 GgufPresetQuant {
                     q_lvl: #q_lvl,
-                    fname: #fname,
+                    fname: Cow::Borrowed(#fname),
                     total_bytes: #total_bytes,
 
                 }

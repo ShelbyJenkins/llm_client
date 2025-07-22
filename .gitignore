@@ -21,3 +21,7 @@ Cargo.lock
 
 # llm_gui Tailwind CSS binary files
 /llm_gui/assets/tailwind/*
+
+perf.data
+perf.data.old
+flamegraph.svg

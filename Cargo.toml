@@ -1,51 +1,28 @@
 [workspace]
-members=[
-    "llm_client",
-    "llm_devices",
-    "llm_gui",
-    "llm_interface",
-    "llm_models",
-    "llm_models_macros",
-    "llm_prompt",
-    "llm_testing",
-]
+members=["llm_models", "llm_prompt", "lmcpp"]
 resolver="2"
 
 [workspace.package]
 authors=["Shelby Jenkins"]
-edition="2021"
+edition="2024"
 exclude=["Cargo.lock", "target/**/*"]
 homepage="https://github.com/shelbyJenkins/llm_client"
 license="MIT"
 repository="https://github.com/shelbyJenkins/llm_client"
 
 [workspace.dependencies]
-anyhow="1.0.95"
+anyhow="1.0.98"
 colorful="0.3.2"
+directories="6.0.0"
 dotenvy="0.15.7"
 indenter="0.3.3"
-llm_client={path="./llm_client", version="0.0.7"}
-llm_devices={path="./llm_devices", version="0.0.3"}
-llm_interface={path="./llm_interface", version="0.0.3"}
-llm_models={path="./llm_models", version="0.0.2", features=["model-tokenizers"]}
-llm_prompt={path="./llm_prompt", version="0.0.3"}
-llm_utils="0.0.11"
-serde={version="1.0.217", features=["derive", "rc"]}
-serde_json="1.0.138"
+llm_models={path="./llm_models"}
+llm_prompt={path="./llm_prompt"}
+serde={version="1.0.219", features=["derive", "rc"]}
+serde_json="1.0.141"
 serial_test="3.2.0"
-thiserror="2.0.11"
-tokio="1.43.0"
+tempfile="3.20.0"
+thiserror="2.0.12"
+tokio="1.46.1"
 tracing="0.1.41"
-url="2.5.4"
-
-[profile]
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"
+url={version="2.5.4", features=["serde"]}

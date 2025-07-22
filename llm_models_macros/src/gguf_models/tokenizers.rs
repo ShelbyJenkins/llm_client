@@ -21,15 +21,17 @@ pub(super) fn generate(output_path: &std::path::PathBuf) {
         }
     }
 
-    let mut pairs = std::collections::HashSet::new();
+    let mut pairs: std::collections::HashSet<(std::path::PathBuf, std::path::PathBuf)> =
+        std::collections::HashSet::new();
 
     for org in organizations.0 {
         for model in org.load_models() {
             if let (Some(input_path), Some(output_path)) = (
                 model.input_tokenizer_path.as_ref(),
-                model.output_tokenizer_path.as_ref(),
+                model.output_tokenizer_file_name.as_ref(),
             ) {
-                let pair = (input_path.clone(), output_path.clone());
+                let pair: (std::path::PathBuf, std::path::PathBuf) =
+                    (input_path.clone(), output_path.clone().into());
 
                 // Only copy if we haven't seen this pair before
                 if !pairs.contains(&pair) {

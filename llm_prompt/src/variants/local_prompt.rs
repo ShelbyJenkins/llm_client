@@ -29,7 +29,7 @@ pub struct LocalPrompt {
     pub generation_prefix: Mutex<Option<String>>,
     pub built_prompt_string: Mutex<Option<String>>,
     pub built_prompt_as_tokens: Mutex<Option<Vec<usize>>>,
-    pub total_prompt_tokens: Mutex<Option<usize>>,
+    pub total_prompt_tokens: Mutex<Option<u64>>,
 }
 
 impl LocalPrompt {
@@ -109,7 +109,7 @@ impl LocalPrompt {
     ///
     /// # Returns
     ///
-    /// Returns `Ok(Vec<usize>)` containing the token IDs for the prompt.
+    /// Returns `Ok(Vec<u64>)` containing the token IDs for the prompt.
     ///
     /// # Errors
     ///
@@ -131,12 +131,12 @@ impl LocalPrompt {
     ///
     /// # Returns
     ///
-    /// Returns `Ok(usize)` containing the total token count.
+    /// Returns `Ok(u64)` containing the total token count.
     ///
     /// # Errors
     ///
     /// Returns an error if the prompt has not been built yet.
-    pub fn get_total_prompt_tokens(&self) -> Result<usize, crate::Error> {
+    pub fn get_total_prompt_tokens(&self) -> Result<u64, crate::Error> {
         match &*self.total_prompt_tokens() {
             Some(prompt) => Ok(*prompt),
             None => crate::bail!(
@@ -167,7 +167,7 @@ impl LocalPrompt {
         }
 
         let built_prompt_as_tokens = self.tokenizer.tokenize(&built_prompt_string);
-        *self.total_prompt_tokens() = Some(built_prompt_as_tokens.len());
+        *self.total_prompt_tokens() = Some(built_prompt_as_tokens.len() as u64);
         *self.built_prompt_as_tokens() = Some(built_prompt_as_tokens);
         *self.built_prompt_string() = Some(built_prompt_string);
     }
@@ -202,7 +202,7 @@ impl LocalPrompt {
         })
     }
 
-    fn total_prompt_tokens(&self) -> MutexGuard<'_, Option<usize>> {
+    fn total_prompt_tokens(&self) -> MutexGuard<'_, Option<u64>> {
         self.total_prompt_tokens.lock().unwrap_or_else(|e| {
             panic!(
                 "LocalPrompt Error - total_prompt_tokens not available: {:?}",

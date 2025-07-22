@@ -39,11 +39,11 @@
 //!
 //! ```rust
 //! use llm_prompt::*;
-//! use llm_models::api_model::ApiLlmModel;
-//! use llm_models::local_model::LocalLlmModel;
+//! use llm_models::api_model::CloudLlm;
+//! use llm_models::local_model::LocalLlm;
 //!
 //! // OpenAI Format
-//! let model = ApiLlmModel::gpt_3_5_turbo();
+//! let model = CloudLlm::gpt_3_5_turbo();
 //! let prompt = LlmPrompt::new_api_prompt(
 //!     model.model_base.tokenizer.clone(),
 //!     Some(model.tokens_per_message),
@@ -51,7 +51,7 @@
 //! );
 //!
 //! // Chat Template
-//! let model = LocalLlmModel::default();
+//! let model = LocalLlm::default();
 //! let prompt = LlmPrompt::new_local_prompt(
 //!     model.model_base.tokenizer.clone(),
 //!     &model.chat_template.chat_template,
@@ -81,7 +81,7 @@
 //!
 //! // Get chat template formatted prompt
 //! let local_prompt_as_string: String = prompt.local_prompt()?.get_built_prompt()?;
-//! let local_prompt_as_tokens: Vec<usize> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
+//! let local_prompt_as_tokens: Vec<u64> = prompt.local_prompt()?.get_built_prompt_as_tokens()?;
 //!
 //! // Openai formatted prompt (Openai and Anthropic format)
 //! let api_prompt_as_messages: Vec<HashMap<String, String>> = prompt.api_prompt()?.get_built_prompt()?;
@@ -91,7 +91,7 @@
 //! let total_prompt_tokens: u64 = prompt.api_prompt()?.get_total_prompt_tokens();
 //!
 //! // Validate requested max_tokens for a generation. If it exceeds the models limits, reduce max_tokens to a safe value
-//! let actual_request_tokens = check_and_get_max_tokens(
+//! let actual_requested_response_tokens = check_and_get_max_tokens(
 //!     model.context_length,
 //!     Some(model.max_tokens_output), // If using a GGUF model use either model.context_length or the ctx_size of the server
 //!     total_prompt_tokens,
@@ -105,11 +105,11 @@
 //!
 //! ```rust
 //! impl PromptTokenizer for LlmTokenizer {
-//!     fn tokenize(&self, input: &str) -> Vec<usize> {
+//!     fn tokenize(&self, input: &str) -> Vec<u64> {
 //!         self.tokenize(input)
 //!     }
 //!
-//!     fn count_tokens(&self, str: &str) -> usize {
+//!     fn count_tokens(&self, str: &str) -> u64 {
 //!         self.count_tokens(str)
 //!     }
 //! }
@@ -135,7 +135,6 @@ use tracing::{debug, error, info, span, trace, warn, Level};
 pub use concatenator::{TextConcatenator, TextConcatenatorTrait};
 pub use prompt_message::{PromptMessage, PromptMessageType, PromptMessages};
 pub use prompt_tokenizer::PromptTokenizer;
-pub use token_count::{check_and_get_max_tokens, MaxTokenState, RequestTokenLimitError};
 pub use variants::{apply_chat_template, ApiPrompt, LocalPrompt};
 
 /// A prompt management system that supports both API-based LLMs (like OpenAI) and local LLMs.
@@ -169,24 +168,23 @@ impl LlmPrompt {
     ///
     /// A new `LlmPrompt` instance configured for local LLM usage.
     pub fn new_local_prompt(
+        &mut self,
         tokenizer: std::sync::Arc<dyn PromptTokenizer>,
         chat_template: &str,
         bos_token: Option<&str>,
         eos_token: &str,
         unk_token: Option<&str>,
         base_generation_prefix: Option<&str>,
-    ) -> Self {
-        Self {
-            local_prompt: Some(LocalPrompt::new(
-                tokenizer,
-                chat_template,
-                bos_token,
-                eos_token,
-                unk_token,
-                base_generation_prefix,
-            )),
-            ..Default::default()
-        }
+    ) -> crate::Result<()> {
+        self.local_prompt = Some(LocalPrompt::new(
+            tokenizer,
+            chat_template,
+            bos_token,
+            eos_token,
+            unk_token,
+            base_generation_prefix,
+        ));
+        Ok(())
     }
 
     /// Creates a new prompt instance configured for API-based LLMs like OpenAI.
@@ -201,18 +199,17 @@ impl LlmPrompt {
     ///
     /// A new `LlmPrompt` instance configured for API usage.
     pub fn new_api_prompt(
+        &mut self,
         tokenizer: std::sync::Arc<dyn PromptTokenizer>,
-        tokens_per_message: Option<usize>,
-        tokens_per_name: Option<isize>,
-    ) -> Self {
-        Self {
-            api_prompt: Some(ApiPrompt::new(
-                tokenizer,
-                tokens_per_message,
-                tokens_per_name,
-            )),
-            ..Default::default()
-        }
+        tokens_per_message: Option<u64>,
+        tokens_per_name: Option<i64>,
+    ) -> crate::Result<()> {
+        self.api_prompt = Some(ApiPrompt::new(
+            tokenizer,
+            tokens_per_message,
+            tokens_per_name,
+        ));
+        Ok(())
     }
 
     // Setter methods
@@ -226,7 +223,7 @@ impl LlmPrompt {
     /// # Returns
     ///
     /// A reference to the newly created message for setting content, or an error if validation fails.
-    pub fn add_system_message(&self) -> Result<Arc<PromptMessage>, crate::Error> {
+    pub fn add_system_message(&self) -> crate::Result<Arc<PromptMessage>> {
         {
             let mut messages = self.messages();
 
@@ -252,7 +249,7 @@ impl LlmPrompt {
     /// # Returns
     ///
     /// A reference to the newly created message for setting content, or an error if validation fails.
-    pub fn add_user_message(&self) -> Result<Arc<PromptMessage>, crate::Error> {
+    pub fn add_user_message(&self) -> crate::Result<Arc<PromptMessage>> {
         {
             let mut messages = self.messages();
 
@@ -280,7 +277,7 @@ impl LlmPrompt {
     /// # Returns
     ///
     /// A reference to the newly created message for setting content, or an error if validation fails.
-    pub fn add_assistant_message(&self) -> Result<Arc<PromptMessage>, crate::Error> {
+    pub fn add_assistant_message(&self) -> crate::Result<Arc<PromptMessage>> {
         {
             let mut messages = self.messages();
 
@@ -351,7 +348,7 @@ impl LlmPrompt {
     /// # Returns
     ///
     /// A reference to the `LocalPrompt` if present, otherwise returns an error
-    pub fn local_prompt(&self) -> Result<&LocalPrompt, crate::Error> {
+    pub fn local_prompt(&self) -> crate::Result<&LocalPrompt> {
         if let Some(local_prompt) = &self.local_prompt {
             if local_prompt.get_built_prompt().is_err() {
                 self.precheck_build()?;
@@ -368,7 +365,7 @@ impl LlmPrompt {
     /// # Returns
     ///
     /// A reference to the `ApiPrompt` if present, otherwise returns an error
-    pub fn api_prompt(&self) -> Result<&ApiPrompt, crate::Error> {
+    pub fn api_prompt(&self) -> crate::Result<&ApiPrompt> {
         if let Some(api_prompt) = &self.api_prompt {
             if api_prompt.get_built_prompt().is_err() {
                 self.precheck_build()?;
@@ -397,7 +394,7 @@ impl LlmPrompt {
     /// - The current message sequence violates prompt rules (e.g., assistant message first)
     /// - The build process fails
     /// - The built messages are unexpectedly None after building
-    pub fn get_built_prompt_messages(&self) -> Result<Vec<HashMap<String, String>>, crate::Error> {
+    pub fn get_built_prompt_messages(&self) -> crate::Result<Vec<HashMap<String, String>>> {
         let built_prompt_messages = self.built_prompt_messages();
 
         if let Some(built_prompt_messages) = &*built_prompt_messages {
@@ -410,6 +407,21 @@ impl LlmPrompt {
             Ok(built_prompt_messages.clone())
         } else {
             crate::bail!("built_prompt_messages is None after building!");
+        }
+    }
+
+    pub fn get_total_prompt_tokens(&self) -> crate::Result<u64> {
+        match (&self.local_prompt, &self.api_prompt) {
+            (Some(_), None) => self.local_prompt()?.get_total_prompt_tokens(),
+            (None, Some(_)) => self.api_prompt()?.get_total_prompt_tokens(),
+            (Some(_), Some(_)) => {
+                crate::bail!(
+                    "Cannot get total prompt tokens when both local and api prompts are present."
+                )
+            }
+            (None, None) => {
+                crate::bail!("Cannot get total prompt tokens when no prompt is present.")
+            }
         }
     }
 

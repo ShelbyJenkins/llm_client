@@ -12,100 +12,124 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
+[llm_client will return](#what-happened-to-llm_client)
+<!-- cargo-rdme start -->
 
-# The Easiest Rust Interface for Local LLMs
+lmcpp – `llama.cpp`'s [`llama-server`](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) for Rust
+=============================================================================================================
 
-```toml
-# For Mac (CPU and GPU), windows (CPU and CUDA), or linux (CPU and CUDA)
-llm_client="*"
-```
+## Fully Managed
+- **Automated Toolchain** – Downloads, builds, and manages the `llama.cpp` toolchain with [`LmcppToolChain`].  
+- **Supported Platforms** – Linux, macOS, and Windows with CPU, CUDA, and Metal support.  
+- **Multiple Versions** – Each release tag and backend is cached separately, allowing you to install multiple versions of `llama.cpp`.
 
-This will download and build [llama.cpp](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md). See [build.md](../docs/build.md) for other features and backends like mistral.rs. 
+## Blazing Fast UDS
+- **UDS IPC** – Integrates with `llama-server`’s Unix-domain-socket client on Linux, macOS, and Windows.  
+- **Fast!** – Is it faster than HTTP? Yes. Is it *measurably* faster? Maybe.
 
-```rust
-use Llmclient::prelude::*;
-// Loads the largest quant available based on your VRAM or system memory
-let llm_client = LlmClient::llama_cpp()
-    .mistral_7b_instruct_v0_3() // Uses a preset model
-    .init() // Downloads model from hugging face and starts the inference interface
-    .await?;
-```
+## Fully Typed / Fully Documented
+- **Server Args** – *All* `llama-server` arguments implemented by [`ServerArgs`].  
+- **Endpoints** – Each endpoint has request and response types defined.
+- **Good Docs** – Every parameter was researched to improve upon the original `llama-server` documentation.
 
-Several of the most common models are available as presets. Loading from local models is also fully supported. See [models.md](./docs/models.md) for more information.
+## CLI Tools & Web UI
+- **`lmcpp-toolchain-cli`** – Manage the `llama.cpp` toolchain: download, build, cache.  
+- **`lmcpp-server-cli`**    – Start, stop, and list servers.  
+- **Easy Web UI** – Use [`LmcppServerLauncher::webui`] to start with HTTP *and* the Web UI enabled.
 
-[API Docs](https://docs.rs/llm_client/latest/llm_client/)
-
-# Features 
-
-* Automated build and support for CPU, CUDA, MacOS
-* Easy model presets and quant selection
-* Novel cascading prompt workflow for CoT and NLP workflows. DIY workflow creation supported!
-* Breadth of configuration options (sampler params, retry logic, prompt caching, logit bias, grammars, etc)
-* API support for OpenAI, Anthropic, Perplexity, and any OpenAI compatible API
-
-# An Interface for Deterministic Signals from Probabilistic LLM Vibes
-
-In addition to basic LLM inference, llm_client is primarily designed for controlled generation using step based cascade workflows. This prompting system runs pre-defined workflows that control and constrain both the overall structure of generation and individual tokens during inference. This allows the implementation of specialized workflows for specific tasks, shaping LLM outputs towards intended, reproducible outcomes. 
+---
 
 ```rust
-let response: u32 = llm_client.reason().integer()
-    .instructions()
-    .set_content("Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?")
-    .return_primitive().await?;
+use lmcpp::*;
 
-// Recieve 'primitive' outputs
-assert_eq!(response, 1)
+fn main() -> LmcppResult<()> {
+    let server = LmcppServerLauncher::builder()
+        .server_args(
+            ServerArgs::builder()
+                .hf_repo("bartowski/google_gemma-3-1b-it-qat-GGUF")?
+                .build(),
+        )
+        .load()?;
+
+    let res = server.completion(
+        CompletionRequest::builder()
+            .prompt("Tell me a joke about Rust.")
+            .n_predict(64),
+    )?;
+
+    println!("Completion response: {:#?}", res.content);
+    Ok(())
+}
 ```
-This runs the reason one round cascading prompt workflow with an integer output.
 
-<img src="./docs/media/reason_one_round_example_annotated.png" width="60%" alt="An example run of this workflow with these instructions.">
+```sh,no_run
+cargo run --bin lmcpp-server-cli -- --webui
+// Or with a specific model from URL:
+cargo run --bin lmcpp-server-cli -- --webui -u https://huggingface.co/bartowski/google_gemma-3-1b-it-qat-GGUF/blob/main/google_gemma-3-1b-it-qat-Q4_K_M.gguf
+// Or with a specific local model:
+cargo run --bin lmcpp-server-cli -- --webui -l /path/to/local/model.gguf
+```
 
-This method significantly improves the reliability of LLM use cases. For example, [there are test cases this repo](./tests/common/test_sets) that can be used to benchmark an LLM. There is a large increase in accuracy when comparing [basic inference with a constrained outcome](./tests/src/llm_client_tests/basic_primitive_tests.rs) and [a CoT style cascading prompt workflow](./llm_client/src/workflows/reason/one_round.rs). The [decision workflow](./llm_client/examples/decision.rs) that runs N count of CoT workflows across a temperature gradient approaches 100% accuracy for the test cases.
+---
 
-I have a full breakdown of this in my blog post, "[Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)."  
+## How It Works
 
-Jump to the [readme.md](./llm_client/README.md) of the llm_client crate to find out how to use them.
+```text
+Your Rust App
+      │
+      ├─→ LmcppToolChain        (downloads / builds / caches)
+      │         ↓
+      ├─→ LmcppServerLauncher   (spawns & monitors)
+      │         ↓
+      └─→ LmcppServer           (typed handle over UDS*)
+                │
+                ├─→ completion()       → text generation
+                └─→ other endpoints    → fill-in-the-middle
+```
+*Windows transparently swaps in a named pipe.*
 
+---
 
-## Examples
+### Endpoints ⇄ Typed Helpers
+| HTTP Route          | Helper on `LmcppServer` | Request type            | Response type          |
+|---------------------|-------------------------|-------------------------|------------------------|
+| `POST /completion`  | `completion()`          | [`CompletionRequest`]   | [`CompletionResponse`] |
+| `POST /infill`      | `infill()`              | [`InfillRequest`]       | [`CompletionResponse`] |
+| `POST /embeddings`  | `embeddings()`          | [`EmbeddingsRequest`]   | [`EmbeddingsResponse`] |
+| `POST /tokenize`    | `tokenize()`            | [`TokenizeRequest`]     | [`TokenizeResponse`]   |
+| `POST /detokenize`  | `detokenize()`          | [`DetokenizeRequest`]   | [`DetokenizeResponse`] |
+| `GET  /props`       | `props()`               | –                       | [`PropsResponse`]      |
+| *custom*            | `status()` ¹            | –                       | [`ServerStatus`]       |
+| *Open AI*           | `open_ai_v1_*()`        | – [`serde_json::Value`] | [`serde_json::Value`]  |
 
-* [device config](./llm_client/examples/device_config.rs) - customizing your inference config
-* [basic completion](./llm_client/examples/basic_completion.rs) - the most basic request available
-* [basic primitive](./llm_client/examples/basic_primitive.rs) - returns the request primitive
-* [reason](./llm_client/examples/reason.rs) - a cascade workflow that performs CoT reasoning before returning a primitive
-* [decision](./llm_client/examples/decision.rs) - uses the reason workflow N times across a temperature gradient
-* [extract urls](./llm_client/examples/extract_urls.rs) - a cascade workflow that extracts all URLs from text that meet a predict
+¹ Internal helper for server health.
 
-## Docs
+---
+## Supported Platforms
+| Platform   | CPU | CUDA | Metal | Binary Sources       |
+|------------|-----|------|-------|----------------------|
+| Linux x64  | ✅ | ✅ | –  | Pre-built + Source |
+| macOS ARM  | ✅ | –  | ✅ | Pre-built + Source |
+| macOS x64  | ✅ | –  | ✅ | Pre-built + Source |
+| Windows x64| ✅ | ✅ | –  | Pre-built + Source |
 
-* llm_client [readme.md](./llm_client/README.md)
-* docs [directory](./docs)
+---
 
-## Guides
+<!-- cargo-rdme end -->
 
-* [Limiting power in Nvidia GPUs](./media/nv-power-limit.md)
+## What happened to llm_client?
 
-## Blog Posts
+And `llm_devices`, `llm_testing`, `llm_prompt`, `llm_models`, and the other crates that used to be in this repo?
 
-* [Step-Based Cascading Prompts: Deterministic Signals from the LLM Vibe Space](https://shelbyjenkins.github.io/blog/cascade-prompt/)
+* I moved cross country and took a long time off.
+* Supporting local *and* cloud models exploded complexity.
+* I realized the goals of llm_client and the goals of most people did not overlap; most people just want an Open AI compatible endpoint. They didn't want a new DSL for building AI agents or low level workflow builders.
 
-## Roadmap
+So, I decided to narrow my scope, and *start fresh*. The new goal of this project is to be the best Llama.cpp integration possible.
 
+And so, this repo will stick to the barebones and low level LLM implementation details. Shortly I will rework `llm_prompt`, and `llm_models` towards this goal.
 
-* Improve the Cascading workflow API to be easier.
-* Refactor the benchmarks module for easy model comparison.
-* WebUI client for local consumption.
-* Server mode for "LLM-in-a-box" deployments
-* Full Rust inference via [mistral.rs](https://github.com/EricLBuehler/mistral.rs) or [candle](https://github.com/huggingface/candle).
-
-### Dependencies 
-
-* [llm_utils](https://github.com/shelbyJenkins/llm_utils) is a sibling crate that was split from the llm_client. If you just need prompting, tokenization, model loading, etc, I suggest using the llm_utils crate on it's own.
-* [llm_interface](./llm_interface) is a sub-crate of llm_client. It is the backend for LLM inference.
-* [llm_devices](./llm_devices) is a sub-crate of llm_client. It contains device and build managment behavior.
-* [llama.cpp](https://github.com/ggerganov/llama.cpp) is used in server mode for LLM inference as the current default.
-* [mistral.rs](https://github.com/EricLBuehler/mistral.rs) is available for basic use, but is a WIP.
-
+Any further tooling built on top of that, will be a different project, which I will link to here once published.
 
 ## Contact
 

@@ -17,17 +17,17 @@ use std::{
 pub struct ApiPrompt {
     #[serde(skip)]
     tokenizer: Arc<dyn PromptTokenizer>,
-    tokens_per_message: Option<usize>,
-    tokens_per_name: Option<isize>,
+    tokens_per_message: Option<u64>,
+    tokens_per_name: Option<i64>,
     built_prompt_messages: Mutex<Option<Vec<HashMap<String, String>>>>,
-    total_prompt_tokens: Mutex<Option<usize>>,
+    total_prompt_tokens: Mutex<Option<u64>>,
 }
 
 impl ApiPrompt {
     pub fn new(
         tokenizer: Arc<dyn PromptTokenizer>,
-        tokens_per_message: Option<usize>,
-        tokens_per_name: Option<isize>,
+        tokens_per_message: Option<u64>,
+        tokens_per_name: Option<i64>,
     ) -> Self {
         Self {
             tokenizer,
@@ -83,7 +83,7 @@ impl ApiPrompt {
     /// # Errors
     ///
     /// Returns an error if the prompt has not been built yet.
-    pub fn get_total_prompt_tokens(&self) -> Result<usize, crate::Error> {
+    pub fn get_total_prompt_tokens(&self) -> Result<u64, crate::Error> {
         match &*self.total_prompt_tokens() {
             Some(prompt) => Ok(*prompt),
             None => crate::bail!(
@@ -118,7 +118,7 @@ impl ApiPrompt {
         })
     }
 
-    fn total_prompt_tokens(&self) -> MutexGuard<'_, Option<usize>> {
+    fn total_prompt_tokens(&self) -> MutexGuard<'_, Option<u64>> {
         self.total_prompt_tokens.lock().unwrap_or_else(|e| {
             panic!(
                 "ApiPrompt Error - total_prompt_tokens not available: {:?}",

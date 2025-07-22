@@ -7,7 +7,8 @@ fn main() {
         .expect("Failed to get parent directory")
         .join("llm_models")
         .join("src")
-        .join("api_models");
+        .join("llm_types")
+        .join("cloud");
 
     generate_api_providers_and_models(api_providers_and_models_path);
 
@@ -16,7 +17,9 @@ fn main() {
         .expect("Failed to get parent directory")
         .join("llm_models")
         .join("src")
-        .join("gguf_presets");
+        .join("llm_types")
+        .join("local")
+        .join("gguf");
 
     generate_local_organizations_and_models(orgs_and_gguf_presets_path)
 }

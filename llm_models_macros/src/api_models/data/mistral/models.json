@@ -1,0 +1,72 @@
+[
+    {
+        "model_id": "mistral-large-latest",
+        "friendly_name": "Mistral Large",
+        "model_ctx_size": 131000,
+        "inference_ctx_size": 131000,
+        "cost_per_m_in_tokens": 200,
+        "cost_per_m_out_tokens": 6000,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "ministral-3b-latest",
+        "friendly_name": "Ministral 3B",
+        "model_ctx_size": 131000,
+        "inference_ctx_size": 131000,
+        "cost_per_m_in_tokens": 4,
+        "cost_per_m_out_tokens": 4,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "ministral-8b-latest",
+        "friendly_name": "Ministral 8B",
+        "model_ctx_size": 131000,
+        "inference_ctx_size": 131000,
+        "cost_per_m_in_tokens": 10,
+        "cost_per_m_out_tokens": 10,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "open-mistral-nemo",
+        "friendly_name": "Mistral NeMo",
+        "model_ctx_size": 131000,
+        "inference_ctx_size": 131000,
+        "cost_per_m_in_tokens": 15,
+        "cost_per_m_out_tokens": 15,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "mistral-small-latest",
+        "friendly_name": "Mistral Small",
+        "model_ctx_size": 32000,
+        "inference_ctx_size": 32000,
+        "cost_per_m_in_tokens": 10,
+        "cost_per_m_out_tokens": 30,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "mistral-saba-latest",
+        "friendly_name": "Mistral Saba",
+        "model_ctx_size": 32000,
+        "inference_ctx_size": 32000,
+        "cost_per_m_in_tokens": 20,
+        "cost_per_m_out_tokens": 60,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    },
+    {
+        "model_id": "codestral-latest",
+        "friendly_name": "Codestral",
+        "model_ctx_size": 256000,
+        "inference_ctx_size": 256000,
+        "cost_per_m_in_tokens": 30,
+        "cost_per_m_out_tokens": 90,
+        "tokens_per_message": 5,
+        "tokens_per_name": 1
+    }
+]

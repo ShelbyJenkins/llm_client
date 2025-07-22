@@ -36,6 +36,24 @@
         "tokens_per_message": 3
     },
     {
+        "model_id": "claude-3-7-sonnet-latest",
+        "friendly_name": "Claude 3.7 Sonnet",
+        "model_ctx_size": 200000,
+        "inference_ctx_size": 8192,
+        "cost_per_m_in_tokens": 300,
+        "cost_per_m_out_tokens": 1500,
+        "tokens_per_message": 3
+    },
+    {
+        "model_id": "claude-3-7-sonnet-thinking-latest",
+        "friendly_name": "Claude 3.7 Sonnet Thinking",
+        "model_ctx_size": 200000,
+        "inference_ctx_size": 64000,
+        "cost_per_m_in_tokens": 300,
+        "cost_per_m_out_tokens": 1500,
+        "tokens_per_message": 3
+    },
+    {
         "model_id": "claude-3-5-haiku-latest",
         "friendly_name": "Claude 3.5 Haiku",
         "model_ctx_size": 200000,

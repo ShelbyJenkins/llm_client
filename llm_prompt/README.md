@@ -41,11 +41,11 @@ is used here for example purposes. It is not required.
 
 ```rust
 use llm_prompt::*;
-use llm_models::api_model::ApiLlmModel;
-use llm_models::local_model::LocalLlmModel;
+use llm_models::api_model::CloudLlm;
+use llm_models::local_model::LocalLlm;
 
 // OpenAI Format
-let model = ApiLlmModel::gpt_3_5_turbo();
+let model = CloudLlm::gpt_3_5_turbo();
 let prompt = LlmPrompt::new_api_prompt(
     model.model_base.tokenizer.clone(),
     Some(model.tokens_per_message),
@@ -53,7 +53,7 @@ let prompt = LlmPrompt::new_api_prompt(
 );
 
 // Chat Template
-let model = LocalLlmModel::default();
+let model = LocalLlm::default();
 let prompt = LlmPrompt::new_local_prompt(
     model.model_base.tokenizer.clone(),
     &model.chat_template.chat_template,
@@ -93,7 +93,7 @@ let total_prompt_tokens: u64 = prompt.local_prompt()?.get_total_prompt_tokens();
 let total_prompt_tokens: u64 = prompt.api_prompt()?.get_total_prompt_tokens();
 
 // Validate requested max_tokens for a generation. If it exceeds the models limits, reduce max_tokens to a safe value
-let actual_request_tokens = check_and_get_max_tokens(
+let actual_requested_response_tokens = check_and_get_max_tokens(
     model.context_length,
     Some(model.max_tokens_output), // If using a GGUF model use either model.context_length or the ctx_size of the server
     total_prompt_tokens,
