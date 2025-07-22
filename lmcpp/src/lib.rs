@@ -46,10 +46,11 @@
 //! ```
 //!
 //! ```sh,no_run
+//! # With default model
 //! cargo run --bin lmcpp-server-cli -- --webui
-//! // Or with a specific model from URL:
+//! # Or with a specific model from URL:
 //! cargo run --bin lmcpp-server-cli -- --webui -u https://huggingface.co/bartowski/google_gemma-3-1b-it-qat-GGUF/blob/main/google_gemma-3-1b-it-qat-Q4_K_M.gguf
-//! // Or with a specific local model:
+//! # Or with a specific local model:
 //! cargo run --bin lmcpp-server-cli -- --webui -l /path/to/local/model.gguf
 //! ```
 //!
@@ -67,9 +68,8 @@
 //!       └─→ LmcppServer           (typed handle over UDS*)
 //!                 │
 //!                 ├─→ completion()       → text generation
-//!                 └─→ other endpoints    → fill-in-the-middle
+//!                 └─→ other endpoints    → stuff
 //! ```
-//! *Windows transparently swaps in a named pipe.*
 //!
 //! ---
 //!
@@ -83,7 +83,7 @@
 //! | `POST /detokenize`  | `detokenize()`          | [`DetokenizeRequest`]   | [`DetokenizeResponse`] |
 //! | `GET  /props`       | `props()`               | –                       | [`PropsResponse`]      |
 //! | *custom*            | `status()` ¹            | –                       | [`ServerStatus`]       |
-//! | *Open AI*           | `open_ai_v1_*()`        | – [`serde_json::Value`] | [`serde_json::Value`]  |
+//! | *Open AI*           | `open_ai_v1_*()`        |   [`serde_json::Value`] | [`serde_json::Value`]  |
 //!
 //! ¹ Internal helper for server health.
 //!
