@@ -231,6 +231,56 @@ mod tests {
 
     #[test]
     #[ignore]
+    fn gpt_oss_demo() -> LmcppResult<()> {
+        let server = LmcppServerLauncher::builder()
+            .toolchain(LmcppToolChain::builder().curl_enabled(true).build()?)
+            .server_args(
+                ServerArgs::builder()
+                    .hf_repo("unsloth/gpt-oss-20b-GGUF")?
+                    .reasoning_format(ReasoningFormat::None)
+                    .jinja(true)
+                    .build(),
+            )
+            .load()?;
+
+        let res = server.completion(
+            CompletionRequest::builder()
+                .prompt("Tell me a joke about Rust.")
+                .n_predict(256),
+        )?;
+        let content = res.content.unwrap();
+        assert!(
+            content.contains("Rust is like a well-typed joke: it takes a while to get it, but when you do, it's solid!"),
+            "Expected funny, got: {content}"
+        );
+        server.stop()?;
+        Ok(())
+    }
+
+    #[test]
+    #[ignore]
+    fn webui_gpt_oss_demo() -> LmcppResult<()> {
+        let _server = LmcppServerLauncher::builder()
+            .toolchain(LmcppToolChain::builder().curl_enabled(true).build()?)
+            .server_args(
+                ServerArgs::builder()
+                    .hf_repo("ggml-org/gpt-oss-20b-GGUF")?
+                    .reasoning_format(ReasoningFormat::None)
+                    .ctx_size(0)
+                    .flash_attn(true)
+                    .jinja(true)
+                    .build(),
+            )
+            .webui(true)
+            .load()?;
+
+        println!("Web UI server started. Open your browser to the provided URL.");
+        std::thread::park();
+        Ok(())
+    }
+
+    #[test]
+    #[ignore]
     fn launch_example() -> LmcppResult<()> {
         let server = LmcppServerLauncher::builder()
             .toolchain(LmcppToolChain::builder().curl_enabled(true).build()?)
@@ -244,7 +294,7 @@ mod tests {
         let res = server.completion(
             CompletionRequest::builder()
                 .prompt("Tell me a joke about Rust.")
-                .n_predict(64),
+                .n_predict(128),
         )?;
         println!("Completion response: {:#?}", res.content);
         Ok(())

@@ -100,9 +100,9 @@ use crate::{
 const DEFAULT_PROJECT_NAME: &str = "llama_cpp_toolchain";
 const DEFAULT_FAIL_LIMIT: u8 = 3;
 
-/// https://github.com/ggml-org/llama.cpp/releases/tag/b5890
-/// 2025/07/13
-const LLAMA_CPP_DEFAULT_TAG: &str = "b5890";
+/// https://github.com/ggml-org/llama.cpp/releases/tag/b6097
+/// 2025/08/05
+const LLAMA_CPP_DEFAULT_TAG: &str = "b6097";
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 pub const LMCPP_SERVER_EXECUTABLE: &str = "llama-server";

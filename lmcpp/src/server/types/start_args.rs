@@ -512,14 +512,14 @@ pub struct ServerArgs {
     /// lower precision or quantized types can save memory at some accuracy cost.  
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(option = "--cache-type-k")]
-    pub cache_type_k: Option<CacheType>,
+    pub cache_type_k: Option<String>,
 
     /// Data type for the **value** part of the KV cache. Supports the same options as
     /// `cache_type_k` (floating point or quantized types). Default is `f16` unless
     /// changed. Using quantized values reduces memory usage.  
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(option = "--cache-type-v")]
-    pub cache_type_v: Option<CacheType>,
+    pub cache_type_v: Option<String>,
 
     /// Threshold for KV cache defragmentation (fraction of free space). If the KV
     /// memory fragmentation exceeds this fraction, the cache will be defragmented.
@@ -743,6 +743,26 @@ pub struct ServerArgs {
     #[arg(flag = "--jinja")]
     pub jinja: bool,
 
+    /// Select how the server handles `<think> … </think>` tags in model
+    /// output.  
+    ///  
+    /// * **`deepseek`** (default) – extracts the text inside the tags and
+    ///   places it in `message.reasoning_content`, leaving the visible
+    ///   reply in `message.content` (tags remain when streaming).  
+    /// * **`none`** – leaves the tags intact in `message.content` and skips
+    ///   the extra field.  
+    ///
+    /// Corresponds to the CLI flag `--reasoning-format <value>`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(option = "--reasoning-format")]
+    pub reasoning_format: Option<ReasoningFormat>,
+
+    /// Controls the amount of thinking allowed; currently only one of: -1 for
+    /// unrestricted thinking budget, or 0 to disable thinking (default: -1)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(option = "--reasoning-budget")]
+    pub reasoning_budget: Option<ReasoningBudget>,
+
     /// Specify a built-in chat template or provide a custom template string to format
     /// chat conversations. If the name matches a known template (e.g., "vicuna" or
     /// "chatml"), that template is used. If `--jinja` is enabled, you can supply a
@@ -871,14 +891,14 @@ pub struct ServerArgs {
     /// the draft model (default f16).  
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(option = "-ctkd")]
-    pub cache_type_k_draft: Option<CacheType>,
+    pub cache_type_k_draft: Option<String>,
 
     /// Data type for the **value** cache of the draft model. Use this to quantize or
     /// change precision of the draft model's value cache, analogous to `cache_type_v`
     /// for the main model (default f16).  
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(option = "-ctvd")]
-    pub cache_type_v_draft: Option<CacheType>,
+    pub cache_type_v_draft: Option<String>,
 
     // ───────────────────────── Audio / TTS ──────────────────────────
     /// Path to a vocoder model file for text-to-speech (TTS). If provided along with
@@ -952,8 +972,7 @@ impl<S: State> ServerArgsBuilder<S> {
         value: V,
     ) -> LmcppResult<ServerArgsBuilder<SetModelUrl<SetHasModelSource<S>>>>
     where
-        V: TryInto<url::Url>,
-        <V as TryInto<url::Url>>::Error: std::fmt::Display,
+        V: TryInto<url::Url, Error: std::fmt::Display>,
         S::ModelUrl: IsUnset,
         S::HasModelSource: IsUnset,
     {
@@ -1004,32 +1023,6 @@ where
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-#[serde(rename_all = "lowercase")]
-pub enum CacheType {
-    F32,
-    F16,
-    Bf16,
-    Q8_0,
-    Q4_0,
-    Q4_1,
-    Iq4Nl,
-    Q5_0,
-    Q5_1,
-}
-
-impl Arg for CacheType {
-    fn append_arg(&self, command: &mut std::process::Command) {
-        command.arg(format!("{}", self));
-    }
-}
-
-impl Display for CacheType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self).map(|_| ())
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "lowercase")] // "none", "linear", "yarn"
 pub enum RopeScaling {
     None,
@@ -1039,7 +1032,7 @@ pub enum RopeScaling {
 
 impl Arg for RopeScaling {
     fn append_arg(&self, command: &mut std::process::Command) {
-        command.arg(format!("{}", self));
+        command.arg(self.to_string().to_lowercase());
     }
 }
 
@@ -1064,7 +1057,7 @@ pub enum NumaStrategy {
 
 impl Arg for NumaStrategy {
     fn append_arg(&self, command: &mut std::process::Command) {
-        command.arg(format!("{}", self));
+        command.arg(self.to_string().to_lowercase());
     }
 }
 
@@ -1084,12 +1077,55 @@ pub enum SplitMode {
 
 impl Arg for SplitMode {
     fn append_arg(&self, command: &mut std::process::Command) {
-        command.arg(format!("{}", self));
+        command.arg(self.to_string().to_lowercase());
     }
 }
 
 impl Display for SplitMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self).map(|_| ())
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningFormat {
+    None,
+    Deepseek,
+    Auto,
+}
+
+impl Arg for ReasoningFormat {
+    fn append_arg(&self, command: &mut std::process::Command) {
+        command.arg(self.to_string().to_lowercase());
+    }
+}
+
+impl Display for ReasoningFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self).map(|_| ())
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningBudget {
+    None,      // 0
+    Unlimited, // -1
+}
+
+impl Arg for ReasoningBudget {
+    fn append_arg(&self, command: &mut std::process::Command) {
+        command.arg(self.to_string().to_lowercase());
+    }
+}
+
+impl Display for ReasoningBudget {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use ReasoningBudget::*;
+        f.write_str(match self {
+            None => "0",
+            Unlimited => "-1",
+        })
     }
 }

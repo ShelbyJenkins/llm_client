@@ -1,5 +1,6 @@
-use llm_models_macros::generate_api_providers_and_models;
-use llm_models_macros::generate_local_organizations_and_models;
+use llm_models_macros::{
+    generate_api_providers_and_models, generate_local_organizations_and_models,
+};
 
 fn main() {
     let api_providers_and_models_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))

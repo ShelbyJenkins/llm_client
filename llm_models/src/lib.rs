@@ -1,9 +1,13 @@
-#![feature(f16)]
-
-pub mod hf_loader;
-pub mod llm;
+pub mod error;
+pub mod estimate;
+pub mod fs;
+pub mod gguf;
+pub mod hf;
+pub mod manifest;
+pub mod runtime;
 
 #[allow(unused_imports)]
-use anyhow::{anyhow, bail, Error, Result};
+use anyhow::{Error, Result, anyhow, bail};
+pub use error::LlmModelsError;
 #[allow(unused_imports)]
-use tracing::{debug, error, info, span, trace, warn, Level};
+use tracing::{Level, debug, error, info, span, trace, warn};

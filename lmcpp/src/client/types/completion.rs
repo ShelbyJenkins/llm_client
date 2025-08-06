@@ -165,10 +165,20 @@ pub struct CompletionRequest {
     /// schema and the builder API remain perfectly flat and backward‑compatible.
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub sampling: Option<SamplingParams>,
+
+    /// Internal reasoning content is included in the response.
+    #[serde(default, skip_serializing_if = "<&bool>::not")]
+    #[builder(default)]
+    pub reasoning_in_content: bool,
 }
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct CompletionResponse {
+    /// Completion result as a single string (excluding any stopping word).
+    /// In streaming mode, this may contain only the **next** token instead of the full completion.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_content: Option<String>,
+
     /// Completion result as a single string (excluding any stopping word).
     /// In streaming mode, this may contain only the **next** token instead of the full completion.
     #[serde(skip_serializing_if = "Option::is_none")]

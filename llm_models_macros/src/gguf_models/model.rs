@@ -4,7 +4,7 @@ use super::{
 };
 
 #[derive(Debug, Clone, serde::Deserialize)]
-pub(super) struct DeGgufPreset {
+pub struct DeGgufPreset {
     pub model_id: String,
     pub friendly_name: String,
     pub gguf_repo_id: String,
@@ -14,7 +14,7 @@ pub(super) struct DeGgufPreset {
     pub tokenizer_path: Option<std::path::PathBuf>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct DeConfigJson {
     #[serde(alias = "max_position_embeddings")]
     #[serde(alias = "n_ctx")]
@@ -92,7 +92,7 @@ impl DeConfigJson {
 }
 
 #[derive(Debug, Clone)]
-pub(super) struct MacroGgufPreset {
+pub struct MacroGgufPreset {
     pub organization: MacroPresetOrganization,
     pub model_id: String,
     pub friendly_name: String,
@@ -143,7 +143,7 @@ impl MacroGgufPreset {
         }
     }
 
-    pub(super) fn const_ident(&self) -> Ident {
+    pub fn const_ident(&self) -> Ident {
         format_ident!(
             "{}",
             self.friendly_name
@@ -152,11 +152,11 @@ impl MacroGgufPreset {
         )
     }
 
-    pub(super) fn enum_ident(&self) -> Ident {
+    pub fn enum_ident(&self) -> Ident {
         format_ident!("{}", to_enum(&self.model_id))
     }
 
-    pub(super) fn fn_name_ident(&self) -> Ident {
+    pub fn fn_name_ident(&self) -> Ident {
         format_ident!("{}", to_func(&self.model_id))
     }
 
@@ -204,7 +204,7 @@ impl MacroGgufPreset {
     }
 }
 
-pub(super) fn generate(output_path: &std::path::PathBuf) {
+pub fn generate(output_path: &std::path::PathBuf) {
     let organizations = MacroPresetOrganizations::new();
 
     let mut preset_associated_consts = Vec::new();

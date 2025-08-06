@@ -1,0 +1,1312 @@
+[
+  {
+    "organization": "Meta",
+    "model_id": "Llama-3.2-1B-Instruct",
+    "friendly_name": "Llama 3.2 1B Instruct",
+    "gguf_repo_id": "bartowski/Llama-3.2-1B-Instruct-GGUF",
+    "model_repo_id": "meta-llama/Llama-3.2-1B-Instruct",
+    "number_of_parameters": 3.0,
+    "tokenizer_file_name": "meta.llama3.1.8b.instruct.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 2048,
+      "feed_forward_length": 8192,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 16,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 128256,
+      "architecture": "llama",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 3,
+        "fname": "Llama-3.2-1B-Instruct-IQ3_M.gguf",
+        "total_bytes": 657289344
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 807694464
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Llama-3.2-1B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 911503488
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Llama-3.2-1B-Instruct-Q6_K.gguf",
+        "total_bytes": 1021800576
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "total_bytes": 1321083008
+      }
+    ]
+  },
+  {
+    "organization": "Meta",
+    "model_id": "Llama-3.2-3B-Instruct",
+    "friendly_name": "Llama 3.2 3B Instruct",
+    "gguf_repo_id": "bartowski/Llama-3.2-3B-Instruct-GGUF",
+    "model_repo_id": "meta-llama/Llama-3.2-3B-Instruct",
+    "number_of_parameters": 3.0,
+    "tokenizer_file_name": "meta.llama3.1.8b.instruct.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 3072,
+      "feed_forward_length": 8192,
+      "head_count": 24,
+      "head_count_kv": 8,
+      "block_count": 28,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 128256,
+      "architecture": "llama",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 3,
+        "fname": "Llama-3.2-3B-Instruct-IQ3_M.gguf",
+        "total_bytes": 1599668768
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 2019377696
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Llama-3.2-3B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 2322154016
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Llama-3.2-3B-Instruct-Q6_K.gguf",
+        "total_bytes": 2643853856
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+        "total_bytes": 3421899296
+      }
+    ]
+  },
+  {
+    "organization": "Meta",
+    "model_id": "Llama-3.1-8B-Instruct-GGUF",
+    "friendly_name": "Llama 3.1 8B Instruct",
+    "gguf_repo_id": "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+    "model_repo_id": "meta-llama/Llama-3.1-8B-Instruct-GGUF",
+    "number_of_parameters": 8.0,
+    "tokenizer_file_name": "meta.llama3.1.8b.instruct.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 4096,
+      "feed_forward_length": 14336,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 128256,
+      "architecture": "llama",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q2_K.gguf",
+        "total_bytes": 3179136416
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 4018922912
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 4920739232
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 5732992416
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q6_K.gguf",
+        "total_bytes": 6596011424
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+        "total_bytes": 8540775840
+      }
+    ]
+  },
+  {
+    "organization": "Mistral",
+    "model_id": "Mixtral-8x7B-Instruct-v0.1",
+    "friendly_name": "Mixtral 8x7B Instruct v0.1",
+    "gguf_repo_id": "MaziyarPanahi/Mixtral-8x7B-Instruct-v0.1-GGUF",
+    "model_repo_id": "nvidia/Mixtral-8x7B-Instruct-v0.1",
+    "number_of_parameters": 56.0,
+    "tokenizer_file_name": "mistral.mixtral8x7b.instruct.v0.1.tokenizer.json",
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 4096,
+      "feed_forward_length": 14336,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32768,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q2_K.gguf",
+        "total_bytes": 17309173632
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q3_K_M.gguf",
+        "total_bytes": 22544394112
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q4_K_M.gguf",
+        "total_bytes": 28446410624
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q5_K_M.gguf",
+        "total_bytes": 33227523968
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q6_K.gguf",
+        "total_bytes": 38378760064
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+        "total_bytes": 49624262528
+      }
+    ]
+  },
+  {
+    "organization": "Mistral",
+    "model_id": "Mistral-7B-Instruct-v0.3",
+    "friendly_name": "Mistral 7B Instruct v0.3",
+    "gguf_repo_id": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF",
+    "model_repo_id": "mistral/Mistral-7B-Instruct-v0.3",
+    "number_of_parameters": 7.0,
+    "tokenizer_file_name": "mistral.mistral7b.instruct.v0.3.tokenizer.json",
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 4096,
+      "feed_forward_length": 14336,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32768,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 1,
+        "fname": "Mistral-7B-Instruct-v0.3.IQ1_M.gguf",
+        "total_bytes": 1757663392
+      },
+      {
+        "q_lvl": 2,
+        "fname": "Mistral-7B-Instruct-v0.3.Q2_K.gguf",
+        "total_bytes": 2722877600
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mistral-7B-Instruct-v0.3.Q3_K_M.gguf",
+        "total_bytes": 3522941088
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
+        "total_bytes": 4372811936
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mistral-7B-Instruct-v0.3.Q5_K_M.gguf",
+        "total_bytes": 5136175264
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mistral-7B-Instruct-v0.3.Q6_K.gguf",
+        "total_bytes": 5947248800
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mistral-7B-Instruct-v0.3.Q8_0.gguf",
+        "total_bytes": 7702565024
+      }
+    ]
+  },
+  {
+    "organization": "Mistral",
+    "model_id": "Mistral-Nemo-Instruct-2407",
+    "friendly_name": "Mistral Nemo Instruct 2407",
+    "gguf_repo_id": "bartowski/Mistral-Nemo-Instruct-2407-GGUF",
+    "model_repo_id": "mistral/Mistral-Nemo-Instruct-2407",
+    "number_of_parameters": 12.0,
+    "tokenizer_file_name": "mistral.mistral.nemo.instruct.2407.tokenizer.json",
+    "config": {
+      "context_length": 1024000,
+      "embedding_length": 5120,
+      "feed_forward_length": 14336,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 131072,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Mistral-Nemo-Instruct-2407-Q2_K.gguf",
+        "total_bytes": 4791051392
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mistral-Nemo-Instruct-2407-Q3_K_M.gguf",
+        "total_bytes": 6083093632
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mistral-Nemo-Instruct-2407-Q4_K_M.gguf",
+        "total_bytes": 7477208192
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mistral-Nemo-Instruct-2407-Q5_K_M.gguf",
+        "total_bytes": 8727635072
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mistral-Nemo-Instruct-2407-Q6_K.gguf",
+        "total_bytes": 10056213632
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mistral-Nemo-Instruct-2407-Q8_0.gguf",
+        "total_bytes": 13022372992
+      }
+    ]
+  },
+  {
+    "organization": "Mistral",
+    "model_id": "Mistral-Small-24B-Instruct-2501",
+    "friendly_name": "Mistral Small 24B Instruct 2501",
+    "gguf_repo_id": "bartowski/Mistral-Small-24B-Instruct-2501-GGUF",
+    "model_repo_id": "mistral/Mistral-Small-24B-Instruct-2501",
+    "number_of_parameters": 24.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 5120,
+      "feed_forward_length": 32768,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 131072,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q2_K.gguf",
+        "total_bytes": 8890324672
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q3_K_M.gguf",
+        "total_bytes": 11474081472
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf",
+        "total_bytes": 14333908672
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q5_K_M.gguf",
+        "total_bytes": 16763983552
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q6_K.gguf",
+        "total_bytes": 19345938112
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mistral-Small-24B-Instruct-2501-Q8_0.gguf",
+        "total_bytes": 25054779072
+      }
+    ]
+  },
+  {
+    "organization": "Mistral",
+    "model_id": "Mistral-Small-Instruct-2409",
+    "friendly_name": "Mistral Small Instruct 2409",
+    "gguf_repo_id": "bartowski/Mistral-Small-Instruct-2409-GGUF",
+    "model_repo_id": "mistral/Mistral-Small-Instruct-2409",
+    "number_of_parameters": 12.0,
+    "tokenizer_file_name": "mistral.mistral.small.instruct.2409.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 6144,
+      "feed_forward_length": 16384,
+      "head_count": 48,
+      "head_count_kv": 8,
+      "block_count": 56,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32768,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Mistral-Small-Instruct-2409-Q2_K.gguf",
+        "total_bytes": 8272098304
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mistral-Small-Instruct-2409-Q3_K_M.gguf",
+        "total_bytes": 10756830208
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mistral-Small-Instruct-2409-Q4_K_M.gguf",
+        "total_bytes": 13341242368
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mistral-Small-Instruct-2409-Q5_K_M.gguf",
+        "total_bytes": 15722558464
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mistral-Small-Instruct-2409-Q6_K.gguf",
+        "total_bytes": 18252706816
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mistral-Small-Instruct-2409-Q8_0.gguf",
+        "total_bytes": 23640552448
+      }
+    ]
+  },
+  {
+    "organization": "Stability AI",
+    "model_id": "stablelm-2-12b-chat",
+    "friendly_name": "Stable LM 2 12B Chat",
+    "gguf_repo_id": "second-state/stablelm-2-12b-chat-GGUF",
+    "model_repo_id": "stabilityai/stablelm-2-12b-chat",
+    "number_of_parameters": 12.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 4096,
+      "embedding_length": 5120,
+      "feed_forward_length": 13824,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 100352,
+      "architecture": "stablelm",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "stablelm-2-12b-chat-Q2_K.gguf",
+        "total_bytes": 4698894176
+      },
+      {
+        "q_lvl": 3,
+        "fname": "stablelm-2-12b-chat-Q3_K_M.gguf",
+        "total_bytes": 5993885536
+      },
+      {
+        "q_lvl": 4,
+        "fname": "stablelm-2-12b-chat-Q4_K_M.gguf",
+        "total_bytes": 7367642976
+      },
+      {
+        "q_lvl": 5,
+        "fname": "stablelm-2-12b-chat-Q5_K_M.gguf",
+        "total_bytes": 8627900256
+      },
+      {
+        "q_lvl": 6,
+        "fname": "stablelm-2-12b-chat-Q6_K.gguf",
+        "total_bytes": 9966923616
+      },
+      {
+        "q_lvl": 8,
+        "fname": "stablelm-2-12b-chat-Q8_0.gguf",
+        "total_bytes": 12907687776
+      }
+    ]
+  },
+  {
+    "organization": "Alibaba",
+    "model_id": "Qwen2.5-7B-Instruct",
+    "friendly_name": "Qwen2.5 7B Instruct",
+    "gguf_repo_id": "bartowski/Qwen2.5-7B-Instruct-GGUF",
+    "model_repo_id": "Qwen/Qwen2.5-7B-Instruct",
+    "number_of_parameters": 7.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 3584,
+      "feed_forward_length": 18944,
+      "head_count": 28,
+      "head_count_kv": 4,
+      "block_count": 28,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 152064,
+      "architecture": "qwen2",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Qwen2.5-7B-Instruct-Q2_K.gguf",
+        "total_bytes": 3015940800
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Qwen2.5-7B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 3808391872
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 4683074240
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Qwen2.5-7B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 5444831936
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Qwen2.5-7B-Instruct-Q6_K.gguf",
+        "total_bytes": 6254199488
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Qwen2.5-7B-Instruct-Q8_0.gguf",
+        "total_bytes": 8098525888
+      }
+    ]
+  },
+  {
+    "organization": "Alibaba",
+    "model_id": "Qwen2.5-32B-Instruct",
+    "friendly_name": "Qwen2.5 32B Instruct",
+    "gguf_repo_id": "bartowski/Qwen2.5-32B-Instruct-GGUF",
+    "model_repo_id": "Qwen/Qwen2.5-32B-Instruct",
+    "number_of_parameters": 32.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 5120,
+      "feed_forward_length": 27648,
+      "head_count": 40,
+      "head_count_kv": 8,
+      "block_count": 64,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 152064,
+      "architecture": "qwen2",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Qwen2.5-32B-Instruct-Q2_K.gguf",
+        "total_bytes": 12313099136
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Qwen2.5-32B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 15935048576
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 19851336576
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Qwen2.5-32B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 23262157696
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Qwen2.5-32B-Instruct-Q6_K.gguf",
+        "total_bytes": 26886155136
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Qwen2.5-32B-Instruct-Q8_0.gguf",
+        "total_bytes": 34820885376
+      }
+    ]
+  },
+  {
+    "organization": "Alibaba",
+    "model_id": "Qwen2.5-14B-Instruct",
+    "friendly_name": "Qwen2.5 14B Instruct",
+    "gguf_repo_id": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "model_repo_id": "Qwen/Qwen2.5-14B-Instruct",
+    "number_of_parameters": 14.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 5120,
+      "feed_forward_length": 13824,
+      "head_count": 40,
+      "head_count_kv": 8,
+      "block_count": 48,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 152064,
+      "architecture": "qwen2",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Qwen2.5-14B-Instruct-Q2_K.gguf",
+        "total_bytes": 5770498176
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Qwen2.5-14B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 7339204736
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 8988110976
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Qwen2.5-14B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 10508873856
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Qwen2.5-14B-Instruct-Q6_K.gguf",
+        "total_bytes": 12124684416
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Qwen2.5-14B-Instruct-Q8_0.gguf",
+        "total_bytes": 15701598336
+      }
+    ]
+  },
+  {
+    "organization": "Alibaba",
+    "model_id": "Qwen2.5-3B-Instruct",
+    "friendly_name": "Qwen2.5 3B Instruct",
+    "gguf_repo_id": "bartowski/Qwen2.5-3B-Instruct-GGUF",
+    "model_repo_id": "Qwen/Qwen2.5-3B-Instruct",
+    "number_of_parameters": 3.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 32768,
+      "embedding_length": 2048,
+      "feed_forward_length": 11008,
+      "head_count": 16,
+      "head_count_kv": 2,
+      "block_count": 36,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 151936,
+      "architecture": "qwen2",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Qwen2.5-3B-Instruct-Q2_K.gguf",
+        "total_bytes": 1274756256
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Qwen2.5-3B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 1590475936
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 1929903264
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Qwen2.5-3B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 2224815264
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Qwen2.5-3B-Instruct-Q6_K.gguf",
+        "total_bytes": 2538159264
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Qwen2.5-3B-Instruct-Q8_0.gguf",
+        "total_bytes": 3285476512
+      }
+    ]
+  },
+  {
+    "organization": "IBM",
+    "model_id": "granite-3.0-8b-instruct",
+    "friendly_name": "Granite 3.0 8b instruct",
+    "gguf_repo_id": "bartowski/granite-3.0-8b-instruct-GGUF",
+    "model_repo_id": "ibm/granite-3.0-8b-instruct",
+    "number_of_parameters": 8.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 4096,
+      "embedding_length": 4096,
+      "feed_forward_length": 12800,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 49155,
+      "architecture": "granite",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "granite-3.0-8b-instruct-Q2_K.gguf",
+        "total_bytes": 3103588576
+      },
+      {
+        "q_lvl": 3,
+        "fname": "granite-3.0-8b-instruct-Q3_K_L.gguf",
+        "total_bytes": 4349427936
+      },
+      {
+        "q_lvl": 4,
+        "fname": "granite-3.0-8b-instruct-Q4_K_M.gguf",
+        "total_bytes": 4942856416
+      },
+      {
+        "q_lvl": 5,
+        "fname": "granite-3.0-8b-instruct-Q5_K_M.gguf",
+        "total_bytes": 5797445856
+      },
+      {
+        "q_lvl": 6,
+        "fname": "granite-3.0-8b-instruct-Q6_K.gguf",
+        "total_bytes": 6705447136
+      },
+      {
+        "q_lvl": 8,
+        "fname": "granite-3.0-8b-instruct-Q8_0.gguf",
+        "total_bytes": 8684244096
+      }
+    ]
+  },
+  {
+    "organization": "IBM",
+    "model_id": "granite-3.0-2b-instruct",
+    "friendly_name": "Granite 3.0 2b instruct",
+    "gguf_repo_id": "bartowski/granite-3.0-2b-instruct-GGUF",
+    "model_repo_id": "ibm/granite-3.0-2b-instruct",
+    "number_of_parameters": 2.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 4096,
+      "embedding_length": 2048,
+      "feed_forward_length": 8192,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 49155,
+      "architecture": "granite",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "granite-3.0-2b-instruct-Q2_K.gguf",
+        "total_bytes": 1011275040
+      },
+      {
+        "q_lvl": 3,
+        "fname": "granite-3.0-2b-instruct-Q3_K_L.gguf",
+        "total_bytes": 1400625056
+      },
+      {
+        "q_lvl": 4,
+        "fname": "granite-3.0-2b-instruct-Q4_K_M.gguf",
+        "total_bytes": 1601919680
+      },
+      {
+        "q_lvl": 5,
+        "fname": "granite-3.0-2b-instruct-Q5_K_M.gguf",
+        "total_bytes": 1874025920
+      },
+      {
+        "q_lvl": 6,
+        "fname": "granite-3.0-2b-instruct-Q6_K.gguf",
+        "total_bytes": 2163138816
+      },
+      {
+        "q_lvl": 8,
+        "fname": "granite-3.0-2b-instruct-Q8_0.gguf",
+        "total_bytes": 2801069184
+      }
+    ]
+  },
+  {
+    "organization": "Arcee AI",
+    "model_id": "SuperNova-Medius",
+    "friendly_name": "SuperNova Medius",
+    "gguf_repo_id": "arcee-ai/SuperNova-Medius-GGUF",
+    "model_repo_id": "arcee-ai/arcee-ai/SuperNova-Medius",
+    "number_of_parameters": 13.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 5120,
+      "feed_forward_length": 13824,
+      "head_count": 40,
+      "head_count_kv": 8,
+      "block_count": 48,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 152064,
+      "architecture": "qwen2",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "SuperNova-Medius-Q2_K.gguf",
+        "total_bytes": 5770498592
+      },
+      {
+        "q_lvl": 3,
+        "fname": "SuperNova-Medius-Q3_K_M.gguf",
+        "total_bytes": 7339205152
+      },
+      {
+        "q_lvl": 4,
+        "fname": "SuperNova-Medius-Q4_K_M.gguf",
+        "total_bytes": 8988111392
+      },
+      {
+        "q_lvl": 5,
+        "fname": "SuperNova-Medius-Q5_K_M.gguf",
+        "total_bytes": 10508874272
+      },
+      {
+        "q_lvl": 6,
+        "fname": "SuperNova-Medius-Q6_K.gguf",
+        "total_bytes": 12124684832
+      },
+      {
+        "q_lvl": 8,
+        "fname": "SuperNova-Medius-Q8_0.gguf",
+        "total_bytes": 15701598752
+      }
+    ]
+  },
+  {
+    "organization": "Nvidia",
+    "model_id": "Llama-3.1-Nemotron-70B-Instruct",
+    "friendly_name": "Llama 3.1 Nemotron 70B Instruct",
+    "gguf_repo_id": "bartowski/Llama-3.1-Nemotron-70B-Instruct-HF-GGUF",
+    "model_repo_id": "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+    "number_of_parameters": 70.0,
+    "tokenizer_file_name": "meta.llama3.1.8b.instruct.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 8192,
+      "feed_forward_length": 28672,
+      "head_count": 64,
+      "head_count_kv": 8,
+      "block_count": 80,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 128256,
+      "architecture": "llama",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Llama-3.1-Nemotron-70B-Instruct-HF-Q2_K.gguf",
+        "total_bytes": 26375113632
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Llama-3.1-Nemotron-70B-Instruct-HF-Q3_K_M.gguf",
+        "total_bytes": 34267499424
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Llama-3.1-Nemotron-70B-Instruct-HF-Q4_K_M.gguf",
+        "total_bytes": 42520398752
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Llama-3.1-Nemotron-70B-Instruct-HF-Q5_K_S.gguf",
+        "total_bytes": 48657451936
+      }
+    ]
+  },
+  {
+    "organization": "Nvidia",
+    "model_id": "Llama-3_1-Nemotron-51B-Instruct",
+    "friendly_name": "Llama 3.1 Nemotron 51B Instruct",
+    "gguf_repo_id": "bartowski/Llama-3_1-Nemotron-51B-Instruct-GGUF",
+    "model_repo_id": "nvidia/Llama-3_1-Nemotron-51B-Instruct",
+    "number_of_parameters": 52.0,
+    "tokenizer_file_name": "meta.llama3.1.8b.instruct.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 8192,
+      "feed_forward_length": null,
+      "head_count": 64,
+      "head_count_kv": 8,
+      "block_count": 80,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 128256,
+      "architecture": "nemotron-nas",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Llama-3_1-Nemotron-51B-Instruct-Q2_K.gguf",
+        "total_bytes": 19418642688
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Llama-3_1-Nemotron-51B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 25182345472
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Llama-3_1-Nemotron-51B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 31037307136
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Llama-3_1-Nemotron-51B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 36465391872
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Llama-3_1-Nemotron-51B-Instruct-Q6_K.gguf",
+        "total_bytes": 42258774272
+      }
+    ]
+  },
+  {
+    "organization": "Nvidia",
+    "model_id": "Mistral-NeMo-Minitron-8B-Instruct",
+    "friendly_name": "Mistral NeMo Minitron 8B Instruct",
+    "gguf_repo_id": "bartowski/Mistral-NeMo-Minitron-8B-Instruct-GGUF",
+    "model_repo_id": "nvidia/Mistral-NeMo-Minitron-8B-Instruct",
+    "number_of_parameters": 8.0,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 8192,
+      "embedding_length": 4096,
+      "feed_forward_length": 11520,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 131072,
+      "architecture": "mistral",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q2_K.gguf",
+        "total_bytes": 3333392064
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q3_K_M.gguf",
+        "total_bytes": 4209149632
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q4_K_M.gguf",
+        "total_bytes": 5145298624
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q5_K_M.gguf",
+        "total_bytes": 6001460928
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q6_K.gguf",
+        "total_bytes": 6911133376
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Mistral-NeMo-Minitron-8B-Instruct-Q8_0.gguf",
+        "total_bytes": 8948844224
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "Phi-3.5-mini-instruct",
+    "friendly_name": "Phi 3.5 mini instruct",
+    "gguf_repo_id": "bartowski/Phi-3.5-mini-instruct-GGUF",
+    "model_repo_id": "microsoft/Phi-3.5-mini-instruct",
+    "number_of_parameters": 4.0,
+    "tokenizer_file_name": "microsoft.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 3072,
+      "feed_forward_length": 8192,
+      "head_count": 32,
+      "head_count_kv": 32,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32064,
+      "architecture": "phi3",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Phi-3.5-mini-instruct-Q2_K.gguf",
+        "total_bytes": 1416204576
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Phi-3.5-mini-instruct-Q3_K_M.gguf",
+        "total_bytes": 1955477280
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Phi-3.5-mini-instruct-Q4_K_M.gguf",
+        "total_bytes": 2393232672
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Phi-3.5-mini-instruct-Q5_K_M.gguf",
+        "total_bytes": 2815276320
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Phi-3.5-mini-instruct-Q6_K.gguf",
+        "total_bytes": 3135853344
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Phi-3.5-mini-instruct-Q8_0.gguf",
+        "total_bytes": 4061222688
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "Phi-3-medium-4k-instruct",
+    "friendly_name": "Phi 3 medium 4k instruct",
+    "gguf_repo_id": "bartowski/Phi-3-medium-4k-instruct-GGUF",
+    "model_repo_id": "microsoft/Phi-3-medium-4k-instruct",
+    "number_of_parameters": 14.0,
+    "tokenizer_file_name": "microsoft.tokenizer.json",
+    "config": {
+      "context_length": 4096,
+      "embedding_length": 5120,
+      "feed_forward_length": 17920,
+      "head_count": 40,
+      "head_count_kv": 10,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32064,
+      "architecture": "phi3",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Phi-3-medium-4k-instruct-Q2_K.gguf",
+        "total_bytes": 5143000448
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Phi-3-medium-4k-instruct-Q3_K_M.gguf",
+        "total_bytes": 6923411328
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Phi-3-medium-4k-instruct-Q4_K_M.gguf",
+        "total_bytes": 8566821248
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Phi-3-medium-4k-instruct-Q5_K_M.gguf",
+        "total_bytes": 10074190208
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Phi-3-medium-4k-instruct-Q6_K.gguf",
+        "total_bytes": 11453817728
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Phi-3-medium-4k-instruct-Q8_0.gguf",
+        "total_bytes": 14834712448
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "phi-4-mini-instruct ",
+    "friendly_name": "Phi-4-mini-instruct ",
+    "gguf_repo_id": "bartowski/microsoft_Phi-4-mini-instruct-GGUF",
+    "model_repo_id": "microsoft/Phi-4-mini-instruct",
+    "number_of_parameters": 3.84,
+    "tokenizer_file_name": null,
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 3072,
+      "feed_forward_length": 8192,
+      "head_count": 24,
+      "head_count_kv": 8,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 200064,
+      "architecture": "phi3",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "microsoft_Phi-4-mini-instruct-Q2_K.gguf",
+        "total_bytes": 1682636160
+      },
+      {
+        "q_lvl": 3,
+        "fname": "microsoft_Phi-4-mini-instruct-Q3_K_M.gguf",
+        "total_bytes": 2117533056
+      },
+      {
+        "q_lvl": 4,
+        "fname": "microsoft_Phi-4-mini-instruct-Q4_K_M.gguf",
+        "total_bytes": 2491874688
+      },
+      {
+        "q_lvl": 5,
+        "fname": "microsoft_Phi-4-mini-instruct-Q5_K_M.gguf",
+        "total_bytes": 2848128384
+      },
+      {
+        "q_lvl": 6,
+        "fname": "microsoft_Phi-4-mini-instruct-Q6_K.gguf",
+        "total_bytes": 3155623296
+      },
+      {
+        "q_lvl": 8,
+        "fname": "microsoft_Phi-4-mini-instruct-Q8_0.gguf",
+        "total_bytes": 4084611456
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "Phi-3-mini-4k-instruct",
+    "friendly_name": "Phi 3 mini 4k instruct",
+    "gguf_repo_id": "bartowski/Phi-3-mini-4k-instruct-GGUF",
+    "model_repo_id": "microsoft/Phi-3-mini-4k-instruct",
+    "number_of_parameters": 4.0,
+    "tokenizer_file_name": "microsoft.tokenizer.json",
+    "config": {
+      "context_length": 4096,
+      "embedding_length": 3072,
+      "feed_forward_length": 8192,
+      "head_count": 32,
+      "head_count_kv": 32,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32064,
+      "architecture": "phi3",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 1,
+        "fname": "Phi-3-mini-4k-instruct-IQ1_M.gguf",
+        "total_bytes": 917106176
+      },
+      {
+        "q_lvl": 2,
+        "fname": "Phi-3-mini-4k-instruct-Q2_K.gguf",
+        "total_bytes": 1416203264
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Phi-3-mini-4k-instruct-Q3_K_M.gguf",
+        "total_bytes": 1955475968
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Phi-3-mini-4k-instruct-Q4_K_M.gguf",
+        "total_bytes": 2393231360
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Phi-3-mini-4k-instruct-Q5_K_M.gguf",
+        "total_bytes": 2815275008
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Phi-3-mini-4k-instruct-Q6_K.gguf",
+        "total_bytes": 3135852032
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Phi-3-mini-4k-instruct-Q8_0.gguf",
+        "total_bytes": 4061221376
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "phi-4",
+    "friendly_name": "Phi-4",
+    "gguf_repo_id": "bartowski/phi-4-GGUF",
+    "model_repo_id": "microsoft/phi-4",
+    "number_of_parameters": 14.0,
+    "tokenizer_file_name": "microsoft.phi4.tokenizer.json",
+    "config": {
+      "context_length": 16384,
+      "embedding_length": 5120,
+      "feed_forward_length": 17920,
+      "head_count": 40,
+      "head_count_kv": 10,
+      "block_count": 40,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 100352,
+      "architecture": "phi3",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "phi-4-Q2_K.gguf",
+        "total_bytes": 5547348416
+      },
+      {
+        "q_lvl": 3,
+        "fname": "phi-4-Q3_K_M.gguf",
+        "total_bytes": 7363269056
+      },
+      {
+        "q_lvl": 4,
+        "fname": "phi-4-Q4_K_M.gguf",
+        "total_bytes": 9053114816
+      },
+      {
+        "q_lvl": 5,
+        "fname": "phi-4-Q5_K_M.gguf",
+        "total_bytes": 10604188096
+      },
+      {
+        "q_lvl": 6,
+        "fname": "phi-4-Q6_K.gguf",
+        "total_bytes": 12030251456
+      },
+      {
+        "q_lvl": 8,
+        "fname": "phi-4-Q8_0.gguf",
+        "total_bytes": 15580500416
+      }
+    ]
+  },
+  {
+    "organization": "Microsoft",
+    "model_id": "Phi-3.5-MoE-instruct",
+    "friendly_name": "Phi 3.5 MoE instruct",
+    "gguf_repo_id": "bartowski/Phi-3.5-MoE-instruct-GGUF",
+    "model_repo_id": "microsoft/Phi-3.5-MoE-instruct",
+    "number_of_parameters": 7.0,
+    "tokenizer_file_name": "microsoft.tokenizer.json",
+    "config": {
+      "context_length": 131072,
+      "embedding_length": 4096,
+      "feed_forward_length": 6400,
+      "head_count": 32,
+      "head_count_kv": 8,
+      "block_count": 32,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 32064,
+      "architecture": "phimoe",
+      "model_size_bytes": null
+    },
+    "quants": [
+      {
+        "q_lvl": 2,
+        "fname": "Phi-3.5-MoE-instruct-Q2_K.gguf",
+        "total_bytes": 15265136480
+      },
+      {
+        "q_lvl": 3,
+        "fname": "Phi-3.5-MoE-instruct-Q3_K_M.gguf",
+        "total_bytes": 20032718688
+      },
+      {
+        "q_lvl": 4,
+        "fname": "Phi-3.5-MoE-instruct-Q4_K_M.gguf",
+        "total_bytes": 25345994592
+      },
+      {
+        "q_lvl": 5,
+        "fname": "Phi-3.5-MoE-instruct-Q5_K_M.gguf",
+        "total_bytes": 29716098912
+      },
+      {
+        "q_lvl": 6,
+        "fname": "Phi-3.5-MoE-instruct-Q6_K.gguf",
+        "total_bytes": 34359334752
+      },
+      {
+        "q_lvl": 8,
+        "fname": "Phi-3.5-MoE-instruct-Q8_0.gguf",
+        "total_bytes": 44499765088
+      }
+    ]
+  }
+]

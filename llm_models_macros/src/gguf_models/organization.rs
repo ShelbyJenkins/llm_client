@@ -1,10 +1,10 @@
 use super::*;
 
 #[derive(Debug)]
-pub(super) struct MacroPresetOrganizations(pub(super) Vec<MacroPresetOrganization>);
+pub struct MacroPresetOrganizations(pub Vec<MacroPresetOrganization>);
 
 impl MacroPresetOrganizations {
-    pub(super) fn new() -> Self {
+    pub fn new() -> Self {
         let entries = std::fs::read_dir(&*PATH_TO_ORGS_DATA_DIR).unwrap_or_else(|_| {
             panic!(
                 "Failed to read preset directory: {}",
@@ -47,20 +47,20 @@ impl MacroPresetOrganizations {
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub(super) struct DePresetOrganization {
+pub struct DePresetOrganization {
     friendly_name: String,
     hf_account: String,
 }
 
-#[derive(Debug, Clone)]
-pub(super) struct MacroPresetOrganization {
-    pub(super) friendly_name: String,
-    hf_account: String,
-    preset_org_path: std::path::PathBuf,
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct MacroPresetOrganization {
+    pub friendly_name: String,
+    pub hf_account: String,
+    pub preset_org_path: std::path::PathBuf,
 }
 
 impl MacroPresetOrganization {
-    pub(super) fn const_ident(&self) -> Ident {
+    pub fn const_ident(&self) -> Ident {
         format_ident!(
             "{}",
             self.friendly_name
@@ -69,7 +69,7 @@ impl MacroPresetOrganization {
         )
     }
 
-    pub(super) fn load_models(&self) -> Vec<MacroGgufPreset> {
+    pub fn load_models(&self) -> Vec<MacroGgufPreset> {
         let mut models = Vec::new();
         let preset_path = self.preset_org_path.clone();
         let entries = fs::read_dir(&preset_path).unwrap_or_else(|_| {
@@ -113,7 +113,7 @@ impl MacroPresetOrganization {
     }
 }
 
-pub(super) fn generate(output_path: &std::path::PathBuf) {
+pub fn generate(output_path: &std::path::PathBuf) {
     let organizations = MacroPresetOrganizations::new();
     let mut org_associated_consts = Vec::new();
     let mut org_associated_consts_idents = Vec::new();

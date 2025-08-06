@@ -1,5 +1,5 @@
 [workspace]
-members=["llm_models", "llm_prompt", "lmcpp"]
+members=["llm_models", "llm_models_macros", "llm_prompt", "lmcpp"]
 resolver="2"
 
 [workspace.package]
@@ -16,7 +16,8 @@ colorful="0.3.2"
 directories="6.0.0"
 dotenvy="0.15.7"
 indenter="0.3.3"
-llm_models={path="./llm_models", version="0.0.3"}
+llm_models={version="0.0.3"}
+# llm_models={path="./llm_models", version="0.0.3"}
 llm_prompt={path="./llm_prompt", version="0.0.3"}
 serde={version="1.0.219", features=["derive", "rc"]}
 serde_json="1.0.141"

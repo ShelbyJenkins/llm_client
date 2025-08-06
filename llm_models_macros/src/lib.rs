@@ -1,13 +1,12 @@
-mod api_models;
-mod gguf_models;
+pub mod api_models;
+pub mod gguf_models;
 
+#[allow(unused_imports)]
+use anyhow::{Error, Result, anyhow, bail};
 pub use api_models::generate_api_providers_and_models;
 pub use gguf_models::generate_local_organizations_and_models;
 use proc_macro2::TokenStream;
 use syn::Ident;
-
-#[allow(unused_imports)]
-use anyhow::{anyhow, bail, Error, Result};
 
 fn open_file(file_name: &str, file_path: &std::path::PathBuf) -> crate::Result<String> {
     match std::fs::read_to_string(&file_path) {

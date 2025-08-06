@@ -10,7 +10,7 @@ license="MIT"
 name="lmcpp"
 readme="README.md"
 repository="https://github.com/shelbyJenkins/llm_client"
-version="0.1.0"
+version="0.1.1"
 
 [dependencies]
 bon={version="3.6.4", features=["implied-bounds"]}

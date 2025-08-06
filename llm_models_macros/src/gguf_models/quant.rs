@@ -1,7 +1,7 @@
 use super::{model::DeGgufPreset, *};
 
 #[derive(Debug, Clone, serde::Deserialize)]
-pub(super) struct DeQuantFileNames {
+pub struct DeQuantFileNames {
     pub q8: Option<String>,
     pub q7: Option<String>,
     pub q6: Option<String>,
